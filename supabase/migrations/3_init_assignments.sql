@@ -1,0 +1,20 @@
+create table if not exists assignments (
+  id uuid primary key default gen_random_uuid(),
+  job_id uuid not null references jobs(id) on delete cascade,
+  driver_id uuid not null references drivers(id) on delete cascade,
+  request_order integer not null default 1,
+  status text not null default 'requested',
+  dispatch_token text not null unique,
+  requested_at timestamptz not null default now(),
+  viewed_at timestamptz,
+  responded_at timestamptz,
+  expires_at timestamptz,
+  response_note text,
+  canceled_at timestamptz,
+  canceled_reason text,
+  request_snapshot jsonb default '{}'::jsonb,
+  created_by text,
+  updated_by text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);

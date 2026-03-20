@@ -1,0 +1,23 @@
+[build]
+  publish = "."
+  functions = "netlify/functions"
+
+[dev]
+  publish = "."
+  framework = "#static"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/admin"
+  to = "/admin/"
+  status = 301
+
+[[redirects]]
+  from = "/driver"
+  to = "/driver/accept.html"
+  status = 301
+
+[[redirects]]
+  from = "/customer"
+  to = "/customer/pay.html"
+  status = 301

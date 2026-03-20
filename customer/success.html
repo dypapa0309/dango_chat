@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>결제 완료</title>
+  <style>
+    body{font-family:Arial,sans-serif;padding:24px;background:#f8fafc;color:#0f172a}
+    .card{max-width:640px;margin:0 auto;background:#fff;padding:24px;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08)}
+    .muted{color:#64748b}
+    .ok{color:#0f766e;font-weight:700}
+    .err{color:#b91c1c;font-weight:700}
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>결제 승인 처리 중...</h1>
+  <p id="status" class="muted">잠시만 기다려 주세요.</p>
+</div>
+<script>
+(async () => {
+  const qs = new URLSearchParams(location.search);
+  const jobId = qs.get('jobId');
+  const paymentKey = qs.get('paymentKey');
+  const orderId = qs.get('orderId') || jobId;
+  const amount = qs.get('amount');
+  const statusEl = document.getElementById('status');
+
+  try {
+    if (!jobId) throw new Error('jobId가 없습니다.');
+    let finalAmount = amount;
+    if (!finalAmount) {
+      const detail = await fetch(`/.netlify/functions/get-job-detail?jobId=${encodeURIComponent(jobId)}`).then(r=>r.json());
+      finalAmount = detail.job?.deposit_amount || 0;
+    }
+
+    const res = await fetch('/.netlify/functions/confirm-toss-payment', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ jobId, paymentKey, orderId, amount: Number(finalAmount) })
+    });
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error || '승인 실패');
+
+    statusEl.className = 'ok';
+    statusEl.textContent = '예약금 결제가 승인되었습니다. 관리자 페이지에서 주문 상태가 confirmed 로 바뀐 것을 확인하면 됩니다.';
+  } catch (e) {
+    statusEl.className = 'err';
+    statusEl.textContent = e.message || '결제 승인 실패';
+  }
+})();
+</script>
+</body>
+</html>
