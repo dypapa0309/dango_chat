@@ -416,8 +416,17 @@ function normalizeItemKey(k) {
       { label: "결과 확인", title: "마지막으로 금액을 확인해요.", hint: "결과를 보고 바로 결제나 상담으로 이어가요.", tokens: [12] }
     ];
 
+    const CLEAN_STAGE_GROUPS = [
+      { label: "청소 정보", title: "청소 유형과 기본 구성을 먼저 넣어요.", hint: "평수와 방 구조만 먼저 맞추면 돼요.", tokens: [1] },
+      { label: "주소·방문", title: "방문 주소와 날짜를 정해요.", hint: "주소와 방문 시간을 먼저 확인해요.", tokens: [2, 3] },
+      { label: "청소 범위", title: "청소 범위와 세부 구성을 정리해요.", hint: "청소 범위와 현장 조건을 확인해요.", tokens: [4, 5, 6, 7, 8, 9] },
+      { label: "추가 요청", title: "특수 청소와 추가 요청을 넣어요.", hint: "특수 청소, 가전 청소, 메모를 정리해요.", tokens: [10, 11] },
+      { label: "결과 확인", title: "마지막으로 금액을 확인해요.", hint: "결과를 보고 바로 접수나 결제로 이어가요.", tokens: [12] }
+    ];
+
     function getStageGroups() {
-      return MOVE_STAGE_GROUPS;
+      const service = state.activeService || DEFAULT_SERVICE;
+      return service === SERVICE.CLEAN ? CLEAN_STAGE_GROUPS : MOVE_STAGE_GROUPS;
     }
 
     function getCurrentStageInfo(stepToken) {
@@ -536,6 +545,10 @@ function normalizeItemKey(k) {
       }
 
       $$("#wizardStagePills .stage-pill").forEach((pill, index) => {
+        const group = stageInfo.groups[index];
+        if (group) {
+          pill.textContent = `${index + 1}. ${group.label}`;
+        }
         pill.classList.toggle("is-active", index === stageInfo.index);
         pill.classList.toggle("is-done", index < stageInfo.index);
         pill.classList.toggle("is-upcoming", index > stageInfo.index);

@@ -1391,9 +1391,12 @@ body.modal-open{ overflow:hidden; }
   box-sizing:border-box;
 }
 
-#wizardNav, .wizard-top { display:none !important; }
-.step-card { display:block; }
-body.onepage-mode .step-card { display:block; }
+#wizardNav{
+  display:flex;
+}
+.wizard-top{
+  display:block;
+}
 
 .waypoint-tools,
 .waypoint-actions{
