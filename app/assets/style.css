@@ -273,6 +273,7 @@ textarea {
 .story-grid,
 .trust-strip,
 .flow-grid,
+.driver-proof-grid,
 .trust-grid,
 .credibility-grid,
 .calculator-layout,
@@ -562,6 +563,46 @@ textarea {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.driver-proof-shell .section-head {
+  max-width: 42rem;
+}
+
+.driver-proof-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.driver-proof-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: rgba(255, 250, 244, 0.92);
+  box-shadow: var(--shadow);
+}
+
+.driver-proof-card img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  background: rgba(255, 244, 228, 0.9);
+}
+
+.driver-proof-copy {
+  padding: 18px 20px 20px;
+}
+
+.driver-proof-copy strong {
+  display: block;
+  font-size: 1.1rem;
+}
+
+.driver-proof-copy span {
+  display: block;
+  margin-top: 8px;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
 .flow-card {
   position: relative;
   padding: 24px;
@@ -812,6 +853,7 @@ textarea {
   .trust-grid,
   .credibility-grid,
   .flow-grid,
+  .driver-proof-grid,
   .hero-proof,
   .quick-tags {
     grid-template-columns: 1fr;
