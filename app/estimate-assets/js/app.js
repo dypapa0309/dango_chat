@@ -408,6 +408,36 @@ function normalizeItemKey(k) {
        Wizard step model (DOM-driven)
     ========================================================= */
     const sections = $$(".step-card");
+    const MOVE_STAGE_GROUPS = [
+      { label: "이동 정보", title: "출발지와 날짜를 먼저 정해요.", hint: "주소와 시간을 먼저 맞추면 돼요.", tokens: [1, 2, 3] },
+      { label: "차량·짐", title: "차량과 짐량을 정해요.", hint: "차량, 이사 방식, 짐량 순서로 보면 돼요.", tokens: [4, 5, 6] },
+      { label: "작업 조건", title: "가구와 작업 조건을 정리해요.", hint: "가구, 인부, 동승 여부를 확인해요.", tokens: [7, 8, 9] },
+      { label: "추가 요청", title: "추가 요청을 정리해요.", hint: "청소나 버릴 물건만 필요한 만큼 넣어요.", tokens: [10, 11] },
+      { label: "결과 확인", title: "마지막으로 금액을 확인해요.", hint: "결과를 보고 바로 결제나 상담으로 이어가요.", tokens: [12] }
+    ];
+
+    function getStageGroups() {
+      return MOVE_STAGE_GROUPS;
+    }
+
+    function getCurrentStageInfo(stepToken) {
+      const groups = getStageGroups();
+      const index = groups.findIndex((group) => group.tokens.includes(stepToken));
+      return {
+        groups,
+        index: index >= 0 ? index : 0,
+        group: groups[index >= 0 ? index : 0]
+      };
+    }
+
+    function gotoStage(stageIndex) {
+      const groups = getStageGroups();
+      const targetGroup = groups[stageIndex];
+      if (!targetGroup) return;
+      const visible = computeVisibleSteps();
+      const nextIndex = visible.findIndex((sec) => targetGroup.tokens.includes(getStepToken(sec)));
+      if (nextIndex >= 0) gotoStep(nextIndex);
+    }
 
     function getStepToken(sectionEl) {
       const raw = sectionEl.getAttribute("data-step");
@@ -479,7 +509,39 @@ function normalizeItemKey(k) {
 
     function updateWizardUI(visibleSteps) {
       const nav = $("#wizardNav");
-      if (nav) nav.style.display = "none";
+      if (nav) nav.style.display = visibleSteps.length ? "flex" : "none";
+
+      const activeSection = visibleSteps[state.stepIndex];
+      const activeToken = getStepToken(activeSection);
+      const stageInfo = getCurrentStageInfo(activeToken);
+      const stageStepEl = $("#wizardStageStep");
+      const stageTitleEl = $("#wizardStageTitle");
+      const stageHintEl = $("#wizardStageHint");
+      const stageBarEl = $("#wizardStageBar");
+      const nextBtn = $("#wizardNext");
+      const prevBtn = $("#wizardPrev");
+
+      if (stageStepEl) stageStepEl.textContent = `${stageInfo.index + 1} / ${stageInfo.groups.length} 단계`;
+      if (stageTitleEl) stageTitleEl.textContent = stageInfo.group?.title || "현재 단계에 집중해서 보면 돼요.";
+      if (stageHintEl) stageHintEl.textContent = stageInfo.group?.hint || "현재 단계만 보면 돼요.";
+      if (stageBarEl) stageBarEl.style.width = `${((stageInfo.index + 1) / stageInfo.groups.length) * 100}%`;
+
+      if (prevBtn) {
+        prevBtn.disabled = state.stepIndex <= 0;
+        prevBtn.textContent = stageInfo.index <= 0 ? "처음 단계" : "이전 단계";
+      }
+      if (nextBtn) {
+        nextBtn.disabled = false;
+        nextBtn.textContent = activeToken === 12 ? "다시 처음부터" : "다음 단계";
+      }
+
+      $$("#wizardStagePills .stage-pill").forEach((pill, index) => {
+        pill.classList.toggle("is-active", index === stageInfo.index);
+        pill.classList.toggle("is-done", index < stageInfo.index);
+        pill.classList.toggle("is-upcoming", index > stageInfo.index);
+      });
+
+      document.body.classList.toggle("wizard-active", state.stepIndex > 0 || activeToken >= 1);
     }
 
     function canGoNext() {
@@ -557,6 +619,12 @@ function normalizeItemKey(k) {
     ========================================================= */
     $("#wizardPrev")?.addEventListener("click", goPrev);
     $("#wizardNext")?.addEventListener("click", goNext);
+    $$("#wizardStagePills .stage-pill").forEach((pill) => {
+      pill.addEventListener("click", () => {
+        const index = Number(pill.dataset.stageIndex || 0);
+        gotoStage(index);
+      });
+    });
     $("#heroStartBtn")?.addEventListener("click", () => {
       const firstSection = document.querySelector('[data-step="1"]');
       firstSection?.scrollIntoView({ behavior: "smooth", block: "start" });

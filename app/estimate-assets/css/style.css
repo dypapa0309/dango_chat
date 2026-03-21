@@ -242,6 +242,39 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   background:linear-gradient(90deg, #2F80ED 0%, #60A5FA 100%);
   transition:width .22s ease;
 }
+.wizard-stage-shell{
+  display:block;
+}
+.stage-pill-row{
+  display:grid;
+  grid-template-columns:repeat(5,1fr);
+  gap:8px;
+  margin-top:12px;
+}
+.stage-pill{
+  border:1px solid rgba(17,24,39,0.08);
+  background:#F8FAFC;
+  color:#64748B;
+  border-radius:14px;
+  padding:10px 8px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:-0.02em;
+  cursor:pointer;
+}
+.stage-pill.is-active{
+  background:#FFF7ED;
+  color:#C2410C;
+  border-color:rgba(234,88,12,0.18);
+}
+.stage-pill.is-done{
+  background:#ECFDF5;
+  color:#166534;
+  border-color:rgba(22,163,74,0.16);
+}
+.stage-pill.is-upcoming{
+  opacity:.72;
+}
 
 .section{ margin:12px 0 16px; }
 .section h2{
@@ -274,6 +307,22 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
 
 .step-card{ display:none; }
 .step-card.is-active{ display:block; }
+.step-card.is-active h2{
+  margin-bottom:12px;
+}
+
+body.wizard-active .dango-estimate-intro{
+  margin-bottom:10px;
+}
+body.wizard-active .dango-estimate-intro .landing-grid{
+  display:none;
+}
+body.wizard-active .dango-estimate-intro .landing-copy{
+  max-width:560px;
+}
+body.wizard-active .dango-estimate-intro .dango-estimate-pills{
+  display:none;
+}
 
 .hero-card{
   border-radius:20px;
@@ -759,6 +808,15 @@ button[disabled].wizard-btn{
 }
 .wizard-btn.ghost{ background:#F8FAFC; }
 .wizard-btn:disabled{ opacity:.55; cursor:not-allowed; }
+
+@media (max-width: 768px){
+  .stage-pill-row{
+    grid-template-columns:repeat(2,1fr);
+  }
+  .wizard-stage-shell{
+    top:calc(var(--safe-top) + 6px + var(--stickybar-h) + 8px);
+  }
+}
 
 .mini-summary{
   margin-top:10px;
