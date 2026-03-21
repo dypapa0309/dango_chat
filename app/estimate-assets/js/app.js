@@ -409,10 +409,10 @@ function normalizeItemKey(k) {
     ========================================================= */
     const sections = $$(".step-card");
     const MOVE_STAGE_GROUPS = [
-      { label: "기본 정보", title: "차량, 주소, 날짜를 먼저 정해요.", hint: "차량과 이동 거리, 시간을 먼저 맞추면 돼요.", tokens: [1, 2, 3] },
+      { label: "기본 정보", title: "차량과 이동 정보를 먼저 정해요.", hint: "차량, 주소, 날짜를 순서대로 보면 돼요.", tokens: [1, 2, 3] },
       { label: "이사 준비", title: "이사 방식과 짐 구성을 정해요.", hint: "이사 방식, 계단, 가구·가전을 순서대로 보면 돼요.", tokens: [4, 5, 6] },
-      { label: "작업 도움", title: "직접 나르기, 인부, 사다리차를 정리해요.", hint: "작업 도움과 사다리차 필요 여부를 확인해요.", tokens: [7, 8, 9] },
-      { label: "추가 요청", title: "추가 옵션과 동승 요청을 정리해요.", hint: "야간, 동승, 버릴 물건을 필요한 만큼 넣어요.", tokens: [10, 11] },
+      { label: "작업 도움", title: "작업 도움 조건을 정리해요.", hint: "직접 나르기, 인부, 사다리차를 확인해요.", tokens: [7, 8, 9] },
+      { label: "추가 요청", title: "추가 요청을 정리해요.", hint: "야간, 동승, 버릴 물건을 필요한 만큼 넣어요.", tokens: [10, 11] },
       { label: "결과 확인", title: "마지막으로 금액을 확인해요.", hint: "결과를 보고 바로 결제나 상담으로 이어가요.", tokens: [12] }
     ];
 
@@ -430,6 +430,27 @@ function normalizeItemKey(k) {
       "거의 다 왔어요. 마지막 요청만 정리하면 돼요.",
       "이제 금액만 확인하면 끝이에요."
     ];
+    const MOVE_STEP_COPY = {
+      1: { title: "차량을 먼저 골라요.", hint: "실제 짐 규모에 맞는 차량부터 정하면 돼요." },
+      2: { title: "출발지와 도착지를 넣어요.", hint: "경유지가 있으면 같이 넣고 거리 계산을 하면 돼요." },
+      3: { title: "날짜와 시간을 정해요.", hint: "가능한 날짜와 희망 시간을 먼저 맞추면 돼요." },
+      4: { title: "이사 방식을 골라요.", hint: "일반, 반포장, 보관 중에서 맞는 방식으로 고르면 돼요." },
+      5: { title: "엘리베이터와 계단을 확인해요.", hint: "출발지와 도착지 작업 환경을 같이 보면 돼요." },
+      6: { title: "가구와 짐 구성을 넣어요.", hint: "가구·가전과 짐양을 실제에 가깝게 넣으면 돼요." },
+      7: { title: "직접 나르기 어려운지 확인해요.", hint: "기사 1명이 가능한 수준인지 먼저 확인하면 돼요." },
+      8: { title: "추가 인부가 필요한지 정해요.", hint: "혼자 어려우면 필요한 인원만 추가하면 돼요." },
+      9: { title: "사다리차 필요 여부를 확인해요.", hint: "건물 구조에 따라 필요한 경우만 체크하면 돼요." },
+      10: { title: "추가 옵션을 정리해요.", hint: "야간, 주말, 동승 요청만 필요한 만큼 넣으면 돼요." },
+      11: { title: "버릴 물건이 있으면 넣어요.", hint: "함께 버릴 물건이 있으면 마지막에 정리하면 돼요." },
+      12: { title: "마지막으로 금액을 확인해요.", hint: "결과를 보고 바로 결제나 상담으로 이어가요." }
+    };
+    const CLEAN_STEP_COPY = {
+      1: { title: "청소 기본 정보를 먼저 넣어요.", hint: "청소 유형, 오염도, 평수부터 맞추면 돼요." },
+      2: { title: "청소 주소를 넣어요.", hint: "방문 주소와 현장 메모를 먼저 정리하면 돼요." },
+      3: { title: "날짜와 시간을 정해요.", hint: "방문 날짜와 희망 시간을 먼저 맞추면 돼요." },
+      4: { title: "청소 옵션을 정리해요.", hint: "외창, 새집증후군, 곰팡이 같은 옵션을 고르면 돼요." },
+      12: { title: "마지막으로 금액을 확인해요.", hint: "결과를 보고 바로 결제나 상담으로 이어가요." }
+    };
 
     function getStageGroups() {
       const service = state.activeService || DEFAULT_SERVICE;
@@ -444,6 +465,12 @@ function normalizeItemKey(k) {
         index: index >= 0 ? index : 0,
         group: groups[index >= 0 ? index : 0]
       };
+    }
+
+    function getCurrentStepCopy(stepToken) {
+      const service = state.activeService || DEFAULT_SERVICE;
+      const map = service === SERVICE.CLEAN ? CLEAN_STEP_COPY : MOVE_STEP_COPY;
+      return map[stepToken] || null;
     }
 
     function gotoStage(stageIndex) {
@@ -539,8 +566,9 @@ function normalizeItemKey(k) {
       const prevBtns = $$('[data-wizard-prev]');
 
       if (stageStepEl) stageStepEl.textContent = `${stageInfo.index + 1} / ${stageInfo.groups.length} 단계`;
-      if (stageTitleEl) stageTitleEl.textContent = stageInfo.group?.title || "현재 단계에 집중해서 보면 돼요.";
-      if (stageHintEl) stageHintEl.textContent = stageInfo.group?.hint || "현재 단계만 보면 돼요.";
+      const stepCopy = getCurrentStepCopy(activeToken);
+      if (stageTitleEl) stageTitleEl.textContent = stepCopy?.title || stageInfo.group?.title || "현재 단계에 집중해서 보면 돼요.";
+      if (stageHintEl) stageHintEl.textContent = stepCopy?.hint || stageInfo.group?.hint || "현재 단계만 보면 돼요.";
       if (stageBarEl) stageBarEl.style.width = `${((stageInfo.index + 1) / stageInfo.groups.length) * 100}%`;
       if (stageCheerEl) stageCheerEl.textContent = STAGE_CHEERS[stageInfo.index] || "좋아요. 이대로 진행하면 돼요.";
 
