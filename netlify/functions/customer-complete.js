@@ -1,5 +1,6 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { buildApprovedSettlementFields } from '../../shared/settlements.js';
 
 async function loadJobByToken(supabase, token) {
   const { data, error } = await supabase
@@ -56,8 +57,10 @@ export async function handler(event) {
         const { error: settlementError } = await supabase
           .from('settlements')
           .update({
-            status: 'approved',
-            approved_at: new Date().toISOString(),
+            ...buildApprovedSettlementFields(new Date(), {
+              amount: job.driver_amount || existingSettlement.amount || 0,
+              driver_id: job.assigned_driver_id
+            }),
             memo: note || '고객 완료 확인으로 정산 승인'
           })
           .eq('id', existingSettlement.id);
@@ -67,8 +70,7 @@ export async function handler(event) {
           job_id: job.id,
           driver_id: job.assigned_driver_id,
           amount: job.driver_amount || 0,
-          status: 'approved',
-          approved_at: new Date().toISOString(),
+          ...buildApprovedSettlementFields(new Date()),
           memo: note || '고객 완료 확인으로 정산 승인'
         });
         if (createSettlementError) throw createSettlementError;

@@ -10,7 +10,7 @@
   <header class="topbar">
     <div>
       <h1>당고 운영툴</h1>
-      <p>주문 · 결제확정 · 배차요청 · 재배차 · 완료처리</p>
+      <p>주문 · 결제확정 · 배차요청 · 완료확인 · 2주 정산</p>
     </div>
     <div class="actions-inline">
       <button id="btnAutoDispatch" class="btn">자동 재배차 실행</button>
@@ -48,9 +48,27 @@
         <label class="check"><input type="checkbox" name="cleaning" /> 청소</label>
         <button class="btn primary" type="submit">주문 생성</button>
       </form>
-      <p class="muted">이 주문을 만든 뒤 예약금 결제 페이지까지 연결 가능.</p>
+      <p class="muted">이 주문을 만든 뒤 전체 결제 페이지까지 바로 연결할 수 있어요.</p>
     </section>
   </main>
+
+  <section class="layout layout-secondary">
+    <section class="panel">
+      <div class="panel-head"><h2>기사 정산 계좌</h2><span id="driverCount">0명</span></div>
+      <div id="driverList" class="stack-list"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>2주 정산 대시보드</h2><span id="settlementSummary">-</span></div>
+      <div id="settlementCards" class="summary-grid"></div>
+      <div class="panel-subhead"><h3>지급 대기 묶음</h3></div>
+      <div id="settlementGroups" class="stack-list"></div>
+      <div class="panel-subhead"><h3>보류 중 정산</h3></div>
+      <div id="heldSettlementList" class="stack-list compact"></div>
+      <div class="panel-subhead"><h3>최근 지급 완료</h3></div>
+      <div id="paidSettlementList" class="stack-list compact"></div>
+    </section>
+  </section>
 
   <dialog id="detailDialog">
     <div class="dialog-head">

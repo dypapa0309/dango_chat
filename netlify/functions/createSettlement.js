@@ -1,5 +1,6 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { buildApprovedSettlementFields } from '../../shared/settlements.js';
 
 export async function handler(event) {
   const opt = handleOptions(event);
@@ -27,8 +28,7 @@ export async function handler(event) {
         .update({
           driver_id: job.assigned_driver_id,
           amount: job.driver_amount || existing.amount || 0,
-          status: 'approved',
-          approved_at: new Date().toISOString(),
+          ...buildApprovedSettlementFields(new Date()),
           memo: '완료 처리로 정산 승인'
         })
         .eq('id', existing.id)
@@ -42,8 +42,7 @@ export async function handler(event) {
       job_id: job.id,
       driver_id: job.assigned_driver_id,
       amount: job.driver_amount || 0,
-      status: 'approved',
-      approved_at: new Date().toISOString(),
+      ...buildApprovedSettlementFields(new Date()),
       memo: '자동 정산 생성'
     }).select('*').single();
     if (createError) throw createError;
