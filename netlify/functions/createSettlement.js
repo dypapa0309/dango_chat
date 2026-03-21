@@ -14,11 +14,36 @@ export async function handler(event) {
     if (error) throw error;
     if (!job.assigned_driver_id) return fail('배정된 기사가 없습니다.');
 
+    const { data: existing } = await supabase
+      .from('settlements')
+      .select('*')
+      .eq('job_id', job.id)
+      .limit(1)
+      .maybeSingle();
+
+    if (existing) {
+      const { data, error: updateError } = await supabase
+        .from('settlements')
+        .update({
+          driver_id: job.assigned_driver_id,
+          amount: job.driver_amount || existing.amount || 0,
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+          memo: '완료 처리로 정산 승인'
+        })
+        .eq('id', existing.id)
+        .select('*')
+        .single();
+      if (updateError) throw updateError;
+      return ok({ settlement: data, reused: true });
+    }
+
     const { data, error: createError } = await supabase.from('settlements').insert({
       job_id: job.id,
       driver_id: job.assigned_driver_id,
       amount: job.driver_amount || 0,
-      status: 'pending',
+      status: 'approved',
+      approved_at: new Date().toISOString(),
       memo: '자동 정산 생성'
     }).select('*').single();
     if (createError) throw createError;

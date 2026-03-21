@@ -49,7 +49,7 @@ export async function handler(event) {
     const supabase = adminClient();
     const { data: payment, error } = await supabase.from('payments').insert({
       job_id: jobId,
-      payment_type: 'deposit',
+      payment_type: 'full_payment',
       method: paymentPayload.method || 'toss',
       status: 'paid',
       amount: Number(amount),
@@ -71,9 +71,47 @@ export async function handler(event) {
       actor_name: 'toss-confirm',
       prev_status: 'deposit_pending',
       next_status: 'confirmed',
-      message: '예약금 결제가 승인되었습니다.',
+      message: '전체 결제가 승인되었습니다.',
       meta: { orderId, amount: Number(amount), paymentKey: paymentPayload.paymentKey || null }
     });
+
+    const { data: job } = await supabase
+      .from('jobs')
+      .select('*')
+      .eq('id', jobId)
+      .single();
+
+    if (job?.assigned_driver_id || job?.driver_amount) {
+      const { data: existingSettlement } = await supabase
+        .from('settlements')
+        .select('*')
+        .eq('job_id', jobId)
+        .limit(1)
+        .maybeSingle();
+
+      if (existingSettlement) {
+        await supabase
+          .from('settlements')
+          .update({
+            amount: job.driver_amount || existingSettlement.amount || 0,
+            status: 'held',
+            held_at: new Date().toISOString(),
+            hold_reason: '고객 완료 확인 대기',
+            memo: '전체 결제 후 기사 정산 대기'
+          })
+          .eq('id', existingSettlement.id);
+      } else if (job?.assigned_driver_id) {
+        await supabase.from('settlements').insert({
+          job_id: jobId,
+          driver_id: job.assigned_driver_id,
+          amount: job.driver_amount || 0,
+          status: 'held',
+          held_at: new Date().toISOString(),
+          hold_reason: '고객 완료 확인 대기',
+          memo: '전체 결제 후 기사 정산 대기'
+        });
+      }
+    }
 
     return ok({ payment, toss: paymentPayload });
   } catch (error) {

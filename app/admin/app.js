@@ -30,13 +30,15 @@ async function loadJobs() {
       </div>
       <div class="row">${escapeHtml(job.start_address || '-')} → ${escapeHtml(job.end_address || '-')}</div>
       <div class="price">${money(job.total_price)}</div>
-      <div class="row">예약금 ${money(job.deposit_amount)} / 잔금 ${money(job.balance_amount)}</div>
+      <div class="row">당고 20% ${money(job.company_amount)} / 기사 정산 예정 80% ${money(job.driver_amount)}</div>
       <div class="card-actions">
         <button class="btn" data-action="detail">상세</button>
         <button class="btn primary" data-action="confirm">예약 확정</button>
         <button class="btn primary" data-action="assign">배차 요청</button>
         <button class="btn danger" data-action="cancel">요청 취소</button>
-        <button class="btn" data-action="complete">완료 처리</button>
+        <button class="btn" data-action="complete">예외 완료</button>
+        <button class="btn" data-action="complete-link">완료 링크</button>
+        <button class="btn" data-action="cancel-link">취소 링크</button>
         <button class="btn" data-action="paylink">결제 링크</button>
       </div>
     `;
@@ -45,6 +47,8 @@ async function loadJobs() {
     card.querySelector('[data-action="assign"]').onclick = () => requestAssign(job.id);
     card.querySelector('[data-action="cancel"]').onclick = () => cancelAssign(job.id);
     card.querySelector('[data-action="complete"]').onclick = () => completeJob(job.id);
+    card.querySelector('[data-action="complete-link"]').onclick = async () => copyCompleteLink(job.id);
+    card.querySelector('[data-action="cancel-link"]').onclick = async () => copyCancelLink(job.id);
     card.querySelector('[data-action="paylink"]').onclick = () => {
       location.href = `/customer/pay.html?jobId=${encodeURIComponent(job.id)}`;
     };
@@ -91,11 +95,31 @@ async function cancelAssign(jobId) {
 }
 
 async function completeJob(jobId) {
-  await updateStatus(jobId, 'completed', 'completed', '작업 완료');
+  await updateStatus(jobId, 'completed', 'completed', '관리자 예외 완료');
   await fetch(api('createSettlement'), {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jobId })
   });
+}
+
+async function copyCompleteLink(jobId) {
+  const res = await fetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
+  const data = await res.json();
+  const token = data.job?.customer_complete_token;
+  if (!token) return alert('고객 완료 토큰이 없습니다.');
+  const url = `${location.origin}/customer/complete.html?token=${encodeURIComponent(token)}`;
+  await navigator.clipboard.writeText(url);
+  alert('고객 완료 링크를 복사했습니다.');
+}
+
+async function copyCancelLink(jobId) {
+  const res = await fetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
+  const data = await res.json();
+  const token = data.job?.customer_cancel_token;
+  if (!token) return alert('고객 취소 토큰이 없습니다.');
+  const url = `${location.origin}/customer/cancel.html?token=${encodeURIComponent(token)}`;
+  await navigator.clipboard.writeText(url);
+  alert('고객 취소 링크를 복사했습니다.');
 }
 
 document.addEventListener('DOMContentLoaded', () => {

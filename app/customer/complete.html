@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 작업 완료 확인</title>
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --card: #fffaf3;
+      --line: rgba(70, 50, 31, 0.12);
+      --text: #20170f;
+      --muted: #6e6255;
+      --brand: #ed6b2f;
+      --ok: #215a45;
+      --warn: #9a3412;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SUIT", Arial, sans-serif;
+      padding: 24px;
+      background: linear-gradient(180deg, #f8e6c3, #f7f3ec);
+      color: var(--text);
+    }
+    .card {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(77, 45, 13, 0.12);
+      border: 1px solid var(--line);
+    }
+    .eyebrow { margin: 0 0 8px; color: #bc4d16; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+    h1 { margin: 0; font-size: 36px; line-height: 1.1; }
+    .muted { color: var(--muted); line-height: 1.7; }
+    .summary {
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 10px;
+    }
+    .line { color: var(--muted); line-height: 1.6; }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font: inherit;
+      resize: vertical;
+    }
+    button, a {
+      width: 100%;
+      min-height: 54px;
+      border: 0;
+      border-radius: 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+    button {
+      margin-top: 18px;
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 16px 28px rgba(237, 107, 47, 0.24);
+    }
+    .ghost {
+      margin-top: 10px;
+      background: #fff;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .ok { color: var(--ok); font-weight: 700; }
+    .warn { color: var(--warn); font-weight: 700; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <p class="eyebrow">DANGO COMPLETE</p>
+    <h1>작업이 문제없이 끝났다면<br />고객 완료 확인을 눌러주세요</h1>
+    <p id="statusText" class="muted">주문 정보를 확인하는 중입니다.</p>
+
+    <div id="summaryCard" class="summary">
+      <div id="summaryMain" class="line">불러오는 중...</div>
+      <div id="summaryAmount" class="line"></div>
+      <div class="line">고객이 완료를 확인하면 기사 정산 예정 80%는 승인 상태로 넘어갑니다.</div>
+      <div class="line">운영 기준으로 완료 확인 후 1시간 내 정산을 진행하는 흐름입니다.</div>
+    </div>
+
+    <textarea id="completeNote" placeholder="문제가 있었다면 간단히 남겨주세요. 없으면 비워도 됩니다."></textarea>
+    <button id="btnComplete" disabled>고객 완료 확인</button>
+    <a class="ghost" href="/estimate/">다른 견적 보기</a>
+  </div>
+
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const token = qs.get('token');
+    const statusText = document.getElementById('statusText');
+    const summaryMain = document.getElementById('summaryMain');
+    const summaryAmount = document.getElementById('summaryAmount');
+    const noteInput = document.getElementById('completeNote');
+    const button = document.getElementById('btnComplete');
+
+    const money = (value) => `${Number(value || 0).toLocaleString()}원`;
+
+    async function loadJob() {
+      if (!token) {
+        statusText.className = 'warn';
+        statusText.textContent = '유효하지 않은 접근입니다.';
+        summaryMain.textContent = '완료 확인 링크가 없습니다.';
+        return;
+      }
+
+      const res = await fetch(`/.netlify/functions/customer-complete?token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (!data.success) {
+        statusText.className = 'warn';
+        statusText.textContent = data.error || '주문을 찾을 수 없습니다.';
+        summaryMain.textContent = '주문 정보를 확인하지 못했습니다.';
+        return;
+      }
+
+      const job = data.job;
+      summaryMain.textContent = `${job.customer_name || '-'} / ${job.start_address || '-'} → ${job.end_address || '-'}`;
+      summaryAmount.textContent = `총 결제 ${money(job.total_price)} / 기사 정산 예정 ${money(job.driver_amount)}`;
+
+      if (job.status === 'completed') {
+        statusText.className = 'ok';
+        statusText.textContent = '이미 고객 완료 확인이 끝난 주문입니다.';
+        button.disabled = true;
+        button.textContent = '이미 완료 확인됨';
+        return;
+      }
+
+      statusText.className = 'muted';
+      statusText.textContent = '작업이 끝났다면 아래 버튼으로 완료를 확인해주세요.';
+      button.disabled = false;
+    }
+
+    button.onclick = async () => {
+      if (!token) return;
+      button.disabled = true;
+      button.textContent = '완료 처리 중...';
+
+      const res = await fetch('/.netlify/functions/customer-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, note: noteInput.value.trim() })
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        statusText.className = 'warn';
+        statusText.textContent = data.error || '완료 확인 처리 실패';
+        button.disabled = false;
+        button.textContent = '고객 완료 확인';
+        return;
+      }
+
+      statusText.className = 'ok';
+      statusText.textContent = '고객 완료 확인이 접수되었습니다. 기사 정산은 승인 상태로 넘어갑니다.';
+      button.textContent = '완료 확인 완료';
+    };
+
+    loadJob();
+  </script>
+</body>
+</html>

@@ -1,0 +1,101 @@
+import { adminClient } from '../../shared/db.js';
+import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+
+async function loadJobByToken(supabase, token) {
+  const { data, error } = await supabase
+    .from('jobs')
+    .select('*, assignments(*, drivers(*)), settlements(*)')
+    .eq('customer_complete_token', token)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function handler(event) {
+  const opt = handleOptions(event);
+  if (opt) return opt;
+
+  try {
+    const supabase = adminClient();
+
+    if (event.httpMethod === 'GET') {
+      const token = event?.queryStringParameters?.token;
+      if (!token) return fail('token이 필요합니다.');
+
+      const job = await loadJobByToken(supabase, token);
+      return ok({ job });
+    }
+
+    if (event.httpMethod !== 'POST') return fail('GET 또는 POST 요청만 허용됩니다.');
+
+    const { token, note } = parseBody(event);
+    if (!token) return fail('token이 필요합니다.');
+
+    const job = await loadJobByToken(supabase, token);
+    if (job.status === 'completed') {
+      return ok({ alreadyCompleted: true, job });
+    }
+
+    const { data: updatedJob, error: updateError } = await supabase
+      .from('jobs')
+      .update({
+        status: 'completed',
+        dispatch_status: 'completed',
+        customer_completed_at: new Date().toISOString(),
+        customer_completion_note: note || null,
+        updated_by: 'customer-complete'
+      })
+      .eq('id', job.id)
+      .select('*')
+      .single();
+    if (updateError) throw updateError;
+
+    if (job.assigned_driver_id) {
+      const existingSettlement = Array.isArray(job.settlements) ? job.settlements[0] : null;
+      if (existingSettlement) {
+        const { error: settlementError } = await supabase
+          .from('settlements')
+          .update({
+            status: 'approved',
+            approved_at: new Date().toISOString(),
+            memo: note || '고객 완료 확인으로 정산 승인'
+          })
+          .eq('id', existingSettlement.id);
+        if (settlementError) throw settlementError;
+      } else {
+        const { error: createSettlementError } = await supabase.from('settlements').insert({
+          job_id: job.id,
+          driver_id: job.assigned_driver_id,
+          amount: job.driver_amount || 0,
+          status: 'approved',
+          approved_at: new Date().toISOString(),
+          memo: note || '고객 완료 확인으로 정산 승인'
+        });
+        if (createSettlementError) throw createSettlementError;
+      }
+
+      const driver = job.assignments?.find((assignment) => assignment.driver_id === job.assigned_driver_id)?.drivers;
+      const nextCompletedJobs = Number(driver?.completed_jobs || 0) + 1;
+      await supabase
+        .from('drivers')
+        .update({ completed_jobs: nextCompletedJobs })
+        .eq('id', job.assigned_driver_id);
+    }
+
+    await supabase.from('dispatch_logs').insert({
+      job_id: job.id,
+      driver_id: job.assigned_driver_id || null,
+      event_type: 'customer_completed',
+      actor_type: 'customer',
+      actor_name: updatedJob.customer_name || 'customer',
+      prev_status: job.status,
+      next_status: 'completed',
+      message: '고객이 작업 완료를 확인했습니다.',
+      meta: { note: note || null }
+    });
+
+    return ok({ job: updatedJob });
+  } catch (error) {
+    return fail('고객 완료 확인 처리 실패', error.message, 500);
+  }
+}

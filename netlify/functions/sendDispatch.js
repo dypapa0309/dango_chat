@@ -1,4 +1,3 @@
-import axios from 'axios';
 import crypto from 'crypto';
 import { env } from '../../shared/env.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
@@ -38,24 +37,25 @@ export async function handler(event) {
       }
     };
 
-    const response = await axios.post(
+    const response = await fetch(
       'https://api.solapi.com/messages/v4/send-many/detail',
-      payload,
       {
+        method: 'POST',
         headers: {
           Authorization: createSolapiAuthHeader(apiKey, apiSecret),
           'Content-Type': 'application/json'
         },
-        timeout: 15000
+        body: JSON.stringify(payload)
       }
     );
 
-    return ok({ provider: 'solapi', result: response.data });
+    const json = await response.json();
+    if (!response.ok) {
+      return fail('문자 발송 실패', json, response.status || 500);
+    }
+
+    return ok({ provider: 'solapi', result: json });
   } catch (error) {
-    return fail(
-      '문자 발송 실패',
-      error.response?.data || error.message,
-      error.response?.status || 500
-    );
+    return fail('문자 발송 실패', error.message, 500);
   }
 }

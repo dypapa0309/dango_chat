@@ -1,3 +1,4 @@
+import crypto from 'crypto';
 import { adminClient } from '../../shared/db.js';
 import { calculatePrice } from '../../shared/price.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
@@ -56,13 +57,31 @@ export async function handler(event) {
       balance_amount: price.balance,
       driver_amount: price.driverAmount,
       company_amount: price.companyAmount,
+      customer_complete_token: crypto.randomUUID(),
+      customer_cancel_token: crypto.randomUUID(),
       status: 'deposit_pending',
       dispatch_status: 'idle',
       created_by: 'customer-form',
       updated_by: 'customer-form'
     };
 
-    const { data, error } = await supabase.from('jobs').insert(payload).select('*').single();
+    let insertPayload = payload;
+    let { data, error } = await supabase.from('jobs').insert(insertPayload).select('*').single();
+
+    if (error && /customer_(complete|cancel)_token/i.test(error.message || '')) {
+      const {
+        customer_complete_token,
+        customer_cancel_token,
+        customer_completed_at,
+        customer_completion_note,
+        customer_canceled_at,
+        customer_cancel_note,
+        ...fallbackPayload
+      } = payload;
+      insertPayload = fallbackPayload;
+      ({ data, error } = await supabase.from('jobs').insert(insertPayload).select('*').single());
+    }
+
     if (error) throw error;
     return ok({ job: data, price });
   } catch (error) {

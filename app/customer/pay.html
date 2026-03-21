@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>당고 | 예약금 결제</title>
+  <title>당고 | 전체 결제</title>
   <script src="https://js.tosspayments.com/v1"></script>
   <style>
     :root {
@@ -81,14 +81,14 @@
 <body>
   <div class="card">
     <p class="eyebrow">DANGO PAYMENT</p>
-    <h1>예약금만 먼저 결제하면<br />배차가 바로 시작됩니다</h1>
-    <p class="muted">토스 키가 연결되어 있으면 실결제로, 없으면 모의 승인 흐름으로 바로 테스트할 수 있습니다.</p>
+    <h1>전체 금액을 먼저 결제하면<br />배차와 정산 준비가 바로 시작됩니다</h1>
+    <p class="muted">고객은 총액을 한 번에 결제하고, 당고 몫 20%와 기사 정산 예정 80%는 작업 완료 확인 후 분리 정산되는 구조입니다.</p>
 
     <div id="summaryCard" class="summary">
       <strong id="summary">불러오는 중...</strong>
-      <div class="line"><span>총 예상 비용</span><span id="totalPrice">-</span></div>
-      <div class="line"><span>예약금 20%</span><span id="price">-</span></div>
-      <div class="line"><span>잔금 80%</span><span id="balance">-</span></div>
+      <div class="line"><span>고객 전체 결제 금액</span><span id="totalPrice">-</span></div>
+      <div class="line"><span>당고 보관/수수료 20%</span><span id="price">-</span></div>
+      <div class="line"><span>기사 정산 예정 80%</span><span id="balance">-</span></div>
     </div>
 
     <button id="btnPay" disabled>결제 준비 중...</button>
@@ -134,8 +134,8 @@
         job = await loadJob();
         document.getElementById('summary').textContent = `${job.customer_name || '-'} / ${job.start_address || '-'} → ${job.end_address || '-'}`;
         document.getElementById('totalPrice').textContent = money(job.total_price || 0);
-        document.getElementById('price').textContent = money(job.deposit_amount || 0);
-        document.getElementById('balance').textContent = money(job.balance_amount || 0);
+        document.getElementById('price').textContent = money(job.company_amount || 0);
+        document.getElementById('balance').textContent = money(job.driver_amount || 0);
 
         try {
           const cfg = await fetch('/.netlify/functions/config').then((res) => res.json());
@@ -144,7 +144,7 @@
 
         const button = document.getElementById('btnPay');
         button.disabled = false;
-        button.textContent = clientKey ? '토스로 예약금 결제하기' : '모의 승인으로 계속하기';
+        button.textContent = clientKey ? '토스로 전체 금액 결제하기' : '모의 승인으로 계속하기';
       } catch (error) {
         document.getElementById('summary').textContent = error.message || '주문 정보를 불러오지 못했습니다.';
       }
@@ -164,7 +164,7 @@
         failUrl.searchParams.set('draftId', draftId);
       }
 
-      successUrl.searchParams.set('amount', String(Number(job.deposit_amount || 0)));
+      successUrl.searchParams.set('amount', String(Number(job.total_price || 0)));
 
       if (!clientKey) {
         location.href = successUrl.toString();
@@ -173,9 +173,9 @@
 
       const toss = TossPayments(clientKey);
       await toss.requestPayment('카드', {
-        amount: Number(job.deposit_amount || 0),
+        amount: Number(job.total_price || 0),
         orderId: job.id,
-        orderName: '당고 예약금',
+        orderName: '당고 전체 결제',
         customerName: job.customer_name || '고객',
         successUrl: successUrl.toString(),
         failUrl: failUrl.toString()

@@ -26,6 +26,15 @@
     .warn { color: #9a3412; font-weight: 700; }
     .err { color: #b91c1c; font-weight: 700; }
     .stack { display: grid; gap: 10px; margin-top: 16px; }
+    .linkbox {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid rgba(70, 50, 31, 0.12);
+      color: #6e6255;
+      line-height: 1.7;
+    }
     a {
       display: inline-flex;
       align-items: center;
@@ -45,8 +54,14 @@
   <div class="card">
     <h1>결제 승인 처리 중...</h1>
     <div class="stack">
-      <p id="paymentStatus" class="muted">예약금 승인 상태를 확인하는 중입니다.</p>
+      <p id="paymentStatus" class="muted">전체 결제 승인 상태를 확인하는 중입니다.</p>
       <p id="dispatchStatus" class="muted">결제 승인 후 자동 배차를 요청합니다.</p>
+    </div>
+    <div id="completeLinkBox" class="linkbox" hidden>
+      <strong style="display:block; color:#20170f; margin-bottom:8px;">고객 전용 링크</strong>
+      <div id="completeLinkText">배차가 완료되면 고객 링크가 준비됩니다.</div>
+      <a id="completeLinkAction" href="#" hidden>고객 완료 확인 페이지 열기</a>
+      <a id="cancelLinkAction" href="#" hidden>작업 시작 전 취소 페이지 열기</a>
     </div>
     <a href="/estimate/">다른 견적도 계속 확인하기</a>
   </div>
@@ -60,6 +75,10 @@
   const amount = qs.get('amount');
   const paymentStatusEl = document.getElementById('paymentStatus');
   const dispatchStatusEl = document.getElementById('dispatchStatus');
+  const completeLinkBox = document.getElementById('completeLinkBox');
+  const completeLinkText = document.getElementById('completeLinkText');
+  const completeLinkAction = document.getElementById('completeLinkAction');
+  const cancelLinkAction = document.getElementById('cancelLinkAction');
 
   function loadDraft() {
     if (!draftId) return null;
@@ -75,9 +94,11 @@
   try {
     if (jobId) {
       let finalAmount = amount;
+      let detailJob = null;
       if (!finalAmount) {
         const detail = await fetch(`/.netlify/functions/get-job-detail?jobId=${encodeURIComponent(jobId)}`).then((r) => r.json());
-        finalAmount = detail.job?.deposit_amount || 0;
+        detailJob = detail.job || null;
+        finalAmount = detail.job?.total_price || 0;
       }
 
       const confirmRes = await fetch('/.netlify/functions/confirm-toss-payment', {
@@ -89,7 +110,7 @@
       if (!confirmData.success) throw new Error(confirmData.error || '결제 승인 실패');
 
       paymentStatusEl.className = 'ok';
-      paymentStatusEl.textContent = '예약금 결제가 승인되었습니다. 주문 상태가 confirmed로 변경되었습니다.';
+      paymentStatusEl.textContent = '전체 결제가 승인되었습니다. 주문 상태가 confirmed로 변경되었습니다.';
 
       const assignRes = await fetch('/.netlify/functions/assign-request', {
         method: 'POST',
@@ -106,6 +127,25 @@
         dispatchStatusEl.textContent = assignData.error || '배차 요청은 실패했지만 결제는 승인되었습니다.';
       }
 
+      if (!detailJob) {
+        const detail = await fetch(`/.netlify/functions/get-job-detail?jobId=${encodeURIComponent(jobId)}`).then((r) => r.json());
+        detailJob = detail.job || null;
+      }
+
+      if (detailJob?.customer_complete_token) {
+        const completeUrl = `${location.origin}/customer/complete.html?token=${encodeURIComponent(detailJob.customer_complete_token)}`;
+        completeLinkBox.hidden = false;
+        completeLinkText.textContent = '작업이 끝나면 완료 확인 링크를, 작업 시작 전 취소가 필요하면 취소 링크를 사용할 수 있습니다. 고객 완료 확인 후 기사 정산 예정 80%는 승인 상태로 넘어갑니다.';
+        completeLinkAction.hidden = false;
+        completeLinkAction.href = completeUrl;
+      }
+      if (detailJob?.customer_cancel_token) {
+        const cancelUrl = `${location.origin}/customer/cancel.html?token=${encodeURIComponent(detailJob.customer_cancel_token)}`;
+        completeLinkBox.hidden = false;
+        cancelLinkAction.hidden = false;
+        cancelLinkAction.href = cancelUrl;
+      }
+
       return;
     }
 
@@ -116,7 +156,7 @@
     localStorage.setItem(`dango:${draftId}`, JSON.stringify(draft));
 
     paymentStatusEl.className = 'ok';
-    paymentStatusEl.textContent = '모의 승인 흐름으로 예약금 결제가 완료되었습니다.';
+    paymentStatusEl.textContent = '모의 승인 흐름으로 전체 결제가 완료되었습니다.';
     dispatchStatusEl.className = 'warn';
     dispatchStatusEl.textContent = '현재는 로컬 초안 상태입니다. 실운영에서는 confirmed 후 자동 배차 요청으로 이어집니다.';
   } catch (error) {
