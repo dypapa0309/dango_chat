@@ -2724,7 +2724,7 @@ function normalizeItemKey(k) {
       const safeDisplay = Math.max(0, Number(displayPrice) || 0);
       const average = safeDisplay > 0 ? safeDisplay / 0.862 : 0;
       const multipliers = [0.94, 0.97, 0.99, 1.00, 1.02, 1.04, 1.04];
-      const labels = ["업체1", "업체2", "업체3", "업체4", "업체5", "업체6", "업체7", "DANGO"];
+      const labels = ["업체1", "업체2", "업체3", "업체4", "업체5", "업체6", "업체7", "DANG-O"];
       const vendors = multipliers.map((m) => Math.round(average * m));
       const mean = vendors.length ? vendors.reduce((a, b) => a + b, 0) / vendors.length : 0;
       return {
@@ -2749,13 +2749,13 @@ function normalizeItemKey(k) {
       if (averageLabel) averageLabel.textContent = `7개 업체 평균 ${formatWon(comparison.average)}`;
 
       const vendorColors = comparison.labels.map((label) =>
-  label === "DANGO"
+  label === "DANG-O"
     ? "#ed6b2f"
     : "#CBD5E1"          // 다른 업체 (연회색)
 );
 
 const borderColors = comparison.labels.map((label) =>
-  label === "DANGO"
+  label === "DANG-O"
     ? "#1D4ED8"
     : "#94A3B8"
 );

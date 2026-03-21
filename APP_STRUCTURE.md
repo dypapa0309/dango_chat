@@ -1,4 +1,4 @@
-# DANGO App Structure
+# DANG-O App Structure
 
 ## Purpose
 

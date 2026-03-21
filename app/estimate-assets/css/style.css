@@ -2074,7 +2074,7 @@ button:active{ transform:scale(0.97); }
   .landing-sub-cta{ min-height:74px; font-size:18px; border-radius:22px; }
 }
 
-/* ===== DANGO estimate overrides ===== */
+/* ===== DANG-O estimate overrides ===== */
 :root{
   --bg:#f6efe4;
   --card:#fffaf3;
