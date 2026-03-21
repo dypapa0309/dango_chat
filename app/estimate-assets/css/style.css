@@ -201,8 +201,8 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
 }
 
 .wizard-top{
-  position:sticky;
-  top:calc(var(--safe-top) + 10px + var(--stickybar-h) + 12px);
+  position:static;
+  top:auto;
   z-index:var(--z-wizardtop);
   background:rgba(255,255,255,0.92);
   border:1px solid rgba(17,24,39,0.08);
