@@ -218,6 +218,16 @@ function normalizeItemKey(k) {
     const CFG = window.DDLOGI_CONFIG || {};
     const supabase = window.supabase?.createClient?.(CFG.supabaseUrl, CFG.supabaseKey);
 
+    if (window.Kakao && CFG.kakaoJavaScriptKey) {
+      try {
+        if (!window.Kakao.isInitialized()) {
+          window.Kakao.init(CFG.kakaoJavaScriptKey);
+        }
+      } catch (error) {
+        console.error("Kakao SDK init failed:", error);
+      }
+    }
+
     async function fetchConfirmedSlots(dateStr) {
       if (!supabase || !dateStr) return new Set();
       try {

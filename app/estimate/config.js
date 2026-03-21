@@ -2,6 +2,7 @@
 window.DDLOGI_CONFIG = {
   supabaseUrl: "https://hsgoaqhqwesfhxehyokb.supabase.co",
   supabaseKey: "sb_publishable_DbJF69dpT9Qly2w5LHKqhQ_xS9NAAfZ",
+  kakaoJavaScriptKey: "c6917241d9bf5f11df6d178f8ef35f17",
   channelPluginKey: "70a74661-1cd7-48f6-9f3f-cc5a427f582f",
 
   timeSlots: [
