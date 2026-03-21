@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { adminClient } from '../../shared/db.js';
 import { calculatePrice } from '../../shared/price.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { ensurePricingStateRow } from '../../shared/pricing-state.js';
 
 export async function handler(event) {
   const opt = handleOptions(event);
@@ -11,10 +12,13 @@ export async function handler(event) {
   try {
     const body = parseBody(event);
     const override = body.price_override || null;
+    const supabase = adminClient();
+    const pricingState = await ensurePricingStateRow(supabase);
     const calculated = calculatePrice({
       distanceKm: body.distance_km,
       floor: body.floor,
       weightKg: body.weight_kg,
+      pricingMultiplier: Number(pricingState.current_multiplier || 1),
       options: body.option_summary || {},
       hasVia: Boolean(body.via_address)
     });
@@ -32,7 +36,6 @@ export async function handler(event) {
         }
       : calculated;
 
-    const supabase = adminClient();
     const payload = {
       customer_name: body.customer_name,
       customer_phone: body.customer_phone,
@@ -59,6 +62,9 @@ export async function handler(event) {
       company_amount: price.companyAmount,
       customer_complete_token: crypto.randomUUID(),
       customer_cancel_token: crypto.randomUUID(),
+      acquisition_source: body.acquisition_source || 'direct',
+      acquisition_medium: body.acquisition_medium || null,
+      acquisition_campaign: body.acquisition_campaign || null,
       status: 'deposit_pending',
       dispatch_status: 'idle',
       created_by: 'customer-form',

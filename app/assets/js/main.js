@@ -1,6 +1,7 @@
 const statReservations = document.getElementById('statReservations');
 const statDispatches = document.getElementById('statDispatches');
 const statEta = document.getElementById('statEta');
+const ATTR_KEY = 'dango:attribution';
 
 function formatStat(value, suffix = '') {
   if (value === null || value === undefined || value === '') return '집계중';
@@ -24,6 +25,23 @@ async function loadStats() {
   }
 }
 
+function captureAttribution() {
+  const qs = new URLSearchParams(location.search);
+  const source = qs.get('utm_source') || qs.get('source') || qs.get('channel');
+  const medium = qs.get('utm_medium') || null;
+  const campaign = qs.get('utm_campaign') || null;
+
+  if (!source && !medium && !campaign) return;
+
+  localStorage.setItem(ATTR_KEY, JSON.stringify({
+    source: source || 'direct',
+    medium,
+    campaign,
+    capturedAt: new Date().toISOString()
+  }));
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  captureAttribution();
   loadStats();
 });

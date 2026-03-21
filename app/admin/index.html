@@ -70,6 +70,33 @@
     </section>
   </section>
 
+  <section class="layout layout-secondary">
+    <section class="panel">
+      <div class="panel-head"><h2>광고 입력</h2><span>숨고 · 메타 · 구글</span></div>
+      <form id="marketingForm" class="driver-grid">
+        <input type="date" name="metricDate" required />
+        <input type="text" name="channel" placeholder="채널명 예: soomgo" required />
+        <input type="number" name="spendAmount" placeholder="광고비" min="0" step="1000" />
+        <input type="number" name="leadSentCount" placeholder="보낸 견적 수" min="0" step="1" />
+        <input type="number" name="leadReadCount" placeholder="읽힌 견적 수" min="0" step="1" />
+        <input type="number" name="refundCount" placeholder="환급 수" min="0" step="1" />
+        <textarea name="notes" placeholder="메모"></textarea>
+        <button class="btn primary" type="submit">광고 데이터 저장</button>
+      </form>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>가격 배율 대시보드</h2><span id="pricingModeText">-</span></div>
+      <div id="pricingSummaryCards" class="summary-grid"></div>
+      <div id="pricingRecommendation" class="mini-card"></div>
+      <div class="driver-actions">
+        <button class="btn primary" id="btnRecomputePricing">배율 다시 계산</button>
+      </div>
+      <div class="panel-subhead"><h3>채널별 성과</h3></div>
+      <div id="pricingChannelList" class="stack-list compact"></div>
+    </section>
+  </section>
+
   <dialog id="detailDialog">
     <div class="dialog-head">
       <h3>주문 상세</h3>

@@ -2,7 +2,7 @@
 (() => {
   "use strict";
 
-  document.addEventListener("DOMContentLoaded", () => {
+  document.addEventListener("DOMContentLoaded", async () => {
     /* 날짜 입력칸 전체 클릭 시 달력 열기 */
     const wrap = document.querySelector(".date-wrap");
     const input = document.querySelector("#moveDate");
@@ -18,13 +18,14 @@
     /* =========================================================
        Global knobs
     ========================================================= */
-    const PRICE_MULTIPLIER = 0.714;
-    const DISPLAY_MULTIPLIER = 1;
+    let PRICE_MULTIPLIER = 0.714;
+    let DISPLAY_MULTIPLIER = 1;
     const MOVE_DEPOSIT_RATE = 0.2;
     const HELPER_FEE_PER_PERSON = 60000;
     const HELPER_DRIVER_SETTLEMENT_PER_PERSON = 40000;
     const HELPER_DEPOSIT_ADDON_PER_PERSON = 20000;
     const SERVICE = { MOVE: "move", CLEAN: "clean" };
+    const ATTR_KEY = "dango:attribution";
 
     /* =========================================================
        DOM helpers
@@ -39,6 +40,43 @@
     const SITE_BRAND = document.body?.dataset.siteBrand || (DEFAULT_SERVICE === "clean" ? "디디클린" : "디디운송");
     const CROSS_LINK = document.body?.dataset.crossLink || "";
     const CROSS_LABEL = document.body?.dataset.crossLabel || (DEFAULT_SERVICE === "clean" ? "이사도 필요하면 눌러주세요." : "청소도 필요하면 눌러주세요.");
+
+    function captureAttributionFromQuery() {
+      const qs = new URLSearchParams(window.location.search);
+      const source = qs.get("utm_source") || qs.get("source") || qs.get("channel");
+      const medium = qs.get("utm_medium") || null;
+      const campaign = qs.get("utm_campaign") || null;
+      if (!source && !medium && !campaign) return;
+      localStorage.setItem(ATTR_KEY, JSON.stringify({
+        source: source || "direct",
+        medium,
+        campaign,
+        capturedAt: new Date().toISOString()
+      }));
+    }
+
+    function getAttribution() {
+      try {
+        const raw = localStorage.getItem(ATTR_KEY);
+        if (!raw) return { source: "direct", medium: null, campaign: null };
+        const parsed = JSON.parse(raw);
+        return {
+          source: parsed?.source || "direct",
+          medium: parsed?.medium || null,
+          campaign: parsed?.campaign || null
+        };
+      } catch {
+        return { source: "direct", medium: null, campaign: null };
+      }
+    }
+
+    async function loadRuntimePricingConfig() {
+      try {
+        const cfg = await fetch("/.netlify/functions/config").then((res) => res.json());
+        if (cfg?.pricing?.multiplier) PRICE_MULTIPLIER = Number(cfg.pricing.multiplier || PRICE_MULTIPLIER);
+        if (cfg?.pricing?.displayMultiplier) DISPLAY_MULTIPLIER = Number(cfg.pricing.displayMultiplier || DISPLAY_MULTIPLIER);
+      } catch {}
+    }
 
 
     function createGaFloatingBadge() {
@@ -2808,6 +2846,7 @@ const borderColors = comparison.labels.map((label) =>
     }
 
     function buildCheckoutPayload(customerName, customerPhone) {
+      const attribution = getAttribution();
       const pricing = buildCurrentPricingBreakdown({
         channel: document.body?.dataset.siteBrand === "당고" ? "dango" : "direct",
       });
@@ -2849,6 +2888,9 @@ const borderColors = comparison.labels.map((label) =>
           cantCarryFrom: Boolean(state.cantCarryFrom),
           cantCarryTo: Boolean(state.cantCarryTo)
         },
+        acquisition_source: attribution.source || "direct",
+        acquisition_medium: attribution.medium,
+        acquisition_campaign: attribution.campaign,
         raw_text: buildInquiryMessage(),
         price_override: {
           total: pricing.total,
@@ -3303,6 +3345,9 @@ const borderColors = comparison.labels.map((label) =>
       host?.scrollIntoView({ behavior: "smooth", block: "center" });
       renderAll();
     });
+
+    captureAttributionFromQuery();
+    await loadRuntimePricingConfig();
 
     // Initial render
     const initialVisible = computeVisibleSteps();

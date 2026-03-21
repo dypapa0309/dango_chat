@@ -145,6 +145,62 @@ function renderSettlementSummary(summary = {}) {
   `;
 }
 
+async function loadPricingDashboard() {
+  const res = await fetch(`${api('get-pricing-dashboard')}?days=14`);
+  const data = await res.json();
+  if (!data.success) {
+    alert(data.error || '가격 대시보드 조회 실패');
+    return;
+  }
+
+  const pricing = data.state || {};
+  const recommendation = data.recommendation || {};
+  const metrics = recommendation.metrics || {};
+
+  document.getElementById('pricingModeText').textContent = `${pricing.mode || 'auto'} / 현재 ${Number(pricing.current_multiplier || 0).toFixed(3)}`;
+  document.getElementById('pricingSummaryCards').innerHTML = `
+    <div class="summary-card">
+      <div class="muted">최근 14일 광고비</div>
+      <strong>${money(metrics.spend)}</strong>
+      <div class="row">읽힌 리드 ${Number(metrics.readLeads || 0)}건</div>
+    </div>
+    <div class="summary-card">
+      <div class="muted">최근 14일 결제</div>
+      <strong>${Number(metrics.paidOrders || 0)}건</strong>
+      <div class="row">총 결제 ${money(metrics.paidRevenue)}</div>
+    </div>
+    <div class="summary-card">
+      <div class="muted">당고 몫 매출</div>
+      <strong>${money(metrics.companyRevenue)}</strong>
+      <div class="row">ROAS ${Number(metrics.companyRoas || 0).toFixed(2)}</div>
+    </div>
+  `;
+
+  document.getElementById('pricingRecommendation').innerHTML = `
+    <strong>추천 배율</strong>
+    <div class="row">현재 ${Number(recommendation.currentMultiplier || pricing.current_multiplier || 0).toFixed(3)} → 추천 ${Number(recommendation.nextMultiplier || pricing.current_multiplier || 0).toFixed(3)}</div>
+    <div class="row">사유: ${escapeHtml(recommendation.reason || '추천 없음')}</div>
+    <div class="row">결제 전환율: ${Number((metrics.paidConversionRate || 0) * 100).toFixed(1)}%</div>
+  `;
+
+  const channelList = document.getElementById('pricingChannelList');
+  channelList.innerHTML = '';
+  (data.channels || []).forEach((channel) => {
+    const card = document.createElement('div');
+    card.className = 'mini-card';
+    card.innerHTML = `
+      <strong>${escapeHtml(channel.channel || 'unknown')}</strong>
+      <div class="row">광고비 ${money(channel.spendAmount)} / 읽힘 ${Number(channel.leadReadCount || 0)}건 / 발송 ${Number(channel.leadSentCount || 0)}건</div>
+      <div class="row">결제 ${Number(channel.paidOrders || 0)}건 / 총 결제 ${money(channel.paidRevenue)} / 당고 몫 ${money(channel.companyRevenue)}</div>
+    `;
+    channelList.appendChild(card);
+  });
+
+  if (!channelList.innerHTML.trim()) {
+    channelList.innerHTML = '<div class="mini-card muted">광고 데이터가 아직 없어요.</div>';
+  }
+}
+
 async function markSettlementsPaid(driverId, periodKey) {
   const paidBy = prompt('누가 이체했는지 적어주세요.', '운영자');
   if (paidBy === null) return;
@@ -317,7 +373,7 @@ async function copyCancelLink(jobId) {
 }
 
 async function loadAll() {
-  await Promise.all([loadJobs(), loadDrivers(), loadSettlementDashboard()]);
+  await Promise.all([loadJobs(), loadDrivers(), loadSettlementDashboard(), loadPricingDashboard()]);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -338,6 +394,10 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadAll();
   };
   document.getElementById('btnCloseDialog').onclick = () => document.getElementById('detailDialog').close();
+  const marketingDateInput = document.querySelector('#marketingForm input[name="metricDate"]');
+  if (marketingDateInput && !marketingDateInput.value) {
+    marketingDateInput.value = new Date().toISOString().slice(0, 10);
+  }
 
   document.getElementById('quickForm').addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -369,6 +429,42 @@ document.addEventListener('DOMContentLoaded', () => {
     e.target.reset();
     await loadAll();
   });
+
+  document.getElementById('marketingForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(e.target);
+    const payload = {
+      metricDate: fd.get('metricDate'),
+      channel: fd.get('channel'),
+      spendAmount: Number(fd.get('spendAmount') || 0),
+      leadSentCount: Number(fd.get('leadSentCount') || 0),
+      leadReadCount: Number(fd.get('leadReadCount') || 0),
+      refundCount: Number(fd.get('refundCount') || 0),
+      notes: fd.get('notes')
+    };
+
+    const res = await fetch(api('upsert-ad-channel-daily'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (!data.success) return alert(data.error || '광고 데이터 저장 실패');
+    alert('광고 데이터를 저장했어요.');
+    await loadPricingDashboard();
+  });
+
+  document.getElementById('btnRecomputePricing').onclick = async () => {
+    const res = await fetch(api('recompute-pricing'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ days: 14, force: true })
+    });
+    const data = await res.json();
+    if (!data.success) return alert(data.error || '배율 재계산 실패');
+    alert(`배율을 ${Number(data.recommendation?.nextMultiplier || 0).toFixed(3)}로 계산했어요.`);
+    await loadPricingDashboard();
+  };
 
   setTimeout(loadAll, 200);
 });

@@ -18,7 +18,7 @@
 .driver-card,.settlement-card,.mini-card{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
 .driver-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .driver-grid input,.driver-grid textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit}
-.driver-grid textarea{grid-column:1/-1;min-height:84px;resize:vertical}
+.driver-grid textarea,.driver-grid button{grid-column:1/-1}.driver-grid textarea{min-height:84px;resize:vertical}
 .driver-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .summary-card{padding:14px;border-radius:12px;background:#f8fafc;border:1px solid var(--line)}

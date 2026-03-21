@@ -1,4 +1,5 @@
 export function calculatePrice(input = {}) {
+  const pricingMultiplier = Number(input.pricingMultiplier || 1);
   const distanceKm = Number(input.distanceKm || 0);
   const floor = Number(input.floor || 0);
   const weightKg = Number(input.weightKg || 0);
@@ -14,7 +15,8 @@ export function calculatePrice(input = {}) {
   const packingFee = options.packing ? 30000 : 0;
   const cleaningFee = options.cleaning ? 50000 : 0;
 
-  const total = base + distanceFee + floorFee + weightFee + viaFee + helperFee + packingFee + cleaningFee;
+  const subtotal = base + distanceFee + floorFee + weightFee + viaFee + helperFee + packingFee + cleaningFee;
+  const total = Math.round(subtotal * pricingMultiplier);
   const deposit = Math.round(total * 0.2);
   const balance = total - deposit;
   const driverAmount = Math.round(total * 0.8);
@@ -22,6 +24,7 @@ export function calculatePrice(input = {}) {
 
   return {
     version: 'v1',
+    pricingMultiplier,
     base,
     distanceFee,
     floorFee,
@@ -30,6 +33,7 @@ export function calculatePrice(input = {}) {
     helperFee,
     packingFee,
     cleaningFee,
+    subtotal,
     total,
     deposit,
     balance,

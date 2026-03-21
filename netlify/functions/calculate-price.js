@@ -1,5 +1,7 @@
 import { calculatePrice } from '../../shared/price.js';
+import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { ensurePricingStateRow } from '../../shared/pricing-state.js';
 
 export async function handler(event) {
   const opt = handleOptions(event);
@@ -8,12 +10,14 @@ export async function handler(event) {
 
   try {
     const body = parseBody(event);
+    const state = await ensurePricingStateRow(adminClient());
     const options = body.options || {};
     const items = body.items || {};
     const price = calculatePrice({
       distanceKm: body.distance ?? body.distance_km ?? 0,
       floor: body.floor ?? 0,
       weightKg: items.weight_kg ?? body.weight_kg ?? 0,
+      pricingMultiplier: Number(state.current_multiplier || 1),
       options,
       hasVia: Boolean(options.via_stop || body.via_address)
     });
