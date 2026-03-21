@@ -785,15 +785,11 @@ button[disabled].wizard-btn{
 }
 
 .wizard-nav{
-  position:fixed;
-  left:12px;
-  right:12px;
-  bottom:calc(12px + var(--safe-bottom));
+  position:static;
   max-width:var(--max);
-  margin:0 auto;
+  margin:20px auto 16px;
   display:flex;
   gap:10px;
-  z-index:var(--z-bottomnav);
 }
 .wizard-btn{
   flex:1;
@@ -1058,7 +1054,7 @@ input[type="date"]::-webkit-datetime-edit-fields-wrapper{
 .date-icon{ pointer-events:none; }
 
 .dd-footer{
-  margin:18px 0 90px;
+  margin:18px 0 28px;
 }
 .dd-footer-inner{
   border:1px solid var(--line);
