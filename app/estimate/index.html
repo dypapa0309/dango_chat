@@ -1051,7 +1051,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
         </div>
 
         <div class="option item-qty-row">
-          <div>침대 매트리스 (킹 제외)</div>
+          <div>침대 매트리스</div>
           <div class="stepper">
             <button type="button" class="stepper-btn" data-stepper-item="침대매트리스(킹제외)" data-dir="-1">−</button>
             <input type="number" class="itemQty" data-item="침대매트리스(킹제외)" min="0" value="0" inputmode="numeric" />
@@ -1194,7 +1194,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
           </div>
         </div>
         <div class="option item-qty-row">
-          <div>침대 매트리스 (킹 제외)</div>
+          <div>침대 매트리스</div>
           <div class="stepper">
             <button type="button" class="stepper-btn" data-stepper-loc="from" data-stepper-item="침대매트리스(킹제외)" data-dir="-1">−</button>
             <input type="number" class="throwQty" data-loc="from" data-item="침대매트리스(킹제외)" min="0" value="0" inputmode="numeric" />
@@ -1428,7 +1428,6 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
     <!-- =========================
        Mattress Size Modal
        - 사용자가 침대 매트리스 수량을 선택한 후 각 사이즈를 지정할 수 있는 모달입니다.
-       - 킹(K) 제외 버전
   ========================= -->
   <div class="modal" id="mattressSizeModal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="매트리스 사이즈 선택">
     <div class="modal-backdrop" data-close="mattressSizeModal"></div>
@@ -1481,8 +1480,18 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
           </div>
         </div>
 
+        <!-- 킹 (K) -->
+        <div class="option item-qty-row">
+          <div>킹 (K) — 165~180×200cm</div>
+          <div class="stepper">
+            <button type="button" class="stepper-btn" data-stepper-size="K" data-dir="-1">−</button>
+            <input type="number" data-size="K" min="0" value="0" inputmode="numeric" />
+            <button type="button" class="stepper-btn" data-stepper-size="K" data-dir="1">+</button>
+          </div>
+        </div>
+
         <div class="hint" style="margin-top:10px;">
-          ※ 킹(K) 사이즈는 지금 선택에서 빠져 있어요.
+          ※ 매트리스가 여러 개면 총 수량에 맞게 사이즈별로 나눠서 넣어주세요.
         </div>
       </div>
 

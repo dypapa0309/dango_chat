@@ -1709,6 +1709,15 @@ function normalizeItemKey(k) {
           state.mattressSizes.SS = 0;
           state.mattressSizes.D = 0;
           state.mattressSizes.Q = 0;
+          state.mattressSizes.K = 0;
+        }
+
+        if (total <= 0) {
+          state.mattressSizes.S = 0;
+          state.mattressSizes.SS = 0;
+          state.mattressSizes.D = 0;
+          state.mattressSizes.Q = 0;
+          state.mattressSizes.K = 0;
         }
       }
     }
@@ -2426,7 +2435,8 @@ function normalizeItemKey(k) {
           const qty = toInt(v, 0);
           if (k === "침대매트리스(킹제외)") {
             const sizesText = summarizeMattressSizes();
-            return sizesText ? `${k}×${qty} ${sizesText}` : `${k}×${qty}`;
+            const displayKey = "침대매트리스";
+            return sizesText ? `${displayKey}×${qty} ${sizesText}` : `${displayKey}×${qty}`;
           }
           return `${k}×${qty}`;
         })
