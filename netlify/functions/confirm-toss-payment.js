@@ -15,6 +15,31 @@ export async function handler(event) {
     const { jobId, paymentKey, orderId, amount } = parseBody(event);
     if (!jobId || !orderId || !amount) return fail('jobId, orderId, amount가 필요합니다.');
 
+    const supabase = adminClient();
+    const paymentLookup = paymentKey
+      ? supabase
+          .from('payments')
+          .select('*')
+          .eq('transaction_key', paymentKey)
+          .eq('payment_type', 'full_payment')
+          .eq('status', 'paid')
+          .limit(1)
+          .maybeSingle()
+      : supabase
+          .from('payments')
+          .select('*')
+          .eq('job_id', jobId)
+          .eq('payment_type', 'full_payment')
+          .eq('status', 'paid')
+          .limit(1)
+          .maybeSingle();
+
+    const { data: existingPayment, error: existingPaymentError } = await paymentLookup;
+    if (existingPaymentError) throw existingPaymentError;
+    if (existingPayment) {
+      return ok({ payment: existingPayment, toss: existingPayment.meta || null, duplicated: true });
+    }
+
     const secretKey = env('TOSS_SECRET_KEY', 'TOSS_WIDGET_SECRET_KEY');
     let paymentPayload;
 
@@ -46,7 +71,6 @@ export async function handler(event) {
       };
     }
 
-    const supabase = adminClient();
     const { data: payment, error } = await supabase.from('payments').insert({
       job_id: jobId,
       payment_type: 'full_payment',

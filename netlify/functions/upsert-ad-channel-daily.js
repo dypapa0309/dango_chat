@@ -1,6 +1,12 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 
+function normalizeMetricAt(value) {
+  if (!value) return '';
+  if (/[zZ]$|[+\-]\d{2}:\d{2}$/.test(value)) return value;
+  return `${value}:00+09:00`;
+}
+
 export async function handler(event) {
   const opt = handleOptions(event);
   if (opt) return opt;
@@ -21,7 +27,7 @@ export async function handler(event) {
     if ((!metricDate && !metricAt) || !channel) return fail('metricAt 또는 metricDate와 channel이 필요합니다.');
 
     const supabase = adminClient();
-    const resolvedMetricAt = metricAt || `${metricDate}T00:00:00.000Z`;
+    const resolvedMetricAt = normalizeMetricAt(metricAt || `${metricDate}T00:00`);
     const resolvedMetricDate = metricDate || String(resolvedMetricAt).slice(0, 10);
     const payload = {
       metric_date: resolvedMetricDate,

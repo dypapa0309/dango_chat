@@ -17,6 +17,25 @@ export async function handler(event) {
     const { data: job, error: jobError } = await supabase.from('jobs').select('*').eq('id', jobId).single();
     if (jobError) throw jobError;
 
+    const { data: existingActiveAssignment, error: existingActiveAssignmentError } = await supabase
+      .from('assignments')
+      .select('*, drivers(*)')
+      .eq('job_id', jobId)
+      .in('status', ['requested', 'accepted'])
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (existingActiveAssignmentError) throw existingActiveAssignmentError;
+
+    if (existingActiveAssignment) {
+      return ok({
+        assignmentId: existingActiveAssignment.id,
+        driver: existingActiveAssignment.drivers || null,
+        reused: true,
+        smsResult: null
+      });
+    }
+
     let selectedDriver = null;
     if (driverId) {
       const { data, error } = await supabase.from('drivers').select('*').eq('id', driverId).single();
