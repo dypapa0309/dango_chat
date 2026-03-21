@@ -481,6 +481,10 @@ document.addEventListener('DOMContentLoaded', () => {
       showAdminGate('운영 비밀번호를 입력해주세요.');
       return;
     }
+    console.log('ADMIN_LOGIN_ATTEMPT', {
+      tokenPreview: `${token.slice(0, 2)}***${token.slice(-2)}`,
+      tokenLength: token.length
+    });
     document.getElementById('adminGateMessage').textContent = '운영 비밀번호를 확인하고 있어요.';
     gateSubmitBtn.disabled = true;
     gateSubmitBtn.textContent = '확인 중이에요...';
