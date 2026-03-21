@@ -31,6 +31,11 @@ function showAdminGate(message = '') {
   document.getElementById('adminGate').hidden = false;
   document.getElementById('adminApp').hidden = true;
   document.getElementById('adminGateMessage').textContent = message;
+  const submitBtn = document.querySelector('#adminGateForm button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = false;
+    submitBtn.textContent = '운영툴 열기';
+  }
 }
 
 function showAdminApp() {
@@ -443,6 +448,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const gateForm = document.getElementById('adminGateForm');
   const gateInput = document.getElementById('adminTokenInput');
   const btnLogout = document.getElementById('btnLogout');
+  const gateSubmitBtn = gateForm.querySelector('button[type="submit"]');
 
   gateForm.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -451,6 +457,9 @@ document.addEventListener('DOMContentLoaded', () => {
       showAdminGate('운영 비밀번호를 입력해주세요.');
       return;
     }
+    document.getElementById('adminGateMessage').textContent = '운영 비밀번호를 확인하고 있어요.';
+    gateSubmitBtn.disabled = true;
+    gateSubmitBtn.textContent = '확인 중이에요...';
     setAdminToken(token);
     try {
       await bootstrapAdmin();
