@@ -2187,6 +2187,40 @@ body{
 #stickyPriceBar .sticky-inner{
   border-radius:18px;
   background:rgba(255,249,241,0.92);
+  align-items:stretch;
+  gap:14px;
+}
+
+.sticky-ga-slot{
+  flex:0 0 250px;
+  display:flex;
+  align-items:stretch;
+  justify-content:flex-end;
+}
+
+.ga-floating-badge--inline{
+  position:static;
+  width:100%;
+  max-width:250px;
+  padding:12px 14px;
+  border-radius:16px;
+  box-shadow:none;
+  border:1px solid rgba(237,107,47,0.14);
+  background:rgba(255,255,255,0.78);
+}
+
+.ga-floating-badge--inline .ga-floating-badge__hero-copy{
+  font-size:12px;
+}
+
+.ga-floating-badge--inline .ga-floating-badge__desc{
+  margin-top:6px;
+  font-size:11px;
+}
+
+.ga-floating-badge--inline .ga-floating-badge__stat{
+  padding:8px 10px;
+  border-radius:12px;
 }
 
 .wizard-btn{
@@ -2248,5 +2282,23 @@ body{
   .dango-estimate-pills{
     display:grid;
     grid-template-columns:1fr;
+  }
+
+  #stickyPriceBar .sticky-inner{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+
+  .sticky-ga-slot{
+    flex-basis:auto;
+    width:100%;
+  }
+
+  .ga-floating-badge--inline{
+    max-width:none;
+  }
+
+  .ga-floating-badge--inline .ga-floating-badge__desc{
+    display:none;
   }
 }

@@ -42,8 +42,7 @@
 
 
     function createGaFloatingBadge() {
-  const langbar = document.querySelector('.langbar');
-  if (!langbar || document.getElementById('gaFloatingBadge')) return null;
+  if (document.getElementById('gaFloatingBadge')) return null;
 
   const lang = (document.body?.dataset.lang || 'ko').toLowerCase();
   const dict = {
@@ -72,10 +71,11 @@
   };
 
   const t = dict[lang] || dict.ko;
+  const slot = document.getElementById('stickyGaSlot');
 
-  const badge = document.createElement('aside');
+  const badge = document.createElement('section');
   badge.id = 'gaFloatingBadge';
-  badge.className = 'ga-floating-badge is-loading';
+  badge.className = 'ga-floating-badge ga-floating-badge--inline is-loading';
   badge.setAttribute('aria-live', 'polite');
 
   badge.innerHTML = `
@@ -110,24 +110,9 @@
     </div>
   `;
 
-  document.body.appendChild(badge);
+  (slot || document.body).appendChild(badge);
 
-  function positionBadge() {
-    const rect = langbar.getBoundingClientRect();
-    const gap = 8;
-    const top = Math.max(12, Math.round(rect.bottom + gap));
-    const viewportWidth = window.innerWidth || document.documentElement.clientWidth || 0;
-    const right = Math.max(12, Math.round(viewportWidth - rect.right));
-    badge.style.top = `${top}px`;
-    badge.style.right = `${right}px`;
-    badge.style.left = 'auto';
-  }
-
-  positionBadge();
-  window.addEventListener('resize', positionBadge, { passive: true });
-  window.addEventListener('scroll', positionBadge, { passive: true });
-
-  return { badge, positionBadge, dict: t, lang };
+  return { badge, dict: t, lang };
 }
 
 const gaBadge = createGaFloatingBadge();
@@ -135,7 +120,7 @@ const gaBadge = createGaFloatingBadge();
 async function loadGaRealtimeBadge() {
   if (!gaBadge?.badge) return;
 
-  const { badge, positionBadge, dict, lang } = gaBadge;
+  const { badge, dict, lang } = gaBadge;
 
   try {
     badge.classList.add('is-loading');
@@ -197,7 +182,6 @@ async function loadGaRealtimeBadge() {
     console.error('GA realtime badge load failed:', err);
   } finally {
     badge.classList.remove('is-loading');
-    positionBadge?.();
   }
 }
 
