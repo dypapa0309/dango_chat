@@ -1,4 +1,5 @@
 let currentFilter = 'all';
+const ADMIN_TOKEN_KEY = 'dang_o_admin_token';
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
 const api = (name) => `${window.dd.apiBase}/${name}`;
@@ -14,8 +15,48 @@ function maskAccountNumber(value) {
   return `${text.slice(0, -4).replace(/[0-9]/g, '*')}${text.slice(-4)}`;
 }
 
+function getAdminToken() {
+  return localStorage.getItem(ADMIN_TOKEN_KEY) || '';
+}
+
+function setAdminToken(token) {
+  localStorage.setItem(ADMIN_TOKEN_KEY, String(token || '').trim());
+}
+
+function clearAdminToken() {
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+}
+
+function showAdminGate(message = '') {
+  document.getElementById('adminGate').hidden = false;
+  document.getElementById('adminApp').hidden = true;
+  document.getElementById('adminGateMessage').textContent = message;
+}
+
+function showAdminApp() {
+  document.getElementById('adminGate').hidden = true;
+  document.getElementById('adminApp').hidden = false;
+}
+
+async function adminFetch(url, options = {}) {
+  const token = getAdminToken();
+  const headers = new Headers(options.headers || {});
+  if (token) headers.set('Authorization', `Bearer ${token}`);
+  const response = await fetch(url, { ...options, headers });
+  if (response.status === 401 || response.status === 503) {
+    let message = '운영 인증이 필요해요.';
+    try {
+      const json = await response.clone().json();
+      message = json.error || message;
+    } catch (_) {}
+    showAdminGate(message);
+    throw new Error(message);
+  }
+  return response;
+}
+
 async function loadJobs() {
-  const res = await fetch(`${api('get-jobs')}?status=${encodeURIComponent(currentFilter)}`);
+  const res = await adminFetch(`${api('get-jobs')}?status=${encodeURIComponent(currentFilter)}`);
   const data = await res.json();
   const jobs = data.jobs || [];
   document.getElementById('jobCount').textContent = `${jobs.length}건`;
@@ -65,7 +106,7 @@ async function loadJobs() {
 }
 
 async function loadDrivers() {
-  const res = await fetch(api('get-drivers'));
+  const res = await adminFetch(api('get-drivers'));
   const data = await res.json();
   const drivers = data.drivers || [];
   document.getElementById('driverCount').textContent = `${drivers.length}명`;
@@ -118,7 +159,7 @@ async function loadDrivers() {
         payoutNote: card.querySelector('[data-field="payoutNote"]').value
       };
 
-      const saveRes = await fetch(api('update-driver-payout'), {
+      const saveRes = await adminFetch(api('update-driver-payout'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
@@ -156,7 +197,7 @@ function renderSettlementSummary(summary = {}) {
 }
 
 async function loadPricingDashboard() {
-  const res = await fetch(`${api('get-pricing-dashboard')}?hours=50`);
+  const res = await adminFetch(`${api('get-pricing-dashboard')}?hours=50`);
   const data = await res.json();
   if (!data.success) {
     alert(data.error || '가격 대시보드 조회 실패');
@@ -217,7 +258,7 @@ async function markSettlementsPaid(driverId, periodKey) {
   const memo = prompt('메모가 있으면 적어주세요.', '수동 이체 완료');
   if (memo === null) return;
 
-  const res = await fetch(api('mark-settlements-paid'), {
+  const res = await adminFetch(api('mark-settlements-paid'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ driverId, periodKey, paidBy, memo })
@@ -229,7 +270,7 @@ async function markSettlementsPaid(driverId, periodKey) {
 }
 
 async function loadSettlementDashboard() {
-  const res = await fetch(api('get-settlement-dashboard'));
+  const res = await adminFetch(api('get-settlement-dashboard'));
   const data = await res.json();
   if (!data.success) {
     alert(data.error || '정산 대시보드 조회 실패');
@@ -312,14 +353,14 @@ async function loadSettlementDashboard() {
 }
 
 async function showDetail(jobId) {
-  const res = await fetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
+  const res = await adminFetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
   const data = await res.json();
   document.getElementById('detailBody').innerHTML = `<pre class="codebox">${escapeHtml(JSON.stringify(data.job, null, 2))}</pre>`;
   document.getElementById('detailDialog').showModal();
 }
 
 async function updateStatus(jobId, status, dispatchStatus, note) {
-  const res = await fetch(api('update-job-status'), {
+  const res = await adminFetch(api('update-job-status'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jobId, status, dispatchStatus, note })
@@ -330,7 +371,7 @@ async function updateStatus(jobId, status, dispatchStatus, note) {
 }
 
 async function requestAssign(jobId) {
-  const res = await fetch(api('assign-request'), {
+  const res = await adminFetch(api('assign-request'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jobId })
@@ -342,7 +383,7 @@ async function requestAssign(jobId) {
 }
 
 async function cancelAssign(jobId) {
-  const res = await fetch(api('cancel-assignment'), {
+  const res = await adminFetch(api('cancel-assignment'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jobId })
@@ -354,7 +395,7 @@ async function cancelAssign(jobId) {
 
 async function completeJob(jobId) {
   await updateStatus(jobId, 'completed', 'completed', '관리자 예외 완료');
-  await fetch(api('createSettlement'), {
+  await adminFetch(api('createSettlement'), {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ jobId })
@@ -363,7 +404,7 @@ async function completeJob(jobId) {
 }
 
 async function copyCompleteLink(jobId) {
-  const res = await fetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
+  const res = await adminFetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
   const data = await res.json();
   const token = data.job?.customer_complete_token;
   if (!token) return alert('고객 완료 토큰이 없어요.');
@@ -373,7 +414,7 @@ async function copyCompleteLink(jobId) {
 }
 
 async function copyCancelLink(jobId) {
-  const res = await fetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
+  const res = await adminFetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
   const data = await res.json();
   const token = data.job?.customer_cancel_token;
   if (!token) return alert('고객 취소 토큰이 없어요.');
@@ -386,7 +427,33 @@ async function loadAll() {
   await Promise.all([loadJobs(), loadDrivers(), loadSettlementDashboard(), loadPricingDashboard()]);
 }
 
+async function bootstrapAdmin() {
+  showAdminApp();
+  await loadAll();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  const gateForm = document.getElementById('adminGateForm');
+  const gateInput = document.getElementById('adminTokenInput');
+  const btnLogout = document.getElementById('btnLogout');
+
+  gateForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const token = gateInput.value.trim();
+    if (!token) {
+      showAdminGate('운영 비밀번호를 입력해주세요.');
+      return;
+    }
+    setAdminToken(token);
+    try {
+      await bootstrapAdmin();
+      gateInput.value = '';
+    } catch (error) {
+      clearAdminToken();
+      showAdminGate(error.message || '운영 인증에 실패했어요.');
+    }
+  });
+
   document.querySelectorAll('.filter').forEach((btn) => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter').forEach((b) => b.classList.remove('active'));
@@ -397,8 +464,12 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btnRefresh').onclick = loadAll;
+  btnLogout.onclick = () => {
+    clearAdminToken();
+    showAdminGate('로그아웃했어요.');
+  };
   document.getElementById('btnAutoDispatch').onclick = async () => {
-    const res = await fetch(api('auto-dispatch'));
+    const res = await adminFetch(api('auto-dispatch'));
     const data = await res.json();
     alert(`자동 재배차 처리: ${data.count || 0}건`);
     await loadAll();
@@ -430,7 +501,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    const res = await fetch(api('create-job'), {
+    const res = await adminFetch(api('create-job'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -455,7 +526,7 @@ document.addEventListener('DOMContentLoaded', () => {
       notes: fd.get('notes')
     };
 
-    const res = await fetch(api('upsert-ad-channel-daily'), {
+    const res = await adminFetch(api('upsert-ad-channel-daily'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -467,7 +538,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.getElementById('btnRecomputePricing').onclick = async () => {
-    const res = await fetch(api('recompute-pricing'), {
+    const res = await adminFetch(api('recompute-pricing'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ hours: 50, force: true })
@@ -477,6 +548,13 @@ document.addEventListener('DOMContentLoaded', () => {
     alert(`배율을 ${Number(data.recommendation?.nextMultiplier || 0).toFixed(3)}로 계산했어요.`);
     await loadPricingDashboard();
   };
-
-  setTimeout(loadAll, 200);
+  const existingToken = getAdminToken();
+  if (existingToken) {
+    bootstrapAdmin().catch((error) => {
+      clearAdminToken();
+      showAdminGate(error.message || '운영 인증이 필요해요.');
+    });
+  } else {
+    showAdminGate('운영 비밀번호를 먼저 입력해주세요.');
+  }
 });

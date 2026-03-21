@@ -12,6 +12,16 @@
       <h1>당고 배차 요청 확인</h1>
       <div id="jobInfo" class="job-info">불러오는 중...</div>
       <div id="agreementGate" class="job-info" hidden></div>
+      <div id="progressPanel" class="job-info" hidden>
+        <strong>현재 진행 상태</strong>
+        <div id="progressText" style="margin-top:8px;">상태를 불러오고 있어요.</div>
+        <div class="actions" style="margin-top:14px;">
+          <button id="btnDepart" class="btn">출발 중</button>
+          <button id="btnArrive" class="btn">도착</button>
+          <button id="btnStart" class="btn primary">작업 시작</button>
+          <button id="btnRequestComplete" class="btn">완료 요청</button>
+        </div>
+      </div>
       <textarea id="responseNote" rows="4" placeholder="메모(선택)"></textarea>
       <div class="actions">
         <button id="btnAccept" class="btn primary">수락</button>

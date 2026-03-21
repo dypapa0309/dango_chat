@@ -1,6 +1,7 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, handleOptions } from '../../shared/http.js';
 import { getSettlementPeriod } from '../../shared/settlements.js';
+import { requireAdmin } from '../../shared/admin-auth.js';
 
 function sumAmounts(items) {
   return items.reduce((acc, item) => acc + Number(item.amount || 0), 0);
@@ -9,6 +10,8 @@ function sumAmounts(items) {
 export async function handler(event) {
   const opt = handleOptions(event);
   if (opt) return opt;
+  const denied = requireAdmin(event);
+  if (denied) return denied;
 
   try {
     const supabase = adminClient();

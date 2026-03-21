@@ -13,7 +13,10 @@ async function maybeRefreshPricingState(supabase, state) {
 
   const response = await fetch(`${env('SITE_URL', 'http://localhost:8888')}/.netlify/functions/recompute-pricing`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(env('ADMIN_TOKEN', '') ? { Authorization: `Bearer ${env('ADMIN_TOKEN', '')}` } : {})
+    },
     body: JSON.stringify({ hours: 50 })
   }).catch(() => null);
 

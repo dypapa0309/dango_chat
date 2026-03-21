@@ -7,103 +7,117 @@
   <link rel="stylesheet" href="./style.css" />
 </head>
 <body>
-  <header class="topbar">
-    <div>
-      <h1>당고 운영툴</h1>
-      <p>주문 · 결제확정 · 배차요청 · 완료확인 · 2주 정산</p>
-    </div>
-    <div class="actions-inline">
-      <button id="btnAutoDispatch" class="btn">자동 재배차 실행</button>
-      <button id="btnRefresh" class="btn">새로고침</button>
-    </div>
-  </header>
-
-  <section class="filters">
-    <button class="filter active" data-status="all">전체</button>
-    <button class="filter" data-status="deposit_pending">예약대기</button>
-    <button class="filter" data-status="confirmed">확정</button>
-    <button class="filter" data-status="assigned">배차완료</button>
-    <button class="filter" data-status="completed">완료</button>
+  <section id="adminGate" class="admin-gate">
+    <form id="adminGateForm" class="admin-gate-card">
+      <p class="admin-eyebrow">DANG-O ADMIN</p>
+      <h1>운영 비밀번호를 입력해주세요.</h1>
+      <p class="muted">운영툴은 비밀번호가 있어야 열려요.</p>
+      <input id="adminTokenInput" type="password" placeholder="운영 비밀번호" autocomplete="current-password" />
+      <button class="btn primary" type="submit">운영툴 열기</button>
+      <p id="adminGateMessage" class="muted"></p>
+    </form>
   </section>
 
-  <main class="layout">
-    <section class="panel">
-      <div class="panel-head"><h2>주문 목록</h2><span id="jobCount">0건</span></div>
-      <div id="jobList" class="job-list"></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>빠른 주문 생성</h2><span>운영 테스트용</span></div>
-      <form id="quickForm" class="quick-form">
-        <input name="customer_name" placeholder="고객명" required />
-        <input name="customer_phone" placeholder="연락처" required />
-        <input type="date" name="move_date" required />
-        <input name="start_address" placeholder="출발지" required />
-        <input name="end_address" placeholder="도착지" required />
-        <input type="number" step="0.1" name="distance_km" placeholder="거리(km)" value="10" />
-        <input type="number" name="floor" placeholder="층수" value="1" />
-        <input type="number" name="weight_kg" placeholder="짐 무게(kg)" value="20" />
-        <label class="check"><input type="checkbox" name="helper" /> 기사 도움</label>
-        <label class="check"><input type="checkbox" name="packing" /> 포장</label>
-        <label class="check"><input type="checkbox" name="cleaning" /> 청소</label>
-        <button class="btn primary" type="submit">주문 생성</button>
-      </form>
-      <p class="muted">이 주문을 만든 뒤 전체 결제 페이지까지 바로 연결할 수 있어요.</p>
-    </section>
-  </main>
-
-  <section class="layout layout-secondary">
-    <section class="panel">
-      <div class="panel-head"><h2>기사 정산 계좌</h2><span id="driverCount">0명</span></div>
-      <div id="driverList" class="stack-list"></div>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>2주 정산 대시보드</h2><span id="settlementSummary">-</span></div>
-      <div id="settlementCards" class="summary-grid"></div>
-      <div class="panel-subhead"><h3>지급 대기 묶음</h3></div>
-      <div id="settlementGroups" class="stack-list"></div>
-      <div class="panel-subhead"><h3>보류 중 정산</h3></div>
-      <div id="heldSettlementList" class="stack-list compact"></div>
-      <div class="panel-subhead"><h3>최근 지급 완료</h3></div>
-      <div id="paidSettlementList" class="stack-list compact"></div>
-    </section>
-  </section>
-
-  <section class="layout layout-secondary">
-    <section class="panel">
-      <div class="panel-head"><h2>광고 입력</h2><span>숨고 · 메타 · 구글</span></div>
-      <form id="marketingForm" class="driver-grid">
-        <input type="datetime-local" name="metricAt" required />
-        <input type="text" name="channel" placeholder="채널명 예: soomgo" required />
-        <input type="number" name="spendAmount" placeholder="광고비" min="0" step="1000" />
-        <input type="number" name="leadSentCount" placeholder="보낸 견적 수" min="0" step="1" />
-        <input type="number" name="leadReadCount" placeholder="읽힌 견적 수" min="0" step="1" />
-        <input type="number" name="refundCount" placeholder="환급 수" min="0" step="1" />
-        <textarea name="notes" placeholder="메모"></textarea>
-        <button class="btn primary" type="submit">광고 데이터 저장</button>
-      </form>
-    </section>
-
-    <section class="panel">
-      <div class="panel-head"><h2>가격 배율 대시보드</h2><span id="pricingModeText">-</span></div>
-      <div id="pricingSummaryCards" class="summary-grid"></div>
-      <div id="pricingRecommendation" class="mini-card"></div>
-      <div class="driver-actions">
-        <button class="btn primary" id="btnRecomputePricing">배율 다시 계산</button>
+  <div id="adminApp" hidden>
+    <header class="topbar">
+      <div>
+        <h1>당고 운영툴</h1>
+        <p>주문 · 결제확정 · 배차요청 · 완료확인 · 2주 정산</p>
       </div>
-      <div class="panel-subhead"><h3>채널별 성과</h3></div>
-      <div id="pricingChannelList" class="stack-list compact"></div>
-    </section>
-  </section>
+      <div class="actions-inline">
+        <button id="btnAutoDispatch" class="btn">자동 재배차 실행</button>
+        <button id="btnRefresh" class="btn">새로고침</button>
+        <button id="btnLogout" class="btn">로그아웃</button>
+      </div>
+    </header>
 
-  <dialog id="detailDialog">
-    <div class="dialog-head">
-      <h3>주문 상세</h3>
-      <button id="btnCloseDialog" class="btn">닫기</button>
-    </div>
-    <div id="detailBody"></div>
-  </dialog>
+    <section class="filters">
+      <button class="filter active" data-status="all">전체</button>
+      <button class="filter" data-status="deposit_pending">예약대기</button>
+      <button class="filter" data-status="confirmed">확정</button>
+      <button class="filter" data-status="assigned">배차완료</button>
+      <button class="filter" data-status="completed">완료</button>
+    </section>
+
+    <main class="layout">
+      <section class="panel">
+        <div class="panel-head"><h2>주문 목록</h2><span id="jobCount">0건</span></div>
+        <div id="jobList" class="job-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>빠른 주문 생성</h2><span>운영 테스트용</span></div>
+        <form id="quickForm" class="quick-form">
+          <input name="customer_name" placeholder="고객명" required />
+          <input name="customer_phone" placeholder="연락처" required />
+          <input type="date" name="move_date" required />
+          <input name="start_address" placeholder="출발지" required />
+          <input name="end_address" placeholder="도착지" required />
+          <input type="number" step="0.1" name="distance_km" placeholder="거리(km)" value="10" />
+          <input type="number" name="floor" placeholder="층수" value="1" />
+          <input type="number" name="weight_kg" placeholder="짐 무게(kg)" value="20" />
+          <label class="check"><input type="checkbox" name="helper" /> 기사 도움</label>
+          <label class="check"><input type="checkbox" name="packing" /> 포장</label>
+          <label class="check"><input type="checkbox" name="cleaning" /> 청소</label>
+          <button class="btn primary" type="submit">주문 생성</button>
+        </form>
+        <p class="muted">이 주문을 만든 뒤 전체 결제 페이지까지 바로 연결할 수 있어요.</p>
+      </section>
+    </main>
+
+    <section class="layout layout-secondary">
+      <section class="panel">
+        <div class="panel-head"><h2>기사 정산 계좌</h2><span id="driverCount">0명</span></div>
+        <div id="driverList" class="stack-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>2주 정산 대시보드</h2><span id="settlementSummary">-</span></div>
+        <div id="settlementCards" class="summary-grid"></div>
+        <div class="panel-subhead"><h3>지급 대기 묶음</h3></div>
+        <div id="settlementGroups" class="stack-list"></div>
+        <div class="panel-subhead"><h3>보류 중 정산</h3></div>
+        <div id="heldSettlementList" class="stack-list compact"></div>
+        <div class="panel-subhead"><h3>최근 지급 완료</h3></div>
+        <div id="paidSettlementList" class="stack-list compact"></div>
+      </section>
+    </section>
+
+    <section class="layout layout-secondary">
+      <section class="panel">
+        <div class="panel-head"><h2>광고 입력</h2><span>숨고 · 메타 · 구글</span></div>
+        <form id="marketingForm" class="driver-grid">
+          <input type="datetime-local" name="metricAt" required />
+          <input type="text" name="channel" placeholder="채널명 예: soomgo" required />
+          <input type="number" name="spendAmount" placeholder="광고비" min="0" step="1000" />
+          <input type="number" name="leadSentCount" placeholder="보낸 견적 수" min="0" step="1" />
+          <input type="number" name="leadReadCount" placeholder="읽힌 견적 수" min="0" step="1" />
+          <input type="number" name="refundCount" placeholder="환급 수" min="0" step="1" />
+          <textarea name="notes" placeholder="메모"></textarea>
+          <button class="btn primary" type="submit">광고 데이터 저장</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>가격 배율 대시보드</h2><span id="pricingModeText">-</span></div>
+        <div id="pricingSummaryCards" class="summary-grid"></div>
+        <div id="pricingRecommendation" class="mini-card"></div>
+        <div class="driver-actions">
+          <button class="btn primary" id="btnRecomputePricing">배율 다시 계산</button>
+        </div>
+        <div class="panel-subhead"><h3>채널별 성과</h3></div>
+        <div id="pricingChannelList" class="stack-list compact"></div>
+      </section>
+    </section>
+
+    <dialog id="detailDialog">
+      <div class="dialog-head">
+        <h3>주문 상세</h3>
+        <button id="btnCloseDialog" class="btn">닫기</button>
+      </div>
+      <div id="detailBody"></div>
+    </dialog>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./supabase.js"></script>

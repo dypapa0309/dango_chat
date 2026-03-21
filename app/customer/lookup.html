@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 비회원 주문 조회</title>
+  <style>
+    :root { --bg:#f5efe4; --card:#fffaf3; --line:rgba(70,50,31,.12); --text:#20170f; --muted:#6e6255; --brand:#ed6b2f; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"SUIT",Arial,sans-serif; background:linear-gradient(180deg,#f8e6c3,#f7f3ec); color:var(--text); padding:24px; }
+    .topnav,.wrap { max-width:860px; margin:0 auto; }
+    .topnav { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+    .topnav a { flex:1; min-width:120px; min-height:46px; border-radius:14px; background:rgba(255,250,243,.92); border:1px solid var(--line); color:var(--text); text-decoration:none; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+    .card,.job-card { background:var(--card); border:1px solid var(--line); border-radius:24px; box-shadow:0 24px 60px rgba(77,45,13,.12); }
+    .card { padding:28px; }
+    .eyebrow { margin:0 0 8px; color:#bc4d16; font-size:13px; font-weight:700; text-transform:uppercase; }
+    h1 { margin:0; font-size:36px; line-height:1.1; }
+    .muted { color:var(--muted); line-height:1.7; }
+    .form { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; }
+    .form input,.btn { min-height:54px; border-radius:14px; border:1px solid var(--line); font:inherit; }
+    .form input { padding:0 16px; background:#fff; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; font-weight:700; cursor:pointer; text-decoration:none; }
+    .btn.primary { background:var(--brand); color:#fff; border:0; }
+    .btn.ghost { background:#fff; color:var(--muted); }
+    .btn-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:12px; }
+    .btn-row .btn { flex:1; min-width:160px; }
+    .result-list { display:grid; gap:14px; margin-top:18px; }
+    .job-card { padding:20px; }
+    .job-top,.row { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+    .row { margin-top:8px; color:var(--muted); flex-wrap:wrap; }
+    .badges { display:flex; gap:8px; flex-wrap:wrap; }
+    .badge { padding:5px 9px; border-radius:999px; background:#fff; border:1px solid var(--line); font-size:12px; }
+    @media (max-width:720px){ .form { grid-template-columns:1fr; } .topnav a,.btn-row .btn { min-width:0; } }
+  </style>
+</head>
+<body>
+  <nav class="topnav" aria-label="고객 이동 메뉴">
+    <a href="/">🏠 홈화면</a>
+    <a href="/estimate/">🚚 소형이사</a>
+    <a href="/ddclean/">🧼 소형청소</a>
+  </nav>
+  <main class="wrap">
+    <section class="card">
+      <p class="eyebrow">DANG-O LOOKUP</p>
+      <h1>비회원 주문도 바로 조회할 수 있어요.</h1>
+      <p class="muted">이름과 연락처를 넣으면 최근 주문 상태를 확인할 수 있어요.</p>
+      <form id="lookupForm" class="form">
+        <input id="customerName" placeholder="이름" required />
+        <input id="customerPhone" placeholder="연락처" required />
+        <button class="btn primary" type="submit" style="grid-column:1/-1;">주문 조회하기</button>
+      </form>
+      <p id="statusText" class="muted">주문을 찾고 있어요.</p>
+      <div id="resultList" class="result-list"></div>
+    </section>
+  </main>
+
+  <script>
+    const form = document.getElementById('lookupForm');
+    const statusText = document.getElementById('statusText');
+    const resultList = document.getElementById('resultList');
+    const money = (value) => `${Number(value || 0).toLocaleString()}원`;
+
+    function escapeHtml(value) {
+      return String(value || '').replace(/[&<>\"]/g, (m) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[m]));
+    }
+
+    function renderJobs(jobs) {
+      resultList.innerHTML = '';
+      if (!jobs.length) {
+        resultList.innerHTML = '<div class="job-card muted">조회된 주문이 없어요.</div>';
+        return;
+      }
+
+      jobs.forEach((job) => {
+        const driverText = job.driver ? `${job.driver.name || '기사'} / ${job.driver.vehicle_type || '차량 정보 없음'}` : '배정 기사 확인 중이에요.';
+        const actions = [];
+        if (job.actions?.canPay) actions.push(`<a class="btn primary" href="/customer/pay.html?jobId=${encodeURIComponent(job.id)}">전체 결제하기</a>`);
+        if (job.actions?.canComplete) actions.push(`<a class="btn ghost" href="/customer/complete.html?token=${encodeURIComponent(job.customer_complete_token)}">완료 확인</a>`);
+        if (job.actions?.canCancel) actions.push(`<a class="btn ghost" href="/customer/cancel.html?token=${encodeURIComponent(job.customer_cancel_token)}">취소 요청</a>`);
+
+        const card = document.createElement('article');
+        card.className = 'job-card';
+        card.innerHTML = `
+          <div class="job-top">
+            <strong>${escapeHtml(job.move_date || '날짜 미정')}</strong>
+            <div class="badges">
+              <span class="badge">${escapeHtml(job.status || '-')}</span>
+              <span class="badge">${escapeHtml(job.dispatch_status || '-')}</span>
+            </div>
+          </div>
+          <div class="row">${escapeHtml(job.start_address || '-')} → ${escapeHtml(job.end_address || '-')}</div>
+          <div class="row">총 결제 ${money(job.total_price)} / 당고 20% ${money(job.company_amount)} / 기사 80% ${money(job.driver_amount)}</div>
+          <div class="row">${escapeHtml(driverText)}</div>
+          ${actions.length ? `<div class="btn-row">${actions.join('')}</div>` : ''}
+        `;
+        resultList.appendChild(card);
+      });
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      statusText.textContent = '주문을 찾고 있어요.';
+      resultList.innerHTML = '';
+
+      const res = await fetch('/.netlify/functions/get-customer-jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: document.getElementById('customerName').value.trim(),
+          customerPhone: document.getElementById('customerPhone').value.trim()
+        })
+      });
+      const data = await res.json();
+      if (!data.success) {
+        statusText.textContent = data.error || '주문 조회에 실패했어요.';
+        return;
+      }
+      statusText.textContent = `최근 주문 ${data.jobs.length || 0}건을 찾았어요.`;
+      renderJobs(data.jobs || []);
+    });
+
+    statusText.textContent = '이름과 연락처를 넣으면 최근 주문을 확인할 수 있어요.';
+  </script>
+</body>
+</html>

@@ -1,5 +1,6 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { requireAdmin } from '../../shared/admin-auth.js';
 
 const ALLOWED = new Set(['draft','deposit_pending','confirmed','assigned','in_progress','completed','canceled']);
 
@@ -7,6 +8,8 @@ export async function handler(event) {
   const opt = handleOptions(event);
   if (opt) return opt;
   if (event.httpMethod !== 'POST') return fail('POST 요청만 허용됩니다.');
+  const denied = requireAdmin(event);
+  if (denied) return denied;
 
   try {
     const { jobId, status, dispatchStatus, note } = parseBody(event);

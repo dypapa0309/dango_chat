@@ -1,6 +1,7 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, handleOptions } from '../../shared/http.js';
 import { ensurePricingStateRow, recommendPricingAdjustment } from '../../shared/pricing-state.js';
+import { requireAdmin } from '../../shared/admin-auth.js';
 
 function isoDateTime(hoursAgo = 0) {
   const date = new Date();
@@ -11,6 +12,8 @@ function isoDateTime(hoursAgo = 0) {
 export async function handler(event) {
   const opt = handleOptions(event);
   if (opt) return opt;
+  const denied = requireAdmin(event);
+  if (denied) return denied;
 
   try {
     const hours = Math.max(24, Math.min(240, Number(event?.queryStringParameters?.hours || 50)));

@@ -1,9 +1,12 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, handleOptions } from '../../shared/http.js';
+import { requireAdmin } from '../../shared/admin-auth.js';
 
 export async function handler(event) {
   const opt = handleOptions(event);
   if (opt) return opt;
+  const denied = requireAdmin(event);
+  if (denied) return denied;
 
   try {
     const jobId = event?.queryStringParameters?.jobId;
