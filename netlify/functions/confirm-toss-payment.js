@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { adminClient } from '../../shared/db.js';
 import { env } from '../../shared/env.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
@@ -20,18 +19,22 @@ export async function handler(event) {
     let paymentPayload;
 
     if (secretKey && paymentKey) {
-      const res = await axios.post(
+      const res = await fetch(
         'https://api.tosspayments.com/v1/payments/confirm',
-        { paymentKey, orderId, amount: Number(amount) },
         {
+          method: 'POST',
           headers: {
             Authorization: `Basic ${basicAuth(secretKey)}`,
             'Content-Type': 'application/json'
           },
-          timeout: 15000
+          body: JSON.stringify({ paymentKey, orderId, amount: Number(amount) })
         }
       );
-      paymentPayload = res.data;
+      const json = await res.json();
+      if (!res.ok) {
+        return fail('토스 결제 승인 실패', json, res.status || 500);
+      }
+      paymentPayload = json;
     } else {
       paymentPayload = {
         paymentKey: paymentKey || `mock_${Date.now()}`,
@@ -76,8 +79,8 @@ export async function handler(event) {
   } catch (error) {
     return fail(
       '토스 결제 승인 실패',
-      error.response?.data || error.message,
-      error.response?.status || 500
+      error.message,
+      500
     );
   }
 }
