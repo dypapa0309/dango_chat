@@ -171,6 +171,16 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   white-space:nowrap;
 }
 @media (max-width: 768px){
+  .wizard-meta{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .stage-pill-row{
+    grid-template-columns:1fr;
+  }
+  .stage-pill{
+    min-height:48px;
+  }
   .ga-floating-badge{
     width:min(190px, calc(100vw - 24px));
     padding:9px 11px;
@@ -222,6 +232,8 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
 .wizard-title{
   font-weight:900;
   letter-spacing:-0.02em;
+  line-height:1.3;
+  text-wrap:balance;
 }
 .wizard-step{
   color:var(--muted);
@@ -268,6 +280,7 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   font-weight:900;
   letter-spacing:-0.02em;
   cursor:pointer;
+  text-wrap:balance;
 }
 .stage-pill.is-active{
   background:#FFF7ED;
@@ -287,9 +300,11 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
 .section h2{
   margin:6px 6px 10px;
   font-size:20px;
+  line-height:1.25;
   letter-spacing:-0.02em;
   font-weight:1000;
   color:#0F172A;
+  text-wrap:balance;
 }
 
 .card{
@@ -1891,13 +1906,15 @@ button:active{ transform:scale(0.97); }
   margin:0 0 14px;
 }
 .page-linkbar--space{
-  justify-content:space-between;
+  justify-content:center;
   align-items:center;
 }
 .page-linkbar__group{
   display:flex;
   flex-wrap:wrap;
   gap:10px;
+  justify-content:center;
+  width:100%;
 }
 .page-link{
   display:inline-flex;
@@ -1912,6 +1929,7 @@ button:active{ transform:scale(0.97); }
   font-size:14px;
   font-weight:900;
   box-shadow:var(--shadow);
+  white-space:nowrap;
 }
 .page-link.is-current{
   color:#1D4ED8;
@@ -1946,6 +1964,7 @@ button:active{ transform:scale(0.97); }
   line-height:1.02;
   letter-spacing:-0.05em;
   color:#0F172A;
+  text-wrap:balance;
 }
 .landing-title .accent{ color:#3B82F6; }
 .landing-copy{
@@ -1954,6 +1973,7 @@ button:active{ transform:scale(0.97); }
   font-size:17px;
   line-height:1.7;
   font-weight:800;
+  max-width:30rem;
 }
 .landing-live{
   margin-top:22px;
@@ -2066,10 +2086,18 @@ button:active{ transform:scale(0.97); }
 }
 @media (max-width: 640px){
   .page-linkbar--space{ align-items:flex-start; }
+  .page-linkbar,
+  .page-linkbar__group{ gap:8px; }
+  .page-link{
+    flex:1 1 calc(33.333% - 6px);
+    min-width:0;
+    padding:0 10px;
+    font-size:13px;
+  }
   .landing-hero,
   .landing-card{ padding:22px; }
   .landing-title{ font-size:42px; }
-  .landing-copy{ font-size:16px; }
+  .landing-copy{ font-size:15px; max-width:none; }
   .landing-main-cta,
   .landing-sub-cta{ min-height:74px; font-size:18px; border-radius:22px; }
 }
@@ -2154,7 +2182,7 @@ body{
 .landing-copy{
   color:var(--muted);
   font-weight:700;
-  max-width:35rem;
+  max-width:30rem;
 }
 
 .dango-estimate-pills{
@@ -2389,6 +2417,22 @@ body{
 }
 
 @media (max-width: 640px){
+  .landing-eyebrow{
+    font-size:12px;
+    padding:9px 12px;
+  }
+  .wizard-top{
+    padding:12px 10px 10px;
+  }
+  .wizard-title{
+    font-size:17px;
+  }
+  .wizard-cheer{
+    font-size:12px;
+  }
+  .section h2{
+    font-size:20px;
+  }
   .landing-hero,
   .landing-card,
   .card,
