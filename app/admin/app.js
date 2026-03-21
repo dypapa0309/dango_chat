@@ -47,7 +47,19 @@ async function adminFetch(url, options = {}) {
   const token = getAdminToken();
   const headers = new Headers(options.headers || {});
   if (token) headers.set('Authorization', `Bearer ${token}`);
-  const response = await fetch(url, { ...options, headers });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 12000);
+  let response;
+  try {
+    response = await fetch(url, { ...options, headers, signal: controller.signal });
+  } catch (error) {
+    clearTimeout(timeout);
+    if (error?.name === 'AbortError') {
+      throw new Error('운영 데이터 응답이 늦어요. 잠시 뒤 다시 시도해주세요.');
+    }
+    throw error;
+  }
+  clearTimeout(timeout);
   const contentType = response.headers.get('content-type') || '';
   if (!contentType.includes('application/json')) {
     const text = await response.clone().text().catch(() => '');
@@ -436,12 +448,24 @@ async function copyCancelLink(jobId) {
 }
 
 async function loadAll() {
-  await Promise.all([loadJobs(), loadDrivers(), loadSettlementDashboard(), loadPricingDashboard()]);
+  const results = await Promise.allSettled([
+    loadJobs(),
+    loadDrivers(),
+    loadSettlementDashboard(),
+    loadPricingDashboard()
+  ]);
+  const firstRejected = results.find((result) => result.status === 'rejected');
+  if (firstRejected) {
+    console.warn('운영툴 일부 패널 로드 실패', firstRejected.reason);
+  }
 }
 
 async function bootstrapAdmin() {
   showAdminApp();
-  await loadAll();
+  await loadJobs();
+  loadDrivers().catch((error) => console.warn('기사 패널 로드 실패', error));
+  loadSettlementDashboard().catch((error) => console.warn('정산 패널 로드 실패', error));
+  loadPricingDashboard().catch((error) => console.warn('가격 패널 로드 실패', error));
 }
 
 document.addEventListener('DOMContentLoaded', () => {
