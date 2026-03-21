@@ -305,6 +305,10 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
 .sub{ color:var(--muted); font-weight:800; font-size:13px; line-height:1.5; }
 .hint{ color:#64748B; font-size:12px; line-height:1.5; }
 
+.option{
+  cursor:pointer;
+}
+
 .step-card{ display:none; }
 .step-card.is-active{ display:block; }
 .step-card.is-active h2{

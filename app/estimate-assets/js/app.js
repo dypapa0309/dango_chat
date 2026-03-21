@@ -956,6 +956,27 @@ function normalizeItemKey(k) {
         openModal('caseImageModal');
         return;
       }
+
+      const optionRow = e.target.closest('.option');
+      if (optionRow) {
+        const tappedInteractive = e.target.closest(
+          'input, button, a, label, textarea, select, .stepper, [data-open-modal], [data-close]'
+        );
+        if (!tappedInteractive) {
+          const control = optionRow.querySelector('input[type="checkbox"], input[type="radio"]');
+          if (control) {
+            e.preventDefault();
+            if (control.type === 'checkbox') {
+              control.checked = !control.checked;
+            } else {
+              control.checked = true;
+            }
+            control.dispatchEvent(new Event('change', { bubbles: true }));
+            control.focus({ preventScroll: true });
+            return;
+          }
+        }
+      }
     });
 
     document.addEventListener('click', (e) => {
