@@ -9,13 +9,27 @@ export async function handler(event) {
 
   try {
     const body = parseBody(event);
-    const price = calculatePrice({
+    const override = body.price_override || null;
+    const calculated = calculatePrice({
       distanceKm: body.distance_km,
       floor: body.floor,
       weightKg: body.weight_kg,
       options: body.option_summary || {},
       hasVia: Boolean(body.via_address)
     });
+
+    const price = override
+      ? {
+          ...calculated,
+          ...override,
+          total: Number(override.total || calculated.total || 0),
+          deposit: Number(override.deposit || calculated.deposit || 0),
+          balance: Number(override.balance || calculated.balance || 0),
+          driverAmount: Number(override.driverAmount || calculated.driverAmount || 0),
+          companyAmount: Number(override.companyAmount || calculated.companyAmount || 0),
+          version: override.version || `${calculated.version}-override`
+        }
+      : calculated;
 
     const supabase = adminClient();
     const payload = {

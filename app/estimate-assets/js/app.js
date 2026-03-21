@@ -2758,7 +2758,12 @@ const borderColors = comparison.labels.map((label) =>
 
     function updateInquiryButtonsState() {
       const shouldDisableMoveInquiry = state.activeService === SERVICE.MOVE && !isMoveInquiryReady();
-      [document.getElementById("channelInquiry"), document.getElementById("sendInquiry")].forEach((btn) => {
+      [
+        document.getElementById("channelInquiry"),
+        document.getElementById("sendInquiry"),
+        document.getElementById("startCheckoutCta"),
+        document.getElementById("confirmCheckoutStart")
+      ].forEach((btn) => {
         if (!btn) return;
         if (shouldDisableMoveInquiry) {
           btn.classList.add("is-disabled");
@@ -2770,6 +2775,149 @@ const borderColors = comparison.labels.map((label) =>
           if (btn.tagName === "BUTTON") btn.disabled = false;
         }
       });
+    }
+
+    function normalizePhone(value) {
+      return String(value || "").replace(/\D+/g, "");
+    }
+
+    function estimateWeightKg() {
+      const loadWeightMap = { 0: 0, 1: 80, 2: 160, 3: 260, 4: 360 };
+      const moveItemsCount = Object.values(state.items || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+      const waypointItemsCount = Object.values(state.waypointItems || {}).reduce((sum, value) => sum + Number(value || 0), 0);
+      return (loadWeightMap[state.loadLevel] || 0) + ((moveItemsCount + waypointItemsCount) * 12);
+    }
+
+    function estimateFloorValue() {
+      const floors = [
+        state.noFrom ? Number(state.fromFloor || 0) : 0,
+        state.noTo ? Number(state.toFloor || 0) : 0,
+        state.hasWaypoint && state.waypointNoElevator ? Number(state.waypointFloor || 0) : 0
+      ];
+      return Math.max(...floors, 0);
+    }
+
+    function buildCheckoutPayload(customerName, customerPhone) {
+      const pricing = buildCurrentPricingBreakdown({
+        channel: document.body?.dataset.siteBrand === "당고" ? "dango" : "direct",
+      });
+
+      return {
+        customer_name: customerName,
+        customer_phone: customerPhone,
+        customer_note: [
+          state.itemsNote ? `가구·가전 기타사항: ${state.itemsNote}` : null,
+          state.throwNote ? `버려주세요 기타사항: ${state.throwNote}` : null,
+          state.cleaningToggle && state.cleanNote ? `청소 특이사항: ${state.cleanNote}` : null
+        ].filter(Boolean).join("\n") || null,
+        move_date: state.moveDate,
+        start_address: state.startAddress,
+        end_address: state.endAddress,
+        via_address: state.hasWaypoint ? state.waypointAddress : null,
+        distance_km: state.distanceKm,
+        floor: estimateFloorValue(),
+        weight_kg: estimateWeightKg(),
+        item_summary: {
+          vehicle: state.vehicle || "",
+          moveType: state.moveType,
+          loadLevel: state.loadLevel,
+          items: state.items || {},
+          waypointItems: state.waypointItems || {},
+          throwFrom: state.throwFrom || {},
+          throwTo: state.throwTo || {},
+          ride: state.ride || 0
+        },
+        option_summary: {
+          helper: Boolean(state.helperFrom || state.helperTo),
+          helperFrom: Boolean(state.helperFrom),
+          helperTo: Boolean(state.helperTo),
+          packing: state.moveType === "half",
+          cleaning: Boolean(state.cleaningToggle),
+          via_stop: Boolean(state.hasWaypoint),
+          ladderFrom: Boolean(state.ladderFromEnabled),
+          ladderTo: Boolean(state.ladderToEnabled),
+          cantCarryFrom: Boolean(state.cantCarryFrom),
+          cantCarryTo: Boolean(state.cantCarryTo)
+        },
+        raw_text: buildInquiryMessage(),
+        price_override: {
+          total: pricing.total,
+          deposit: pricing.deposit,
+          balance: pricing.balance,
+          driverAmount: pricing.driverAmount,
+          companyAmount: pricing.companyAmount,
+          version: pricing.settlement?.source === "move-helper-custom" ? "dango-detailed-helper" : "dango-detailed"
+        }
+      };
+    }
+
+    function buildDraftRecord(payload) {
+      return {
+        id: `draft-${Date.now()}`,
+        customer_name: payload.customer_name,
+        customer_phone: payload.customer_phone,
+        move_date: payload.move_date,
+        start_address: payload.start_address,
+        end_address: payload.end_address,
+        via_address: payload.via_address || null,
+        raw_text: payload.raw_text,
+        total_price: payload.price_override.total,
+        deposit_amount: payload.price_override.deposit,
+        balance_amount: payload.price_override.balance,
+        payment_status: "draft",
+        dispatch_status: "pending"
+      };
+    }
+
+    async function startDirectCheckout() {
+      if (!validateMoveInquiryBeforeSend()) return;
+
+      const nameInput = $("#checkoutCustomerName");
+      const phoneInput = $("#checkoutCustomerPhone");
+      const messageEl = $("#checkoutInlineMessage");
+      const button = $("#confirmCheckoutStart");
+
+      const customerName = (nameInput?.value || "").trim();
+      const customerPhone = normalizePhone(phoneInput?.value || "");
+
+      if (!customerName || customerPhone.length < 10) {
+        if (messageEl) messageEl.textContent = "이름과 연락처를 정확히 입력해주세요.";
+        return;
+      }
+
+      const originalText = button?.textContent || "";
+      if (button) {
+        button.disabled = true;
+        button.textContent = "결제 페이지 준비 중...";
+      }
+      if (messageEl) messageEl.textContent = "주문을 생성하고 결제 페이지로 이동하는 중입니다.";
+
+      const payload = buildCheckoutPayload(customerName, customerPhone);
+
+      try {
+        const res = await fetch('/.netlify/functions/create-job', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (res.ok && data.success && data.job?.id) {
+          window.location.href = `../customer/pay.html?jobId=${encodeURIComponent(data.job.id)}`;
+          return;
+        }
+        throw new Error(data.error || '주문 생성 실패');
+      } catch (error) {
+        const draftId = `checkout-${Date.now()}`;
+        localStorage.setItem(`dango:${draftId}`, JSON.stringify(buildDraftRecord(payload)));
+        if (messageEl) messageEl.textContent = "실주문 연결이 지연되어 초안 결제 흐름으로 이동합니다.";
+        window.location.href = `../customer/pay.html?draftId=${encodeURIComponent(draftId)}`;
+      } finally {
+        if (button) {
+          button.disabled = false;
+          button.textContent = originalText;
+        }
+      }
     }
 
     function renderAll() {
@@ -3125,6 +3273,10 @@ const borderColors = comparison.labels.map((label) =>
       const ok = openSmsAppWithPrefill(msg);
 
       if (!ok) handleInquirySmsFallback(copied);
+    });
+
+    $("#confirmCheckoutStart")?.addEventListener("click", async () => {
+      await startDirectCheckout();
     });
 
     $("#askClean")?.addEventListener("click", () => {

@@ -687,17 +687,17 @@ content="당고 상세 견적 페이지입니다. 출발지, 도착지, 짐, 옵
     </div>
 
     <div class="result-cta-stack">
-      <a href="#" class="contact-btn mega result-main-cta" id="channelInquiry">
+      <button type="button" class="contact-btn mega result-main-cta result-main-cta--checkout" id="startCheckoutCta" data-open-modal="checkoutStartModal">
         <span class="cta-text">
-          <span class="title">이 조건으로 예약 진행할까요?</span>
-          <span class="desc">문자에 견적서를 담아 바로 전송합니다.</span>
-          <span class="desc small-discount">예약 가능 여부와 다음 절차를 바로 안내받을 수 있습니다.</span>
+          <span class="title">현재 견적으로 바로 결제하고 기사 배차받기</span>
+          <span class="desc">예약금 결제로 일정 확정과 배차 요청을 바로 시작합니다.</span>
+          <span class="desc small-discount">이름과 연락처만 입력하면 결제 페이지로 바로 이동합니다.</span>
         </span>
-      </a>
+      </button>
 
       <div class="result-sub-actions" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;">
+        <a href="#" class="contact-btn ghost" id="channelInquiry" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">상담용 견적서 문자로 보내기</a>
         <button type="button" class="contact-btn" data-open-modal="shareSiteModal">친구에게 공유하기</button>
-        <a href="../" class="contact-btn ghost" style="text-decoration:none;display:flex;align-items:center;justify-content:center;">랜딩 페이지로 돌아가기</a>
       </div>
     </div>
 
@@ -1499,16 +1499,47 @@ content="당고 상세 견적 페이지입니다. 출발지, 도착지, 짐, 옵
     </div>
 
     <div class="modal-body">
-      <p>이사 견적을 최종 전송하시기 전에</p>
-      <p>청소도 함께 필요하시면 디디클린으로 이동할 수 있습니다.</p>
-      <p>필요하면 아래 버튼으로 바로 이동해주세요.</p>
+      <p>현재 견적서를 문자로 전송해 상담을 이어갈 수 있습니다.</p>
+      <p>바로 일정 확정과 배차를 원하시면 결과 화면의 결제 버튼을 이용해주세요.</p>
     </div>
 
     <div class="modal-foot">
-      <button type="button" class="wizard-btn primary large" id="sendInquiry">지금 예약 가능 여부 확인하기</button>
+      <button type="button" class="wizard-btn primary large" id="sendInquiry">상담용 견적서 문자 보내기</button>
       <div class="confirm-sub-actions">
         <button type="button" class="wizard-btn ghost small" data-close="confirmInquiryModal">취소</button>
-        <button type="button" class="wizard-btn small" id="askClean">디디클린으로 이동하기</button>
+        <button type="button" class="wizard-btn small" data-close="confirmInquiryModal">돌아가기</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="checkoutStartModal" aria-hidden="true" role="dialog" aria-modal="true" aria-label="결제 후 배차 시작">
+  <div class="modal-backdrop" data-close="checkoutStartModal"></div>
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div class="modal-title">결제 후 바로 배차를 시작합니다</div>
+      <button class="modal-x" type="button" data-close="checkoutStartModal" aria-label="닫기">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="checkout-modal-copy">예약금 결제 페이지로 이동하기 전에 이름과 연락처를 입력해주세요.</p>
+      <div class="checkout-form">
+        <label class="checkout-field">
+          <span>이름</span>
+          <input type="text" id="checkoutCustomerName" placeholder="이름을 입력해주세요" autocomplete="name" />
+        </label>
+        <label class="checkout-field">
+          <span>연락처</span>
+          <input type="tel" id="checkoutCustomerPhone" placeholder="01012345678" autocomplete="tel" inputmode="numeric" />
+        </label>
+      </div>
+      <div class="mini-summary" id="checkoutInlineMessage">입력 완료 후 예약금 결제 페이지로 이동합니다.</div>
+    </div>
+
+    <div class="modal-foot">
+      <button type="button" class="wizard-btn primary large" id="confirmCheckoutStart">예약금 결제하고 기사 배차받기</button>
+      <div class="confirm-sub-actions">
+        <button type="button" class="wizard-btn ghost small" data-close="checkoutStartModal">취소</button>
       </div>
     </div>
   </div>
