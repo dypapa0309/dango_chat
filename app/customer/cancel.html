@@ -88,17 +88,17 @@
 <body>
   <div class="card">
     <p class="eyebrow">DANGO CANCEL</p>
-    <h1>작업 시작 전이라면<br />고객이 직접 취소할 수 있습니다</h1>
-    <p id="statusText" class="muted">주문 정보를 불러오는 중입니다.</p>
+    <h1>작업 시작 전이라면<br />고객이 직접 취소할 수 있어요.</h1>
+    <p id="statusText" class="muted">주문 정보를 불러오고 있어요.</p>
 
     <div id="summaryCard" class="summary">
       <div id="summaryMain">불러오는 중...</div>
       <div id="summaryAmount" class="muted"></div>
-      <div class="muted">작업 시작 전 취소 시 결제 취소를 함께 시도합니다.</div>
-      <div class="muted">이미 작업이 시작되었으면 자동 취소 대신 운영 확인이 필요합니다.</div>
+      <div class="muted">작업 시작 전 취소면 결제 취소도 같이 시도해요.</div>
+      <div class="muted">이미 작업이 시작됐다면 자동 취소 대신 운영 확인이 필요해요.</div>
     </div>
 
-    <textarea id="cancelReason" placeholder="취소 사유를 적어주세요. 비워도 취소는 가능합니다."></textarea>
+    <textarea id="cancelReason" placeholder="취소 사유를 적어주세요. 비워도 취소할 수 있어요."></textarea>
     <button id="btnCancel" disabled>고객이 직접 취소하기</button>
     <a class="ghost" href="/estimate/">다른 견적 보기</a>
   </div>
@@ -117,7 +117,7 @@
     async function loadJob() {
       if (!token) {
         statusText.className = 'warn';
-        statusText.textContent = '유효하지 않은 취소 링크입니다.';
+        statusText.textContent = '유효하지 않은 취소 링크예요.';
         return;
       }
 
@@ -125,7 +125,7 @@
       const data = await res.json();
       if (!data.success) {
         statusText.className = 'warn';
-        statusText.textContent = data.error || '주문을 찾지 못했습니다.';
+        statusText.textContent = data.error || '주문을 찾지 못했어요.';
         return;
       }
 
@@ -135,21 +135,21 @@
 
       if (!data.cancelable) {
         statusText.className = 'warn';
-        statusText.textContent = '이미 작업이 시작되었거나 완료되어 자동 취소할 수 없습니다.';
+        statusText.textContent = '이미 작업이 시작됐거나 끝나서 자동 취소가 어려워요.';
         button.disabled = true;
-        button.textContent = '자동 취소 불가';
+        button.textContent = '자동 취소 어려움';
         return;
       }
 
       statusText.className = 'muted';
-      statusText.textContent = '작업 시작 전이라면 아래 버튼으로 취소와 환불을 진행할 수 있습니다.';
+      statusText.textContent = '작업 시작 전이면 아래 버튼으로 취소와 환불을 진행할 수 있어요.';
       button.disabled = false;
     }
 
     button.onclick = async () => {
       if (!token) return;
       button.disabled = true;
-      button.textContent = '취소 처리 중...';
+      button.textContent = '취소 처리 중이에요...';
 
       const res = await fetch('/.netlify/functions/customer-cancel', {
         method: 'POST',
@@ -160,7 +160,7 @@
 
       if (!data.success) {
         statusText.className = 'warn';
-        statusText.textContent = data.error || '취소 처리 실패';
+        statusText.textContent = data.error || '취소 처리에 실패했어요.';
         button.disabled = false;
         button.textContent = '고객이 직접 취소하기';
         return;
@@ -168,8 +168,8 @@
 
       statusText.className = 'ok';
       statusText.textContent = data.refunded
-        ? '고객 취소와 결제 취소가 접수되었습니다.'
-        : '고객 취소가 접수되었습니다.';
+        ? '취소와 결제 취소가 접수됐어요.'
+        : '취소가 접수됐어요.';
       button.textContent = '취소 완료';
     };
 

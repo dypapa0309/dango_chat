@@ -38,7 +38,7 @@
     const DEFAULT_SERVICE = document.body?.dataset.defaultService || "move";
     const SITE_BRAND = document.body?.dataset.siteBrand || (DEFAULT_SERVICE === "clean" ? "디디클린" : "디디운송");
     const CROSS_LINK = document.body?.dataset.crossLink || "";
-    const CROSS_LABEL = document.body?.dataset.crossLabel || (DEFAULT_SERVICE === "clean" ? "이사도 필요하시다면 클릭해주세요" : "청소도 필요하시다면 클릭해주세요");
+    const CROSS_LABEL = document.body?.dataset.crossLabel || (DEFAULT_SERVICE === "clean" ? "이사도 필요하면 눌러주세요." : "청소도 필요하면 눌러주세요.");
 
 
     function createGaFloatingBadge() {
@@ -482,7 +482,7 @@ function normalizeItemKey(k) {
       }
       if (state.activeService === SERVICE.MOVE) {
         if (token === 1 && !state.vehicle) alert("차량을 선택해주세요.");
-        if (token === 2 && (state.distanceKm <= 0 || state.lastDistanceRouteKey !== currentRouteKey())) alert("주소를 바꿨다면 거리 계산하기를 다시 눌러주세요.");
+        if (token === 2 && (state.distanceKm <= 0 || state.lastDistanceRouteKey !== currentRouteKey())) alert("주소를 바꿨다면 거리 계산을 다시 눌러주세요.");
         if (token === 3 && (!state.moveDate || !state.timeSlot)) alert("날짜와 시간을 선택해주세요.");
         if (token === 6 && state.loadLevel === null) alert("짐양(박스 기준)을 선택해주세요.");
       }
@@ -1331,10 +1331,10 @@ function normalizeItemKey(k) {
           console.error(e);
           state.distanceKm = 0;
           state.lastDistanceRouteKey = "";
-          if (distanceText) distanceText.textContent = "주소를 다시 확인해주세요";
+          if (distanceText) distanceText.textContent = "주소를 다시 확인해주세요.";
           const hasDetail = isLikelyDetailedAddress(start) || isLikelyDetailedAddress(end) || (state.hasWaypoint && isLikelyDetailedAddress(wp));
           if (hasDetail) showAddressGuidePopup();
-          else alert("거리 계산에 실패했어. 주소를 더 구체적으로 입력해줘 (도로명/건물명 추천).");
+          else alert("거리 계산에 실패했어요. 도로명이나 건물명 기준으로 다시 넣어주세요.");
         }
       });
     }
@@ -2353,7 +2353,7 @@ function normalizeItemKey(k) {
 
     function buildSummaryText() {
       const svc = state.activeService;
-      if (!svc) return "조건을 선택하세요";
+      if (!svc) return "조건을 선택해보세요.";
 
       if (svc === SERVICE.MOVE) {
         const lines = [];
@@ -2521,7 +2521,7 @@ function normalizeItemKey(k) {
         return lines.join("<br>");
       }
 
-      return "조건을 선택하세요";
+      return "조건을 선택해보세요.";
     }
 
     let compareChart = null;
@@ -2724,12 +2724,12 @@ const borderColors = comparison.labels.map((label) =>
         <div class="modal-backdrop" data-close="addressGuideModal"></div>
         <div class="modal-panel">
           <div class="modal-head">
-            <div class="modal-title">주소를 다시 입력해주세요</div>
+            <div class="modal-title">주소를 다시 넣어주세요.</div>
             <button class="modal-x" type="button" data-close="addressGuideModal" aria-label="닫기">×</button>
           </div>
           <div class="modal-body">
             <p style="margin:0; line-height:1.7; color:var(--text,#111);">세부 주소(몇 동, 몇 호, 몇 층)까지 넣으면 주소를 찾지 못해 거리가 0으로 계산될 수 있어요.</p>
-            <p style="margin:12px 0 0; line-height:1.7; color:var(--muted,#666);">동·호수는 빼고 <b>도로명주소/건물명까지만</b> 입력한 뒤 다시 거리 계산을 해주세요.</p>
+            <p style="margin:12px 0 0; line-height:1.7; color:var(--muted,#666);">동·호수는 빼고 <b>도로명주소나 건물명까지만</b> 넣은 뒤 다시 거리 계산을 해주세요.</p>
           </div>
           <div class="modal-foot">
             <button type="button" class="wizard-btn" data-close="addressGuideModal">확인</button>
@@ -2891,16 +2891,16 @@ const borderColors = comparison.labels.map((label) =>
       const customerPhone = normalizePhone(phoneInput?.value || "");
 
       if (!customerName || customerPhone.length < 10) {
-        if (messageEl) messageEl.textContent = "이름과 연락처를 정확히 입력해주세요.";
+        if (messageEl) messageEl.textContent = "이름과 연락처를 정확히 넣어주세요.";
         return;
       }
 
       const originalText = button?.textContent || "";
       if (button) {
         button.disabled = true;
-        button.textContent = "결제 페이지 준비 중...";
+        button.textContent = "결제 페이지를 준비하고 있어요...";
       }
-      if (messageEl) messageEl.textContent = "주문을 생성하고 결제 페이지로 이동하는 중입니다.";
+      if (messageEl) messageEl.textContent = "주문을 만들고 결제 페이지로 넘어가고 있어요.";
 
       const payload = buildCheckoutPayload(customerName, customerPhone);
 
@@ -2916,11 +2916,11 @@ const borderColors = comparison.labels.map((label) =>
           window.location.href = `../customer/pay.html?jobId=${encodeURIComponent(data.job.id)}`;
           return;
         }
-        throw new Error(data.error || '주문 생성 실패');
+        throw new Error(data.error || '주문 생성에 실패했어요.');
       } catch (error) {
         const draftId = `checkout-${Date.now()}`;
         localStorage.setItem(`dango:${draftId}`, JSON.stringify(buildDraftRecord(payload)));
-        if (messageEl) messageEl.textContent = "실주문 연결이 지연되어 초안 결제 흐름으로 이동합니다.";
+        if (messageEl) messageEl.textContent = "실주문 연결이 늦어져서 초안 결제 흐름으로 넘어가요.";
         window.location.href = `../customer/pay.html?draftId=${encodeURIComponent(draftId)}`;
       } finally {
         if (button) {
@@ -2983,8 +2983,8 @@ const borderColors = comparison.labels.map((label) =>
       const distText = $("#distanceText");
       if (distText) {
         if (state.distanceKm > 0 && state.lastDistanceRouteKey === currentRouteKey()) distText.textContent = `${state.distanceKm} km`;
-        else if (state.startAddress && state.endAddress) distText.textContent = "거리 계산하기를 눌러주세요";
-        else distText.textContent = "주소를 입력해주세요";
+        else if (state.startAddress && state.endAddress) distText.textContent = "거리 계산을 눌러주세요.";
+        else distText.textContent = "주소를 입력해주세요.";
       }
 
       updateInquiryButtonsState();
@@ -3319,7 +3319,7 @@ const borderColors = comparison.labels.map((label) =>
     const altServiceLink = document.querySelector(".alt-service-link");
     if (altServiceLink) {
       altServiceLink.setAttribute("href", CROSS_LINK || "/");
-      altServiceLink.textContent = DEFAULT_SERVICE === "clean" ? "🚚 이사도 필요하시다면 클릭해주세요" : "🧼 청소도 필요하시다면 클릭해주세요";
+      altServiceLink.textContent = DEFAULT_SERVICE === "clean" ? "🚚 이사도 필요하면 눌러주세요." : "🧼 청소도 필요하면 눌러주세요.";
     }
 
     updateStickyBarVisibility();
