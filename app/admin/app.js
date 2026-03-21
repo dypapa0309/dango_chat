@@ -1,5 +1,6 @@
 let currentFilter = 'all';
 const ADMIN_TOKEN_KEY = 'dang_o_admin_token';
+let runtimeAdminToken = '';
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
 const api = (name) => `${window.dd.apiBase}/${name}`;
@@ -15,15 +16,33 @@ function maskAccountNumber(value) {
   return `${text.slice(0, -4).replace(/[0-9]/g, '*')}${text.slice(-4)}`;
 }
 
+function normalizeAdminToken(value) {
+  const token = String(value || '').trim();
+  if (!token) return '';
+  if (/^https?:\/\//i.test(token)) return '';
+  return token;
+}
+
 function getAdminToken() {
-  return localStorage.getItem(ADMIN_TOKEN_KEY) || '';
+  if (runtimeAdminToken) return runtimeAdminToken;
+  const stored = normalizeAdminToken(localStorage.getItem(ADMIN_TOKEN_KEY) || '');
+  if (stored) {
+    runtimeAdminToken = stored;
+    return stored;
+  }
+  localStorage.removeItem(ADMIN_TOKEN_KEY);
+  return '';
 }
 
 function setAdminToken(token) {
-  localStorage.setItem(ADMIN_TOKEN_KEY, String(token || '').trim());
+  const safeToken = normalizeAdminToken(token);
+  runtimeAdminToken = safeToken;
+  if (safeToken) localStorage.setItem(ADMIN_TOKEN_KEY, safeToken);
+  else localStorage.removeItem(ADMIN_TOKEN_KEY);
 }
 
 function clearAdminToken() {
+  runtimeAdminToken = '';
   localStorage.removeItem(ADMIN_TOKEN_KEY);
 }
 
