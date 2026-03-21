@@ -4,6 +4,7 @@
   const statusEl = document.getElementById('joinStatus');
   const resultEl = document.getElementById('joinResult');
   const joinBtn = document.getElementById('btnJoin');
+  const formBody = document.getElementById('joinFormBody');
   const contractAgreed = document.getElementById('contractAgreed');
   const commercialPlateConfirmed = document.getElementById('commercialPlateConfirmed');
 
@@ -26,7 +27,8 @@
   commercialPlateConfirmed.addEventListener('change', syncButton);
 
   if (!token) {
-    statusEl.textContent = '유효하지 않은 가입 링크예요.';
+    statusEl.innerHTML = '<strong>유효하지 않은 가입 링크예요.</strong><div>운영툴에서 복사한 전체 가입 링크로 다시 열어주세요.</div>';
+    formBody.hidden = true;
     return;
   }
 
@@ -53,7 +55,8 @@
       resultEl.textContent = '이미 가입과 계약 동의가 끝난 기사예요. 필요하면 정보를 다시 저장할 수 있어요.';
     }
   } catch (error) {
-    statusEl.textContent = error.message || '기사 정보를 불러오지 못했어요.';
+    statusEl.innerHTML = `<strong>${error.message || '기사 정보를 불러오지 못했어요.'}</strong><div>가입 링크가 만료됐거나 잘못됐을 수 있어요. 운영툴에서 링크를 다시 복사해주세요.</div>`;
+    formBody.hidden = true;
     return;
   }
 
