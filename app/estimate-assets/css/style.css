@@ -242,6 +242,13 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   background:linear-gradient(90deg, #2F80ED 0%, #60A5FA 100%);
   transition:width .22s ease;
 }
+.wizard-cheer{
+  margin-top:10px;
+  color:#bc4d16;
+  font-size:13px;
+  font-weight:800;
+  letter-spacing:-0.02em;
+}
 .wizard-stage-shell{
   display:block;
 }

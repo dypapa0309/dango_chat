@@ -423,6 +423,13 @@ function normalizeItemKey(k) {
       { label: "추가 요청", title: "특수 청소와 추가 요청을 넣어요.", hint: "특수 청소, 가전 청소, 메모를 정리해요.", tokens: [10, 11] },
       { label: "결과 확인", title: "마지막으로 금액을 확인해요.", hint: "결과를 보고 바로 접수나 결제로 이어가요.", tokens: [12] }
     ];
+    const STAGE_CHEERS = [
+      "좋아요. 이제 하나씩 넣으면 돼요.",
+      "흐름이 잘 맞고 있어요.",
+      "중간까지 왔어요. 조금만 더 보면 돼요.",
+      "거의 다 왔어요. 마지막 요청만 정리하면 돼요.",
+      "이제 금액만 확인하면 끝이에요."
+    ];
 
     function getStageGroups() {
       const service = state.activeService || DEFAULT_SERVICE;
@@ -527,6 +534,7 @@ function normalizeItemKey(k) {
       const stageTitleEl = $("#wizardStageTitle");
       const stageHintEl = $("#wizardStageHint");
       const stageBarEl = $("#wizardStageBar");
+      const stageCheerEl = $("#wizardCheer");
       const nextBtns = $$('[data-wizard-next]');
       const prevBtns = $$('[data-wizard-prev]');
 
@@ -534,6 +542,7 @@ function normalizeItemKey(k) {
       if (stageTitleEl) stageTitleEl.textContent = stageInfo.group?.title || "현재 단계에 집중해서 보면 돼요.";
       if (stageHintEl) stageHintEl.textContent = stageInfo.group?.hint || "현재 단계만 보면 돼요.";
       if (stageBarEl) stageBarEl.style.width = `${((stageInfo.index + 1) / stageInfo.groups.length) * 100}%`;
+      if (stageCheerEl) stageCheerEl.textContent = STAGE_CHEERS[stageInfo.index] || "좋아요. 이대로 진행하면 돼요.";
 
       prevBtns.forEach((prevBtn) => {
         prevBtn.disabled = state.stepIndex <= 0;
