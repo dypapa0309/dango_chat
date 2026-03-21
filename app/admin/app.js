@@ -43,6 +43,13 @@ async function adminFetch(url, options = {}) {
   const headers = new Headers(options.headers || {});
   if (token) headers.set('Authorization', `Bearer ${token}`);
   const response = await fetch(url, { ...options, headers });
+  const contentType = response.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    const text = await response.clone().text().catch(() => '');
+    if (/<!doctype html/i.test(text) || /<html/i.test(text)) {
+      throw new Error('관리자 페이지는 정적 서버가 아니라 Netlify 주소나 npm run dev로 열어야 해요.');
+    }
+  }
   if (response.status === 401 || response.status === 503) {
     let message = '운영 인증이 필요해요.';
     try {
