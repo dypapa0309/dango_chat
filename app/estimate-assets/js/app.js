@@ -733,6 +733,7 @@ function normalizeItemKey(k) {
     function openModal(id) {
       const m = document.getElementById(id);
       if (!m) return false;
+      if (id === "mattressSizeModal") syncMattressModalFromState();
       m.setAttribute("aria-hidden", "false");
       m.classList.add("open");
       syncModalBodyLock();
@@ -1770,6 +1771,40 @@ function normalizeItemKey(k) {
       return toInt(state.items["침대매트리스(킹제외)"], 0);
     }
 
+    function totalMattressSizeQty() {
+      return Object.values(state.mattressSizes || {}).reduce((a, b) => a + toInt(b, 0), 0);
+    }
+
+    function syncMattressModalFromState() {
+      document.querySelectorAll('#mattressSizeModal input[data-size]').forEach((inp) => {
+        const size = inp.getAttribute("data-size");
+        inp.value = String(toInt(state.mattressSizes?.[size], 0));
+      });
+    }
+
+    function commitMattressSizesToItems() {
+      const sumSizes = totalMattressSizeQty();
+      const target = getItemsStateTarget();
+      if (itemsModalContext === "main") {
+        if (sumSizes <= 0) {
+          delete target["침대매트리스(킹제외)"];
+        } else {
+          target["침대매트리스(킹제외)"] = sumSizes;
+        }
+      } else {
+        if (sumSizes <= 0) {
+          delete target["침대매트리스(킹제외)"];
+        } else {
+          target["침대매트리스(킹제외)"] = sumSizes;
+        }
+      }
+
+      const mainMattressInput = document.querySelector('#itemsModal .itemQty[data-item="침대매트리스(킹제외)"]');
+      if (mainMattressInput && itemsModalContext === "main") {
+        mainMattressInput.value = String(sumSizes);
+      }
+    }
+
     function setMattressSize(sizeKey, qty) {
       const key = String(sizeKey);
       const v = Math.max(0, toInt(qty, 0));
@@ -1805,6 +1840,12 @@ function normalizeItemKey(k) {
       renderAll();
       return true;
     }
+
+    document.getElementById("saveMattressSizeModal")?.addEventListener("click", () => {
+      commitMattressSizesToItems();
+      syncItemsModalFromState();
+      renderAll();
+    });
 
     // mattress modal controls are handled by delegated listeners below
 
