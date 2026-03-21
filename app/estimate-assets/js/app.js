@@ -527,22 +527,22 @@ function normalizeItemKey(k) {
       const stageTitleEl = $("#wizardStageTitle");
       const stageHintEl = $("#wizardStageHint");
       const stageBarEl = $("#wizardStageBar");
-      const nextBtn = $("#wizardNext");
-      const prevBtn = $("#wizardPrev");
+      const nextBtns = $$('[data-wizard-next]');
+      const prevBtns = $$('[data-wizard-prev]');
 
       if (stageStepEl) stageStepEl.textContent = `${stageInfo.index + 1} / ${stageInfo.groups.length} 단계`;
       if (stageTitleEl) stageTitleEl.textContent = stageInfo.group?.title || "현재 단계에 집중해서 보면 돼요.";
       if (stageHintEl) stageHintEl.textContent = stageInfo.group?.hint || "현재 단계만 보면 돼요.";
       if (stageBarEl) stageBarEl.style.width = `${((stageInfo.index + 1) / stageInfo.groups.length) * 100}%`;
 
-      if (prevBtn) {
+      prevBtns.forEach((prevBtn) => {
         prevBtn.disabled = state.stepIndex <= 0;
         prevBtn.textContent = stageInfo.index <= 0 ? "처음 단계" : "이전 단계";
-      }
-      if (nextBtn) {
+      });
+      nextBtns.forEach((nextBtn) => {
         nextBtn.disabled = false;
         nextBtn.textContent = activeToken === 12 ? "다시 처음부터" : "다음 단계";
-      }
+      });
 
       $$("#wizardStagePills .stage-pill").forEach((pill, index) => {
         const group = stageInfo.groups[index];
@@ -630,8 +630,8 @@ function normalizeItemKey(k) {
     /* =========================================================
        Bind wizard nav
     ========================================================= */
-    $("#wizardPrev")?.addEventListener("click", goPrev);
-    $("#wizardNext")?.addEventListener("click", goNext);
+    $$('[data-wizard-prev]').forEach((btn) => btn.addEventListener("click", goPrev));
+    $$('[data-wizard-next]').forEach((btn) => btn.addEventListener("click", goNext));
     $$("#wizardStagePills .stage-pill").forEach((pill) => {
       pill.addEventListener("click", () => {
         const index = Number(pill.dataset.stageIndex || 0);

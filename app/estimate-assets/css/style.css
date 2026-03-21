@@ -251,6 +251,11 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   gap:8px;
   margin-top:12px;
 }
+.wizard-stage-actions{
+  display:flex;
+  gap:10px;
+  margin-top:12px;
+}
 .stage-pill{
   border:1px solid rgba(17,24,39,0.08);
   background:#F8FAFC;
@@ -812,6 +817,9 @@ button[disabled].wizard-btn{
 @media (max-width: 768px){
   .stage-pill-row{
     grid-template-columns:repeat(2,1fr);
+  }
+  .wizard-stage-actions{
+    flex-direction:column;
   }
   .wizard-stage-shell{
     top:calc(var(--safe-top) + 6px + var(--stickybar-h) + 8px);
