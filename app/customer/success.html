@@ -48,9 +48,36 @@
       font-weight: 700;
       margin-top: 18px;
     }
+    .topnav {
+      max-width: 720px;
+      margin: 0 auto 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .topnav a {
+      flex: 1;
+      min-width: 120px;
+      min-height: 46px;
+      border-radius: 14px;
+      background: rgba(255, 250, 243, 0.92);
+      border: 1px solid rgba(70, 50, 31, 0.12);
+      color: #20170f;
+      text-decoration: none;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0;
+    }
   </style>
 </head>
 <body>
+  <nav class="topnav" aria-label="고객 이동 메뉴">
+    <a href="/">홈화면</a>
+    <a href="/estimate/">소형이사</a>
+    <a href="/ddclean/">소형청소</a>
+  </nav>
   <div class="card">
     <h1>결제를 확인하고 있어요.</h1>
     <div class="stack">
