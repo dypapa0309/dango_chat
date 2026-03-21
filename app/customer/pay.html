@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 예약금 결제</title>
+  <script src="https://js.tosspayments.com/v1"></script>
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --card: #fffaf3;
+      --line: rgba(70, 50, 31, 0.12);
+      --text: #20170f;
+      --muted: #6e6255;
+      --brand: #ed6b2f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SUIT", Arial, sans-serif;
+      background: linear-gradient(180deg, #f8e6c3, #f7f3ec);
+      color: var(--text);
+      padding: 24px;
+    }
+    .card {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--card);
+      padding: 28px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(77, 45, 13, 0.12);
+    }
+    .eyebrow { margin: 0 0 8px; color: #bc4d16; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+    h1 { margin: 0; font-size: 36px; line-height: 1.1; }
+    .muted { color: var(--muted); line-height: 1.7; }
+    .summary {
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+    .summary strong { display: block; margin-bottom: 8px; font-size: 18px; }
+    .line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+    }
+    .line:last-of-type { border-bottom: 0; }
+    button, .ghost {
+      width: 100%;
+      min-height: 54px;
+      border: 0;
+      border-radius: 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button {
+      margin-top: 18px;
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 16px 28px rgba(237, 107, 47, 0.24);
+    }
+    .ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 10px;
+      background: #fff;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <p class="eyebrow">DANGO PAYMENT</p>
+    <h1>예약금만 먼저 결제하면<br />배차가 바로 시작됩니다</h1>
+    <p class="muted">토스 키가 연결되어 있으면 실결제로, 없으면 모의 승인 흐름으로 바로 테스트할 수 있습니다.</p>
+
+    <div id="summaryCard" class="summary">
+      <strong id="summary">불러오는 중...</strong>
+      <div class="line"><span>총 예상 비용</span><span id="totalPrice">-</span></div>
+      <div class="line"><span>예약금 20%</span><span id="price">-</span></div>
+      <div class="line"><span>잔금 80%</span><span id="balance">-</span></div>
+    </div>
+
+    <button id="btnPay" disabled>결제 준비 중...</button>
+    <a class="ghost" href="/">처음으로 돌아가기</a>
+  </div>
+
+  <script>
+    let job = null;
+    let clientKey = '';
+
+    const qs = new URLSearchParams(location.search);
+    const jobId = qs.get('jobId');
+    const draftId = qs.get('draftId');
+
+    const money = (value) => `${Number(value || 0).toLocaleString()}원`;
+
+    function getDraft() {
+      if (!draftId) return null;
+      const raw = localStorage.getItem(`dango:${draftId}`);
+      if (!raw) return null;
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    }
+
+    async function loadJob() {
+      if (jobId) {
+        const detailRes = await fetch(`/.netlify/functions/get-job-detail?jobId=${encodeURIComponent(jobId)}`);
+        const detailJson = await detailRes.json();
+        if (!detailJson.success) throw new Error(detailJson.error || '주문을 찾을 수 없습니다.');
+        return detailJson.job;
+      }
+
+      const draft = getDraft();
+      if (!draft) throw new Error('jobId 또는 draftId가 없습니다.');
+      return draft;
+    }
+
+    async function load() {
+      try {
+        job = await loadJob();
+        document.getElementById('summary').textContent = `${job.customer_name || '-'} / ${job.start_address || '-'} → ${job.end_address || '-'}`;
+        document.getElementById('totalPrice').textContent = money(job.total_price || 0);
+        document.getElementById('price').textContent = money(job.deposit_amount || 0);
+        document.getElementById('balance').textContent = money(job.balance_amount || 0);
+
+        try {
+          const cfg = await fetch('/.netlify/functions/config').then((res) => res.json());
+          clientKey = cfg?.tossClientKey || '';
+        } catch {}
+
+        const button = document.getElementById('btnPay');
+        button.disabled = false;
+        button.textContent = clientKey ? '토스로 예약금 결제하기' : '모의 승인으로 계속하기';
+      } catch (error) {
+        document.getElementById('summary').textContent = error.message || '주문 정보를 불러오지 못했습니다.';
+      }
+    }
+
+    document.getElementById('btnPay').onclick = async () => {
+      if (!job) return;
+      const successUrl = new URL(`${location.origin}/customer/success.html`);
+      const failUrl = new URL(`${location.origin}/customer/fail.html`);
+
+      if (jobId) {
+        successUrl.searchParams.set('jobId', job.id);
+        failUrl.searchParams.set('jobId', job.id);
+      }
+      if (draftId) {
+        successUrl.searchParams.set('draftId', draftId);
+        failUrl.searchParams.set('draftId', draftId);
+      }
+
+      successUrl.searchParams.set('amount', String(Number(job.deposit_amount || 0)));
+
+      if (!clientKey) {
+        location.href = successUrl.toString();
+        return;
+      }
+
+      const toss = TossPayments(clientKey);
+      await toss.requestPayment('카드', {
+        amount: Number(job.deposit_amount || 0),
+        orderId: job.id,
+        orderName: '당고 예약금',
+        customerName: job.customer_name || '고객',
+        successUrl: successUrl.toString(),
+        failUrl: failUrl.toString()
+      });
+    };
+
+    load();
+  </script>
+</body>
+</html>

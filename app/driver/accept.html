@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 배차 응답</title>
+  <link rel="stylesheet" href="./accept.css" />
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <h1>당고 배차 요청 확인</h1>
+      <div id="jobInfo" class="job-info">불러오는 중...</div>
+      <textarea id="responseNote" rows="4" placeholder="메모(선택)"></textarea>
+      <div class="actions">
+        <button id="btnAccept" class="btn primary">수락</button>
+        <button id="btnDecline" class="btn danger">거절</button>
+      </div>
+      <p id="result" class="result"></p>
+    </div>
+  </main>
+  <script src="./accept.js"></script>
+</body>
+</html>

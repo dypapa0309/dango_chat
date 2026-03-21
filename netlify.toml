@@ -1,9 +1,9 @@
 [build]
-  publish = "."
+  publish = "app"
   functions = "netlify/functions"
 
 [dev]
-  publish = "."
+  publish = "app"
   framework = "#static"
   functions = "netlify/functions"
 

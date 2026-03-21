@@ -1,10 +1,11 @@
 {
-  "name": "dd-move-os-ready",
+  "name": "dango",
   "version": "1.1.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "netlify dev",
+    "check:web": "node --check app/assets/js/main.js && node --check app/estimate-assets/js/app.js",
     "test": "node tests/job_flow_test.js && node tests/sms_failure_test.js && node tests/payment_flow_test.js"
   },
   "engines": {

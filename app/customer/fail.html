@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 결제 실패</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: "SUIT", Arial, sans-serif;
+      padding: 24px;
+      background: linear-gradient(180deg, #f8e6c3, #f7f3ec);
+      color: #20170f;
+    }
+    .card {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #fffaf3;
+      padding: 28px;
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(77, 45, 13, 0.12);
+      border: 1px solid rgba(70, 50, 31, 0.12);
+    }
+    code {
+      background: #fff;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 14px;
+      background: #ed6b2f;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: 18px;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <h1>결제가 완료되지 않았습니다</h1>
+  <p id="msg">다시 시도해주세요.</p>
+  <a href="/">당고로 돌아가기</a>
+</div>
+<script>
+const qs = new URLSearchParams(location.search);
+const code = qs.get('code');
+const message = qs.get('message');
+if (code || message) {
+  document.getElementById('msg').innerHTML = `오류 코드: <code>${code || '-'}</code><br>메시지: <code>${message || '-'}</code>`;
+}
+</script>
+</body>
+</html>
