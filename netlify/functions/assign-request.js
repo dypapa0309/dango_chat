@@ -21,11 +21,15 @@ export async function handler(event) {
     if (driverId) {
       const { data, error } = await supabase.from('drivers').select('*').eq('id', driverId).single();
       if (error) throw error;
+      if (!data?.consign_contract_agreed || !data?.commercial_plate_confirmed) {
+        return fail('기사 가입과 위탁운송 계약 동의가 끝난 기사만 배차할 수 있습니다.');
+      }
       selectedDriver = data;
     } else {
       const { data: drivers, error } = await supabase.from('drivers').select('*');
       if (error) throw error;
-      const ranked = rankDrivers(job, drivers || []);
+      const eligibleDrivers = (drivers || []).filter((driver) => driver?.consign_contract_agreed && driver?.commercial_plate_confirmed);
+      const ranked = rankDrivers(job, eligibleDrivers);
       selectedDriver = ranked[0];
     }
 

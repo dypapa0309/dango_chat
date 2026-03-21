@@ -9,7 +9,7 @@ export async function handler(event) {
     const supabase = adminClient();
     const { data, error } = await supabase
       .from('drivers')
-      .select('id, name, phone, status, dispatch_enabled, completed_jobs, rating, acceptance_rate, response_score, bank_name, account_number, account_holder, payout_enabled, payout_note, created_at')
+      .select('id, name, phone, status, dispatch_enabled, completed_jobs, rating, acceptance_rate, response_score, bank_name, account_number, account_holder, payout_enabled, payout_note, join_token, vehicle_type, vehicle_number, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, created_at')
       .order('created_at', { ascending: false });
 
     if (error) throw error;

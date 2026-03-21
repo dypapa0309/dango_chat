@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 기사 가입</title>
+  <link rel="stylesheet" href="./accept.css" />
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <h1>당고 기사 가입</h1>
+      <div id="joinStatus" class="job-info">기사 정보를 불러오고 있어요.</div>
+
+      <div class="form-grid">
+        <input id="driverName" type="text" placeholder="이름" />
+        <input id="driverPhone" type="tel" placeholder="연락처" />
+        <input id="vehicleType" type="text" placeholder="차량 종류 예: 1톤 카고" />
+        <input id="vehicleNumber" type="text" placeholder="차량 번호" />
+        <input id="bankName" type="text" placeholder="은행명" />
+        <input id="accountHolder" type="text" placeholder="예금주" />
+        <input id="accountNumber" type="text" placeholder="계좌번호" />
+      </div>
+
+      <textarea id="payoutNote" rows="3" placeholder="정산 메모가 있으면 적어주세요."></textarea>
+
+      <div class="agreement-box">
+        <strong>위탁운송 계약 동의</strong>
+        <ul>
+          <li>기사는 화물자동차 운송 관련 법령을 스스로 준수해야 해요.</li>
+          <li>유상 화물운송은 적법한 운송 자격과 영업용 차량 기준을 갖춘 경우에만 수행해야 해요.</li>
+          <li>기사 본인은 영업용 화물차량을 사용하고 있다고 확인해야 해요.</li>
+          <li>통상 노란 번호판으로 운영되는 영업용 차량 기준을 스스로 확인해야 해요.</li>
+          <li>자가용 차량이나 무자격 상태로 운송하면 모든 책임은 기사 본인에게 있어요.</li>
+          <li>관련 기준을 어긴 운송으로 생기는 민형사상 책임에 회사는 책임지지 않아요.</li>
+        </ul>
+      </div>
+
+      <label class="checkline"><input id="commercialPlateConfirmed" type="checkbox" /> 영업용 차량 기준을 확인했고 적법한 운송 자격으로 운행해요.</label>
+      <label class="checkline"><input id="contractAgreed" type="checkbox" /> 위탁운송 계약 내용에 동의해요.</label>
+
+      <div class="actions">
+        <button id="btnJoin" class="btn primary" disabled>가입 완료</button>
+      </div>
+      <p id="joinResult" class="result"></p>
+    </div>
+  </main>
+  <script src="./join.js"></script>
+</body>
+</html>

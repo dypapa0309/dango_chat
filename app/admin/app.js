@@ -83,9 +83,11 @@ async function loadDrivers() {
         </div>
         <div class="settlement-meta">
           <span class="pill ${driver.payout_enabled ? 'ok' : 'off'}">${driver.payout_enabled ? '정산 가능' : '정산 보류'}</span>
+          <span class="pill ${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? 'ok' : 'warn'}">${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? '계약 완료' : '계약 필요'}</span>
           <span class="pill">${escapeHtml(driver.status || '-')}</span>
         </div>
       </div>
+      <div class="row">차량 ${escapeHtml(driver.vehicle_type || '-')} / 번호 ${escapeHtml(driver.vehicle_number || '-')}</div>
       <div class="driver-grid">
         <input type="text" data-field="bankName" value="${escapeHtml(driver.bank_name || '')}" placeholder="은행명" />
         <input type="text" data-field="accountHolder" value="${escapeHtml(driver.account_holder || '')}" placeholder="예금주" />
@@ -94,9 +96,17 @@ async function loadDrivers() {
         <textarea data-field="payoutNote" placeholder="정산 메모">${escapeHtml(driver.payout_note || '')}</textarea>
       </div>
       <div class="driver-actions">
+        <button class="btn" data-action="copy-join">가입 링크 복사</button>
         <button class="btn primary" data-action="save-driver">계좌 저장</button>
       </div>
     `;
+
+    card.querySelector('[data-action="copy-join"]').onclick = async () => {
+      if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
+      const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
+      await navigator.clipboard.writeText(url);
+      alert('기사 가입 링크를 복사했어요.');
+    };
 
     card.querySelector('[data-action="save-driver"]').onclick = async () => {
       const payload = {

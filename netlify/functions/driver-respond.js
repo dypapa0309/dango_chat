@@ -13,7 +13,7 @@ export async function handler(event) {
       if (!token) return fail('token이 필요합니다.');
       const { data: assignment, error } = await supabase
         .from('assignments')
-        .select('*, jobs(*)')
+        .select('*, jobs(*), drivers(*)')
         .eq('dispatch_token', token)
         .single();
       if (error) throw error;
@@ -27,6 +27,13 @@ export async function handler(event) {
         return ok({ expired: true, message: '만료된 요청입니다.', job: assignment.jobs });
       }
       await supabase.from('assignments').update({ viewed_at: new Date().toISOString(), updated_by: 'driver' }).eq('id', assignment.id);
+      if (!assignment.drivers?.consign_contract_agreed || !assignment.drivers?.commercial_plate_confirmed) {
+        const siteUrl = process.env.SITE_URL || 'http://localhost:8888';
+        const joinUrl = assignment.drivers?.join_token
+          ? `${siteUrl.replace(/\/$/, '')}/driver/join.html?token=${encodeURIComponent(assignment.drivers.join_token)}`
+          : null;
+        return ok({ job: assignment.jobs, assignment, agreementRequired: true, joinUrl });
+      }
       return ok({ job: assignment.jobs, assignment });
     }
 
@@ -36,11 +43,14 @@ export async function handler(event) {
 
     const { data: assignment, error } = await supabase
       .from('assignments')
-      .select('*, jobs(*)')
+      .select('*, jobs(*), drivers(*)')
       .eq('dispatch_token', token)
       .single();
     if (error) throw error;
     if (!assignment || assignment.status !== 'requested') return fail('이미 처리되었거나 없는 요청입니다.');
+    if (!assignment.drivers?.consign_contract_agreed || !assignment.drivers?.commercial_plate_confirmed) {
+      return fail('기사 가입과 위탁운송 계약 동의가 먼저 필요합니다.');
+    }
 
     if (action === 'accept') {
       await supabase.from('assignments').update({ status: 'accepted', responded_at: new Date().toISOString(), response_note: responseNote || null, updated_by: 'driver' }).eq('id', assignment.id);
