@@ -2,14 +2,14 @@ import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 import { ensurePricingStateRow, recommendPricingAdjustment } from '../../shared/pricing-state.js';
 
-function daysAgo(days) {
+function hoursAgo(hours) {
   const date = new Date();
-  date.setDate(date.getDate() - days);
+  date.setHours(date.getHours() - hours);
   return date;
 }
 
-function isoDateOnly(value) {
-  return new Date(value).toISOString().slice(0, 10);
+function isoDateTime(value) {
+  return new Date(value).toISOString();
 }
 
 export async function handler(event) {
@@ -18,7 +18,7 @@ export async function handler(event) {
 
   try {
     const body = parseBody(event);
-    const days = Math.max(3, Math.min(30, Number(body.days || event?.queryStringParameters?.days || 14)));
+    const hours = Math.max(24, Math.min(240, Number(body.hours || event?.queryStringParameters?.hours || 50)));
     const forced = body.force === true || event?.queryStringParameters?.force === 'true';
     const supabase = adminClient();
     const state = await ensurePricingStateRow(supabase);
@@ -27,12 +27,12 @@ export async function handler(event) {
       return ok({ skipped: true, state, reason: '수동 모드라 자동 조정을 건너뜀' });
     }
 
-    const fromDate = isoDateOnly(daysAgo(days));
+    const fromDateTime = isoDateTime(hoursAgo(hours));
 
     const { data: adRows, error: adError } = await supabase
       .from('ad_channel_daily')
       .select('*')
-      .gte('metric_date', fromDate);
+      .gte('metric_at', fromDateTime);
     if (adError) throw adError;
 
     const paidChannels = Array.from(new Set((adRows || []).filter((row) => Number(row.spend_amount || 0) > 0).map((row) => row.channel)));
@@ -40,7 +40,7 @@ export async function handler(event) {
     const { data: jobs, error: jobsError } = await supabase
       .from('jobs')
       .select('id, total_price, company_amount, acquisition_source, created_at')
-      .gte('created_at', `${fromDate}T00:00:00.000Z`);
+      .gte('created_at', fromDateTime);
     if (jobsError) throw jobsError;
 
     const channelJobs = (jobs || []).filter((job) => paidChannels.length ? paidChannels.includes(job.acquisition_source) : false);
@@ -50,7 +50,7 @@ export async function handler(event) {
       .from('payments')
       .select('job_id, amount, status, paid_at')
       .eq('status', 'paid')
-      .gte('paid_at', `${fromDate}T00:00:00.000Z`);
+      .gte('paid_at', fromDateTime);
     if (paymentsError) throw paymentsError;
 
     const paidRows = (payments || []).filter((payment) => jobMap.has(payment.job_id));
@@ -73,8 +73,8 @@ export async function handler(event) {
     });
 
     const snapshot = {
-      days,
-      fromDate,
+      hours,
+      fromDateTime,
       paidChannels,
       ...recommendation.metrics
     };

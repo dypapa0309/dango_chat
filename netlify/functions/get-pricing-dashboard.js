@@ -2,10 +2,10 @@ import { adminClient } from '../../shared/db.js';
 import { ok, fail, handleOptions } from '../../shared/http.js';
 import { ensurePricingStateRow, recommendPricingAdjustment } from '../../shared/pricing-state.js';
 
-function isoDateOnly(daysAgo = 0) {
+function isoDateTime(hoursAgo = 0) {
   const date = new Date();
-  date.setDate(date.getDate() - daysAgo);
-  return date.toISOString().slice(0, 10);
+  date.setHours(date.getHours() - hoursAgo);
+  return date.toISOString();
 }
 
 export async function handler(event) {
@@ -13,16 +13,16 @@ export async function handler(event) {
   if (opt) return opt;
 
   try {
-    const days = Math.max(3, Math.min(30, Number(event?.queryStringParameters?.days || 14)));
-    const fromDate = isoDateOnly(days);
+    const hours = Math.max(24, Math.min(240, Number(event?.queryStringParameters?.hours || 50)));
+    const fromDateTime = isoDateTime(hours);
     const supabase = adminClient();
     const state = await ensurePricingStateRow(supabase);
 
     const { data: adRows, error: adError } = await supabase
       .from('ad_channel_daily')
       .select('*')
-      .gte('metric_date', fromDate)
-      .order('metric_date', { ascending: false });
+      .gte('metric_at', fromDateTime)
+      .order('metric_at', { ascending: false });
     if (adError) throw adError;
 
     const paidChannels = Array.from(new Set((adRows || []).filter((row) => Number(row.spend_amount || 0) > 0).map((row) => row.channel)));
@@ -30,7 +30,7 @@ export async function handler(event) {
     const { data: jobs, error: jobsError } = await supabase
       .from('jobs')
       .select('id, total_price, company_amount, acquisition_source, created_at')
-      .gte('created_at', `${fromDate}T00:00:00.000Z`);
+      .gte('created_at', fromDateTime);
     if (jobsError) throw jobsError;
 
     const channelJobs = (jobs || []).filter((job) => paidChannels.length ? paidChannels.includes(job.acquisition_source) : false);
@@ -40,7 +40,7 @@ export async function handler(event) {
       .from('payments')
       .select('job_id, amount, status, paid_at')
       .eq('status', 'paid')
-      .gte('paid_at', `${fromDate}T00:00:00.000Z`);
+      .gte('paid_at', fromDateTime);
     if (paymentsError) throw paymentsError;
 
     const paidJobIds = new Set((payments || []).filter((payment) => jobMap.has(payment.job_id)).map((payment) => payment.job_id));
@@ -106,8 +106,8 @@ export async function handler(event) {
     return ok({
       state,
       metrics: {
-        days,
-        fromDate,
+        hours,
+        fromDateTime,
         spend,
         sentLeads,
         readLeads,

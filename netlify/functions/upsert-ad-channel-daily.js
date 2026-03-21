@@ -9,6 +9,7 @@ export async function handler(event) {
   try {
     const {
       metricDate,
+      metricAt,
       channel,
       spendAmount,
       leadSentCount,
@@ -17,11 +18,14 @@ export async function handler(event) {
       notes
     } = parseBody(event);
 
-    if (!metricDate || !channel) return fail('metricDate와 channel이 필요합니다.');
+    if ((!metricDate && !metricAt) || !channel) return fail('metricAt 또는 metricDate와 channel이 필요합니다.');
 
     const supabase = adminClient();
+    const resolvedMetricAt = metricAt || `${metricDate}T00:00:00.000Z`;
+    const resolvedMetricDate = metricDate || String(resolvedMetricAt).slice(0, 10);
     const payload = {
-      metric_date: metricDate,
+      metric_date: resolvedMetricDate,
+      metric_at: resolvedMetricAt,
       channel: String(channel).trim().toLowerCase(),
       spend_amount: Number(spendAmount || 0),
       lead_sent_count: Number(leadSentCount || 0),
@@ -32,7 +36,7 @@ export async function handler(event) {
 
     const { data, error } = await supabase
       .from('ad_channel_daily')
-      .upsert(payload, { onConflict: 'metric_date,channel' })
+      .insert(payload)
       .select('*')
       .single();
 

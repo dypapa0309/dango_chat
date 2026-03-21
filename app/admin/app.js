@@ -156,7 +156,7 @@ function renderSettlementSummary(summary = {}) {
 }
 
 async function loadPricingDashboard() {
-  const res = await fetch(`${api('get-pricing-dashboard')}?days=14`);
+  const res = await fetch(`${api('get-pricing-dashboard')}?hours=50`);
   const data = await res.json();
   if (!data.success) {
     alert(data.error || '가격 대시보드 조회 실패');
@@ -169,13 +169,13 @@ async function loadPricingDashboard() {
 
   document.getElementById('pricingModeText').textContent = `${pricing.mode || 'auto'} / 현재 ${Number(pricing.current_multiplier || 0).toFixed(3)}`;
   document.getElementById('pricingSummaryCards').innerHTML = `
-    <div class="summary-card">
-      <div class="muted">최근 14일 광고비</div>
+      <div class="summary-card">
+      <div class="muted">최근 50시간 광고비</div>
       <strong>${money(metrics.spend)}</strong>
       <div class="row">읽힌 리드 ${Number(metrics.readLeads || 0)}건</div>
     </div>
     <div class="summary-card">
-      <div class="muted">최근 14일 결제</div>
+      <div class="muted">최근 50시간 결제</div>
       <strong>${Number(metrics.paidOrders || 0)}건</strong>
       <div class="row">총 결제 ${money(metrics.paidRevenue)}</div>
     </div>
@@ -190,7 +190,7 @@ async function loadPricingDashboard() {
     <strong>추천 배율</strong>
     <div class="row">현재 ${Number(recommendation.currentMultiplier || pricing.current_multiplier || 0).toFixed(3)} → 추천 ${Number(recommendation.nextMultiplier || pricing.current_multiplier || 0).toFixed(3)}</div>
     <div class="row">사유: ${escapeHtml(recommendation.reason || '추천 없음')}</div>
-    <div class="row">결제 전환율: ${Number((metrics.paidConversionRate || 0) * 100).toFixed(1)}%</div>
+      <div class="row">결제 전환율: ${Number((metrics.paidConversionRate || 0) * 100).toFixed(1)}% / 최근 50시간 기준</div>
   `;
 
   const channelList = document.getElementById('pricingChannelList');
@@ -404,9 +404,11 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadAll();
   };
   document.getElementById('btnCloseDialog').onclick = () => document.getElementById('detailDialog').close();
-  const marketingDateInput = document.querySelector('#marketingForm input[name="metricDate"]');
+  const marketingDateInput = document.querySelector('#marketingForm input[name="metricAt"]');
   if (marketingDateInput && !marketingDateInput.value) {
-    marketingDateInput.value = new Date().toISOString().slice(0, 10);
+    const now = new Date();
+    const local = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+    marketingDateInput.value = local;
   }
 
   document.getElementById('quickForm').addEventListener('submit', async (e) => {
@@ -443,8 +445,8 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('marketingForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
-    const payload = {
-      metricDate: fd.get('metricDate'),
+      const payload = {
+      metricAt: fd.get('metricAt'),
       channel: fd.get('channel'),
       spendAmount: Number(fd.get('spendAmount') || 0),
       leadSentCount: Number(fd.get('leadSentCount') || 0),
@@ -468,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const res = await fetch(api('recompute-pricing'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ days: 14, force: true })
+      body: JSON.stringify({ hours: 50, force: true })
     });
     const data = await res.json();
     if (!data.success) return alert(data.error || '배율 재계산 실패');

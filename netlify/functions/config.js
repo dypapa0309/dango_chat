@@ -14,7 +14,7 @@ async function maybeRefreshPricingState(supabase, state) {
   const response = await fetch(`${env('SITE_URL', 'http://localhost:8888')}/.netlify/functions/recompute-pricing`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ days: 14 })
+    body: JSON.stringify({ hours: 50 })
   }).catch(() => null);
 
   if (!response || !response.ok) return state;
