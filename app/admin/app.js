@@ -17,6 +17,21 @@ function parseWon(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
+function resolveRevenueSplit(totalPrice, companyAmount, driverAmount) {
+  const total = Math.max(0, Math.round(Number(totalPrice || 0)));
+  const company = Math.max(0, Math.round(Number(companyAmount || 0)));
+  const driver = Math.max(0, Math.round(Number(driverAmount || 0)));
+  if (total > 0 && company + driver === total) {
+    return { total, companyAmount: company, driverAmount: driver };
+  }
+  const normalizedCompany = Math.round(total * 0.2);
+  return {
+    total,
+    companyAmount: normalizedCompany,
+    driverAmount: Math.max(0, total - normalizedCompany)
+  };
+}
+
 function escapeHtml(str) {
   return String(str).replace(/[&<>\"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
 }
@@ -255,6 +270,7 @@ function renderRequestSummary(job) {
 }
 
 function renderJobDetail(job) {
+  const split = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount);
   return `
     <div class="detail-grid">
       <section class="detail-card">
@@ -272,8 +288,8 @@ function renderJobDetail(job) {
         <h4>금액 정보</h4>
         <div class="detail-kv">
           <div><span>총 결제</span><strong>${money(job.total_price)}</strong></div>
-          <div><span>당고 20%</span><strong>${money(job.company_amount)}</strong></div>
-          <div><span>기사 80%</span><strong>${money(job.driver_amount)}</strong></div>
+          <div><span>당고 20%</span><strong>${money(split.companyAmount)}</strong></div>
+          <div><span>기사 80%</span><strong>${money(split.driverAmount)}</strong></div>
           <div><span>거리</span><strong>${Number(job.distance_km || 0).toFixed(1)}km</strong></div>
           <div><span>작성일</span><strong>${formatDateTime(job.created_at)}</strong></div>
         </div>
@@ -662,6 +678,7 @@ async function loadJobs() {
   list.innerHTML = '';
 
   jobs.forEach((job) => {
+    const split = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount);
     const card = document.createElement('div');
     card.className = 'job-card';
     card.innerHTML = `
@@ -677,7 +694,7 @@ async function loadJobs() {
       </div>
       <div class="row">${escapeHtml(job.start_address || '-')} → ${escapeHtml(job.end_address || '-')}</div>
       <div class="price">${money(job.total_price)}</div>
-      <div class="row">당고 20% ${money(job.company_amount)} / 기사 정산 예정 80% ${money(job.driver_amount)}</div>
+      <div class="row">당고 20% ${money(split.companyAmount)} / 기사 정산 예정 80% ${money(split.driverAmount)}</div>
       <div class="card-actions">
         <button class="btn" data-action="detail">상세</button>
         <button class="btn primary" data-action="confirm">결제 확인</button>

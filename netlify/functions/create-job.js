@@ -3,6 +3,7 @@ import { adminClient } from '../../shared/db.js';
 import { calculatePrice } from '../../shared/price.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 import { ensurePricingStateRow } from '../../shared/pricing-state.js';
+import { resolveRevenueSplit } from '../../shared/revenue.js';
 
 export async function handler(event) {
   const opt = handleOptions(event);
@@ -23,6 +24,12 @@ export async function handler(event) {
       hasVia: Boolean(body.via_address)
     });
 
+    const resolvedSplit = resolveRevenueSplit(
+      override?.total || calculated.total,
+      override?.companyAmount,
+      override?.driverAmount
+    );
+
     const price = override
       ? {
           ...calculated,
@@ -30,8 +37,8 @@ export async function handler(event) {
           total: Number(override.total || calculated.total || 0),
           deposit: Number(override.deposit || calculated.deposit || 0),
           balance: Number(override.balance || calculated.balance || 0),
-          driverAmount: Number(override.driverAmount || calculated.driverAmount || 0),
-          companyAmount: Number(override.companyAmount || calculated.companyAmount || 0),
+          driverAmount: resolvedSplit.driverAmount,
+          companyAmount: resolvedSplit.companyAmount,
           version: override.version || `${calculated.version}-override`
         }
       : calculated;

@@ -1,6 +1,7 @@
 import { adminClient } from '../../shared/db.js';
 import { env } from '../../shared/env.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { resolveRevenueSplit } from '../../shared/revenue.js';
 
 function basicAuth(secretKey) {
   return Buffer.from(`${secretKey}:`).toString('base64');
@@ -106,6 +107,7 @@ export async function handler(event) {
       .single();
 
     if (job?.assigned_driver_id || job?.driver_amount) {
+      const revenueSplit = resolveRevenueSplit(job?.total_price, job?.company_amount, job?.driver_amount);
       const { data: existingSettlement } = await supabase
         .from('settlements')
         .select('*')
@@ -117,7 +119,7 @@ export async function handler(event) {
         await supabase
           .from('settlements')
           .update({
-            amount: job.driver_amount || existingSettlement.amount || 0,
+            amount: revenueSplit.driverAmount || existingSettlement.amount || 0,
             status: 'held',
             held_at: new Date().toISOString(),
             hold_reason: '고객 완료 확인 대기',
@@ -128,7 +130,7 @@ export async function handler(event) {
         await supabase.from('settlements').insert({
           job_id: jobId,
           driver_id: job.assigned_driver_id,
-          amount: job.driver_amount || 0,
+          amount: revenueSplit.driverAmount || 0,
           status: 'held',
           held_at: new Date().toISOString(),
           hold_reason: '고객 완료 확인 대기',

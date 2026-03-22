@@ -2,6 +2,7 @@ import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 import { buildApprovedSettlementFields, calculateFreelancerWithholding } from '../../shared/settlements.js';
 import { requireAdmin } from '../../shared/admin-auth.js';
+import { resolveRevenueSplit } from '../../shared/revenue.js';
 
 export async function handler(event) {
   const opt = handleOptions(event);
@@ -25,7 +26,8 @@ export async function handler(event) {
       .limit(1)
       .maybeSingle();
 
-    const grossAmount = job.driver_amount || existing?.amount || 0;
+    const revenueSplit = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount);
+    const grossAmount = revenueSplit.driverAmount || existing?.amount || 0;
     const withholding = calculateFreelancerWithholding(grossAmount);
 
     if (existing) {

@@ -1,6 +1,7 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 import { buildApprovedSettlementFields, calculateFreelancerWithholding } from '../../shared/settlements.js';
+import { resolveRevenueSplit } from '../../shared/revenue.js';
 
 async function loadJobByToken(supabase, token) {
   const { data, error } = await supabase
@@ -53,7 +54,8 @@ export async function handler(event) {
 
     if (job.assigned_driver_id) {
       const existingSettlement = Array.isArray(job.settlements) ? job.settlements[0] : null;
-      const withholding = calculateFreelancerWithholding(job.driver_amount || existingSettlement?.amount || 0);
+      const revenueSplit = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount);
+      const withholding = calculateFreelancerWithholding(revenueSplit.driverAmount || existingSettlement?.amount || 0);
       if (existingSettlement) {
         const { error: settlementError } = await supabase
           .from('settlements')
