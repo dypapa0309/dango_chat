@@ -114,6 +114,16 @@ function renderJobDetail(job) {
   `;
 }
 
+function buildDriverJoinMessage(driver, url) {
+  return [
+    `${driver?.name || '기사님'} 안녕하세요.`,
+    '당고 기사 가입과 계약 동의 링크를 보내드립니다.',
+    '아래 링크에서 정보 입력과 계약 동의를 완료해주세요.',
+    url,
+    '완료 후 배차 요청 링크에서 수락이나 거절을 진행할 수 있습니다.'
+  ].join('\n');
+}
+
 function setAdminSection(section) {
   document.querySelectorAll('.admin-tab').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.tab === section);
@@ -321,6 +331,7 @@ async function loadDrivers() {
       </div>
       <div class="driver-actions">
         <button class="btn" data-action="copy-join">가입 링크 복사</button>
+        <button class="btn" data-action="copy-message">안내 문구 복사</button>
         <button class="btn primary" data-action="save-driver">계좌 저장</button>
       </div>
     `;
@@ -330,6 +341,13 @@ async function loadDrivers() {
       const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
       await navigator.clipboard.writeText(url);
       alert('기사 가입 링크를 복사했어요.');
+    };
+
+    card.querySelector('[data-action="copy-message"]').onclick = async () => {
+      if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
+      const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
+      await navigator.clipboard.writeText(buildDriverJoinMessage(driver, url));
+      alert('기사 안내 문구를 복사했어요.');
     };
 
     card.querySelector('[data-action="save-driver"]').onclick = async () => {
