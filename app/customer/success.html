@@ -152,7 +152,7 @@
       let finalAmount = amount;
       let detailJob = null;
       if (!finalAmount) {
-        const detail = await fetch(`/.netlify/functions/get-job-detail?jobId=${encodeURIComponent(jobId)}`).then((r) => r.json());
+        const detail = await fetch(`/.netlify/functions/get-job-public?jobId=${encodeURIComponent(jobId)}`).then((r) => r.json());
         detailJob = detail.job || null;
         finalAmount = detail.job?.total_price || 0;
       }
@@ -186,7 +186,7 @@
       }
 
       if (!detailJob) {
-        const detail = await fetch(`/.netlify/functions/get-job-detail?jobId=${encodeURIComponent(jobId)}`).then((r) => r.json());
+        const detail = await fetch(`/.netlify/functions/get-job-public?jobId=${encodeURIComponent(jobId)}`).then((r) => r.json());
         detailJob = detail.job || null;
       }
 
