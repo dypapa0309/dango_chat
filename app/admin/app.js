@@ -481,7 +481,7 @@ async function loadDrivers() {
         <label class="check"><input type="checkbox" data-field="payoutEnabled" ${driver.payout_enabled ? 'checked' : ''} /> 정산 가능</label>
         <textarea data-field="payoutNote" placeholder="정산 메모">${escapeHtml(driver.payout_note || '')}</textarea>
         <input type="text" data-field="taxName" value="${escapeHtml(driver.tax_name || '')}" placeholder="세금 신고용 이름" />
-        <input type="date" data-field="taxBirthDate" value="${escapeHtml(driver.tax_birth_date || '')}" />
+        <input type="date" data-field="taxBirthDate" value="${escapeHtml(driver.tax_birth_date || '')}" aria-label="생년월일" />
         <input type="text" data-field="taxIdNumber" value="${escapeHtml(driver.tax_id_number || '')}" placeholder="주민등록번호 또는 사업자등록번호" />
         <input type="email" data-field="taxEmail" value="${escapeHtml(driver.tax_email || '')}" placeholder="세금 신고용 이메일" />
         <label class="check"><input type="checkbox" data-field="taxWithholdingAgreed" ${driver.tax_withholding_agreed ? 'checked' : ''} /> 3.3% 세금 정산 동의</label>
