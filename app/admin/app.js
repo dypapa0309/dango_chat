@@ -16,6 +16,104 @@ function maskAccountNumber(value) {
   return `${text.slice(0, -4).replace(/[0-9]/g, '*')}${text.slice(-4)}`;
 }
 
+function formatDateTime(value) {
+  if (!value) return '-';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return String(value);
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+function renderAssignmentItems(assignments = []) {
+  if (!assignments.length) return '<div class="mini-card muted">배차 이력이 아직 없어요.</div>';
+  return `<div class="detail-list">${assignments.map((assignment) => `
+    <div class="detail-item">
+      <strong>${escapeHtml(assignment.drivers?.name || '기사 미확인')} · ${escapeHtml(assignment.status || '-')}</strong>
+      <div class="row">요청순서 ${Number(assignment.request_order || 0)} / 만료 ${formatDateTime(assignment.expires_at)}</div>
+      <div class="row">${escapeHtml(assignment.drivers?.phone || '-')} / 차량 ${escapeHtml(assignment.drivers?.vehicle_type || '-')}</div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function renderPaymentItems(payments = []) {
+  if (!payments.length) return '<div class="mini-card muted">결제 내역이 아직 없어요.</div>';
+  return `<div class="detail-list">${payments.map((payment) => `
+    <div class="detail-item">
+      <strong>${money(payment.amount)} · ${escapeHtml(payment.status || '-')}</strong>
+      <div class="row">${escapeHtml(payment.method || payment.payment_type || '-')} / ${formatDateTime(payment.paid_at || payment.created_at)}</div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function renderSettlementItems(settlements = []) {
+  if (!settlements.length) return '<div class="mini-card muted">정산 내역이 아직 없어요.</div>';
+  return `<div class="detail-list">${settlements.map((settlement) => `
+    <div class="detail-item">
+      <strong>${money(settlement.amount)} · ${escapeHtml(settlement.status || '-')}</strong>
+      <div class="row">정산기간 ${escapeHtml(settlement.period_key || '-')} / 지급 ${formatDateTime(settlement.paid_at)}</div>
+      <div class="row">${escapeHtml(settlement.paid_by || '-')} / ${escapeHtml(settlement.payout_memo || '-')}</div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function renderLogItems(logs = []) {
+  if (!logs.length) return '<div class="mini-card muted">배차 로그가 아직 없어요.</div>';
+  return `<div class="detail-list">${logs.map((log) => `
+    <div class="detail-item">
+      <strong>${escapeHtml(log.event_type || '-')}</strong>
+      <div class="row">${escapeHtml(log.prev_status || '-')} → ${escapeHtml(log.next_status || '-')}</div>
+      <div class="row">${formatDateTime(log.created_at)} / ${escapeHtml(log.message || '-')}</div>
+    </div>
+  `).join('')}</div>`;
+}
+
+function renderJobDetail(job) {
+  return `
+    <div class="detail-grid">
+      <section class="detail-card">
+        <h4>기본 정보</h4>
+        <div class="detail-kv">
+          <div><span>고객명</span><strong>${escapeHtml(job.customer_name || '-')}</strong></div>
+          <div><span>연락처</span><strong>${escapeHtml(job.customer_phone || '-')}</strong></div>
+          <div><span>이동일</span><strong>${escapeHtml(job.move_date || '-')}</strong></div>
+          <div><span>상태</span><strong>${escapeHtml(job.status || '-')} / ${escapeHtml(job.dispatch_status || '-')}</strong></div>
+          <div><span>출발지</span><strong>${escapeHtml(job.start_address || '-')}</strong></div>
+          <div><span>도착지</span><strong>${escapeHtml(job.end_address || '-')}</strong></div>
+        </div>
+      </section>
+      <section class="detail-card">
+        <h4>금액 정보</h4>
+        <div class="detail-kv">
+          <div><span>총 결제</span><strong>${money(job.total_price)}</strong></div>
+          <div><span>당고 20%</span><strong>${money(job.company_amount)}</strong></div>
+          <div><span>기사 80%</span><strong>${money(job.driver_amount)}</strong></div>
+          <div><span>거리</span><strong>${Number(job.distance_km || 0).toFixed(1)}km</strong></div>
+          <div><span>작성일</span><strong>${formatDateTime(job.created_at)}</strong></div>
+        </div>
+      </section>
+      <section class="detail-card">
+        <h4>배차 이력</h4>
+        ${renderAssignmentItems(job.assignments || [])}
+      </section>
+      <section class="detail-card">
+        <h4>결제 내역</h4>
+        ${renderPaymentItems(job.payments || [])}
+      </section>
+      <section class="detail-card">
+        <h4>정산 내역</h4>
+        ${renderSettlementItems(job.settlements || [])}
+      </section>
+      <section class="detail-card">
+        <h4>배차 로그</h4>
+        ${renderLogItems(job.dispatch_logs || [])}
+      </section>
+    </div>
+    <details class="detail-debug">
+      <summary>원본 데이터 보기</summary>
+      <pre class="codebox">${escapeHtml(JSON.stringify(job, null, 2))}</pre>
+    </details>
+  `;
+}
+
 function normalizeAdminToken(value) {
   const token = String(value || '').trim();
   if (!token) return '';
@@ -407,7 +505,7 @@ async function loadSettlementDashboard() {
 async function showDetail(jobId) {
   const res = await adminFetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
   const data = await res.json();
-  document.getElementById('detailBody').innerHTML = `<pre class="codebox">${escapeHtml(JSON.stringify(data.job, null, 2))}</pre>`;
+  document.getElementById('detailBody').innerHTML = renderJobDetail(data.job);
   document.getElementById('detailDialog').showModal();
 }
 
@@ -429,7 +527,10 @@ async function requestAssign(jobId) {
     body: JSON.stringify({ jobId })
   });
   const data = await res.json();
-  if (!data.success) return alert(data.error || '배차 요청 실패');
+  if (!data.success) {
+    const detail = data.detail ? `\n${data.detail}` : '';
+    return alert(`${data.error || '배차 요청 실패'}${detail}`);
+  }
   alert(`배차 요청 완료: ${data.driver?.name || '-'}`);
   await loadAll();
 }

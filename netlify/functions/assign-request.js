@@ -50,6 +50,27 @@ export async function handler(event) {
       const eligibleDrivers = (drivers || []).filter((driver) => driver?.consign_contract_agreed && driver?.commercial_plate_confirmed);
       const ranked = rankDrivers(job, eligibleDrivers);
       selectedDriver = ranked[0];
+
+      if (!selectedDriver) {
+        const allDrivers = drivers || [];
+        const diagnostics = {
+          totalDrivers: allDrivers.length,
+          activeDrivers: allDrivers.filter((driver) => driver.status === 'active').length,
+          dispatchEnabledDrivers: allDrivers.filter((driver) => driver.dispatch_enabled).length,
+          contractReadyDrivers: allDrivers.filter((driver) => driver?.consign_contract_agreed && driver?.commercial_plate_confirmed).length,
+          fullyEligibleDrivers: allDrivers.filter((driver) =>
+            driver.status === 'active' &&
+            driver.dispatch_enabled &&
+            driver?.consign_contract_agreed &&
+            driver?.commercial_plate_confirmed
+          ).length
+        };
+        return fail(
+          `배차 가능한 기사가 없습니다. 활성 ${diagnostics.activeDrivers}명 / 배차허용 ${diagnostics.dispatchEnabledDrivers}명 / 계약완료 ${diagnostics.contractReadyDrivers}명 / 최종가능 ${diagnostics.fullyEligibleDrivers}명`,
+          JSON.stringify(diagnostics),
+          400
+        );
+      }
     }
 
     if (!selectedDriver) return fail('배차 가능한 기사가 없습니다.');
