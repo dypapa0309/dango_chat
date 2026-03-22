@@ -124,6 +124,21 @@ function buildDriverJoinMessage(driver, url) {
   ].join('\n');
 }
 
+async function withButtonBusy(button, busyText, job) {
+  if (!button) return job();
+  const prevText = button.textContent;
+  button.disabled = true;
+  button.classList.add('is-busy');
+  button.textContent = busyText;
+  try {
+    return await job();
+  } finally {
+    button.disabled = false;
+    button.classList.remove('is-busy');
+    button.textContent = prevText;
+  }
+}
+
 function setAdminSection(section) {
   document.querySelectorAll('.admin-tab').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.tab === section);
@@ -260,16 +275,16 @@ async function loadJobs() {
         <button class="btn" data-action="paylink">결제 링크</button>
       </div>
     `;
-    card.querySelector('[data-action="detail"]').onclick = () => showDetail(job.id);
-    card.querySelector('[data-action="confirm"]').onclick = () => updateStatus(job.id, 'confirmed', 'idle', '관리자 확정');
-    card.querySelector('[data-action="assign"]').onclick = () => requestAssign(job.id);
-    card.querySelector('[data-action="cancel"]').onclick = () => cancelAssign(job.id);
-    card.querySelector('[data-action="complete"]').onclick = () => completeJob(job.id);
-    card.querySelector('[data-action="complete-link"]').onclick = async () => copyCompleteLink(job.id);
-    card.querySelector('[data-action="cancel-link"]').onclick = async () => copyCancelLink(job.id);
-    card.querySelector('[data-action="paylink"]').onclick = () => {
+    card.querySelector('[data-action="detail"]').onclick = (e) => withButtonBusy(e.currentTarget, '불러오는 중...', () => showDetail(job.id));
+    card.querySelector('[data-action="confirm"]').onclick = (e) => withButtonBusy(e.currentTarget, '확인 중...', () => updateStatus(job.id, 'confirmed', 'idle', '관리자 확정'));
+    card.querySelector('[data-action="assign"]').onclick = (e) => withButtonBusy(e.currentTarget, '배차 중...', () => requestAssign(job.id));
+    card.querySelector('[data-action="cancel"]').onclick = (e) => withButtonBusy(e.currentTarget, '취소 중...', () => cancelAssign(job.id));
+    card.querySelector('[data-action="complete"]').onclick = (e) => withButtonBusy(e.currentTarget, '완료 처리 중...', () => completeJob(job.id));
+    card.querySelector('[data-action="complete-link"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', () => copyCompleteLink(job.id));
+    card.querySelector('[data-action="cancel-link"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', () => copyCancelLink(job.id));
+    card.querySelector('[data-action="paylink"]').onclick = (e) => withButtonBusy(e.currentTarget, '이동 중...', async () => {
       location.href = `/customer/pay.html?jobId=${encodeURIComponent(job.id)}`;
-    };
+    });
     list.appendChild(card);
   });
 }
@@ -336,21 +351,21 @@ async function loadDrivers() {
       </div>
     `;
 
-    card.querySelector('[data-action="copy-join"]').onclick = async () => {
+    card.querySelector('[data-action="copy-join"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
       if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
       const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
       await navigator.clipboard.writeText(url);
       alert('기사 가입 링크를 복사했어요.');
-    };
+    });
 
-    card.querySelector('[data-action="copy-message"]').onclick = async () => {
+    card.querySelector('[data-action="copy-message"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
       if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
       const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
       await navigator.clipboard.writeText(buildDriverJoinMessage(driver, url));
       alert('기사 안내 문구를 복사했어요.');
-    };
+    });
 
-    card.querySelector('[data-action="save-driver"]').onclick = async () => {
+    card.querySelector('[data-action="save-driver"]').onclick = async (e) => withButtonBusy(e.currentTarget, '저장 중...', async () => {
       const payload = {
         driverId: driver.id,
         bankName: card.querySelector('[data-field="bankName"]').value,
@@ -369,7 +384,7 @@ async function loadDrivers() {
       if (!saveData.success) return alert(saveData.error || '기사 계좌 저장 실패');
       alert('기사 계좌 정보를 저장했어요.');
       loadSettlementDashboard();
-    };
+    });
 
     list.appendChild(card);
   });
@@ -512,7 +527,7 @@ async function loadSettlementDashboard() {
       </div>
     `;
 
-    card.querySelector('[data-action="paid"]').onclick = () => markSettlementsPaid(group.driverId, group.periodKey);
+    card.querySelector('[data-action="paid"]').onclick = (e) => withButtonBusy(e.currentTarget, '처리 중...', () => markSettlementsPaid(group.driverId, group.periodKey));
     groupsEl.appendChild(card);
   });
 
@@ -692,17 +707,17 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.getElementById('btnRefresh').onclick = loadAll;
+  document.getElementById('btnRefresh').onclick = (e) => withButtonBusy(e.currentTarget, '새로고침 중...', () => loadAll());
   btnLogout.onclick = () => {
     clearAdminToken();
     showAdminGate('로그아웃했어요.');
   };
-  document.getElementById('btnAutoDispatch').onclick = async () => {
+  document.getElementById('btnAutoDispatch').onclick = async (e) => withButtonBusy(e.currentTarget, '재배차 중...', async () => {
     const res = await adminFetch(api('auto-dispatch'));
     const data = await res.json();
     alert(`자동 재배차 처리: ${data.count || 0}건`);
     await loadAll();
-  };
+  });
   document.getElementById('btnCloseDialog').onclick = () => document.getElementById('detailDialog').close();
   const marketingDateInput = document.querySelector('#marketingForm input[name="metricAt"]');
   if (marketingDateInput && !marketingDateInput.value) {
@@ -730,16 +745,19 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     };
 
-    const res = await adminFetch(api('create-job'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    await withButtonBusy(submitButton, '생성 중...', async () => {
+      const res = await adminFetch(api('create-job'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.success) return alert(data.error || '주문 생성 실패');
+      alert(`주문 생성 완료 / 총액 ${money(data.job.total_price)}`);
+      e.target.reset();
+      await loadAll();
     });
-    const data = await res.json();
-    if (!data.success) return alert(data.error || '주문 생성 실패');
-    alert(`주문 생성 완료 / 총액 ${money(data.job.total_price)}`);
-    e.target.reset();
-    await loadAll();
   });
 
   document.getElementById('marketingForm').addEventListener('submit', async (e) => {
@@ -755,18 +773,21 @@ document.addEventListener('DOMContentLoaded', () => {
       notes: fd.get('notes')
     };
 
-    const res = await adminFetch(api('upsert-ad-channel-daily'), {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    await withButtonBusy(submitButton, '저장 중...', async () => {
+      const res = await adminFetch(api('upsert-ad-channel-daily'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!data.success) return alert(data.error || '광고 데이터 저장 실패');
+      alert('광고 데이터를 저장했어요.');
+      await loadPricingDashboard();
     });
-    const data = await res.json();
-    if (!data.success) return alert(data.error || '광고 데이터 저장 실패');
-    alert('광고 데이터를 저장했어요.');
-    await loadPricingDashboard();
   });
 
-  document.getElementById('btnRecomputePricing').onclick = async () => {
+  document.getElementById('btnRecomputePricing').onclick = async (e) => withButtonBusy(e.currentTarget, '계산 중...', async () => {
     const res = await adminFetch(api('recompute-pricing'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -776,7 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!data.success) return alert(data.error || '배율 재계산 실패');
     alert(`배율을 ${Number(data.recommendation?.nextMultiplier || 0).toFixed(3)}로 계산했어요.`);
     await loadPricingDashboard();
-  };
+  });
   const existingToken = getAdminToken();
   setAdminSection('orders');
   if (existingToken) {
