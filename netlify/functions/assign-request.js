@@ -77,7 +77,8 @@ export async function handler(event) {
 
     const { count } = await supabase.from('assignments').select('*', { count: 'exact', head: true }).eq('job_id', jobId);
     const attempt = Number(count || 0) + 1;
-    const maxAttempts = Number(env('DISPATCH_MAX_ATTEMPTS', '10'));
+    const rawMaxAttempts = Number(env('DISPATCH_MAX_ATTEMPTS', '10'));
+    const maxAttempts = Number.isFinite(rawMaxAttempts) && rawMaxAttempts >= 1 ? rawMaxAttempts : 10;
     if (attempt > maxAttempts) {
       return fail('최대 재배차 횟수를 초과했습니다.', `현재 ${Number(count || 0)}회 요청됨 / 최대 ${maxAttempts}회`, 400);
     }
