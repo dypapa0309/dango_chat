@@ -47,8 +47,12 @@ function clearAdminToken() {
 }
 
 function showAdminGate(message = '') {
-  document.getElementById('adminGate').hidden = false;
-  document.getElementById('adminApp').hidden = true;
+  const gate = document.getElementById('adminGate');
+  const app = document.getElementById('adminApp');
+  gate.hidden = false;
+  gate.style.display = '';
+  app.hidden = true;
+  app.style.display = 'none';
   document.getElementById('adminGateMessage').textContent = message;
   const submitBtn = document.querySelector('#adminGateForm button[type="submit"]');
   if (submitBtn) {
@@ -58,8 +62,13 @@ function showAdminGate(message = '') {
 }
 
 function showAdminApp() {
-  document.getElementById('adminGate').hidden = true;
-  document.getElementById('adminApp').hidden = false;
+  const gate = document.getElementById('adminGate');
+  const app = document.getElementById('adminApp');
+  gate.hidden = true;
+  gate.style.display = 'none';
+  app.hidden = false;
+  app.style.display = '';
+  window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
 async function adminFetch(url, options = {}) {
