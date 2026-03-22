@@ -232,7 +232,7 @@ async function loadJobs() {
       <div class="row">당고 20% ${money(job.company_amount)} / 기사 정산 예정 80% ${money(job.driver_amount)}</div>
       <div class="card-actions">
         <button class="btn" data-action="detail">상세</button>
-        <button class="btn primary" data-action="confirm">예약 확정</button>
+        <button class="btn primary" data-action="confirm">결제 확인</button>
         <button class="btn primary" data-action="assign">배차 요청</button>
         <button class="btn danger" data-action="cancel">요청 취소</button>
         <button class="btn" data-action="complete">예외 완료</button>
