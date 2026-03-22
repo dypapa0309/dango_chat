@@ -1,6 +1,7 @@
 let currentFilter = 'all';
 const ADMIN_TOKEN_KEY = 'dang_o_admin_token';
 let runtimeAdminToken = '';
+const adminPage = document.body?.dataset?.adminPage || 'orders';
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
 const api = (name) => `${window.dd.apiBase}/${name}`;
@@ -139,19 +140,6 @@ async function withButtonBusy(button, busyText, job) {
   }
 }
 
-function setAdminSection(section) {
-  document.querySelectorAll('.admin-tab').forEach((button) => {
-    button.classList.toggle('is-active', button.dataset.tab === section);
-  });
-  let activePanel = null;
-  document.querySelectorAll('.admin-section').forEach((panel) => {
-    const isActive = panel.dataset.section === section;
-    panel.classList.toggle('is-active', isActive);
-    if (isActive) activePanel = panel;
-  });
-  activePanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
 function normalizeAdminToken(value) {
   const token = String(value || '').trim();
   if (!token) return '';
@@ -244,11 +232,13 @@ async function adminFetch(url, options = {}) {
 }
 
 async function loadJobs() {
+  const jobCountEl = document.getElementById('jobCount');
+  const list = document.getElementById('jobList');
+  if (!jobCountEl || !list) return;
   const res = await adminFetch(`${api('get-jobs')}?status=${encodeURIComponent(currentFilter)}`);
   const data = await res.json();
   const jobs = data.jobs || [];
-  document.getElementById('jobCount').textContent = `${jobs.length}건`;
-  const list = document.getElementById('jobList');
+  jobCountEl.textContent = `${jobs.length}건`;
   list.innerHTML = '';
 
   jobs.forEach((job) => {
@@ -294,35 +284,44 @@ async function loadJobs() {
 }
 
 async function loadDrivers() {
+  const driverCountEl = document.getElementById('driverCount');
+  const eligibleDriverCountEl = document.getElementById('eligibleDriverCount');
+  const eligibleDriverSummaryEl = document.getElementById('eligibleDriverSummary');
+  const eligibleList = document.getElementById('eligibleDriverList');
+  const list = document.getElementById('driverList');
+  if (!driverCountEl && !eligibleDriverCountEl && !eligibleDriverSummaryEl && !eligibleList && !list) return;
   const res = await adminFetch(api('get-drivers'));
   const data = await res.json();
   const drivers = data.drivers || [];
-  document.getElementById('driverCount').textContent = `${drivers.length}명`;
+  if (driverCountEl) driverCountEl.textContent = `${drivers.length}명`;
   const eligibleDrivers = drivers.filter((driver) =>
     driver.status === 'active' &&
     driver.dispatch_enabled &&
     driver.consign_contract_agreed &&
     driver.commercial_plate_confirmed
   );
-  document.getElementById('eligibleDriverCount').textContent = `${eligibleDrivers.length}명`;
-  document.getElementById('eligibleDriverSummary').textContent =
-    `활성 ${drivers.filter((driver) => driver.status === 'active').length}명 / 배차허용 ${drivers.filter((driver) => driver.dispatch_enabled).length}명 / 계약완료 ${drivers.filter((driver) => driver.consign_contract_agreed && driver.commercial_plate_confirmed).length}명`;
-  const eligibleList = document.getElementById('eligibleDriverList');
-  eligibleList.innerHTML = '';
-  eligibleDrivers.forEach((driver) => {
-    const item = document.createElement('div');
-    item.className = 'eligible-driver';
-    item.innerHTML = `
-      <strong>${escapeHtml(driver.name || '기사')}</strong>
-      <div class="row">${escapeHtml(driver.phone || '-')} / ${escapeHtml(driver.vehicle_type || '-')}</div>
-      <div class="row">계약 완료 / 배차 허용 / 완료 ${Number(driver.completed_jobs || 0)}건</div>
-    `;
-    eligibleList.appendChild(item);
-  });
-  if (!eligibleList.innerHTML.trim()) {
-    eligibleList.innerHTML = '<div class="mini-card muted">지금 바로 배차 가능한 기사가 없어요. 기사 가입과 계약 동의를 먼저 끝내야 합니다.</div>';
+  if (eligibleDriverCountEl) eligibleDriverCountEl.textContent = `${eligibleDrivers.length}명`;
+  if (eligibleDriverSummaryEl) {
+    eligibleDriverSummaryEl.textContent =
+      `활성 ${drivers.filter((driver) => driver.status === 'active').length}명 / 배차허용 ${drivers.filter((driver) => driver.dispatch_enabled).length}명 / 계약완료 ${drivers.filter((driver) => driver.consign_contract_agreed && driver.commercial_plate_confirmed).length}명`;
   }
-  const list = document.getElementById('driverList');
+  if (eligibleList) {
+    eligibleList.innerHTML = '';
+    eligibleDrivers.forEach((driver) => {
+      const item = document.createElement('div');
+      item.className = 'eligible-driver';
+      item.innerHTML = `
+        <strong>${escapeHtml(driver.name || '기사')}</strong>
+        <div class="row">${escapeHtml(driver.phone || '-')} / ${escapeHtml(driver.vehicle_type || '-')}</div>
+        <div class="row">계약 완료 / 배차 허용 / 완료 ${Number(driver.completed_jobs || 0)}건</div>
+      `;
+      eligibleList.appendChild(item);
+    });
+    if (!eligibleList.innerHTML.trim()) {
+      eligibleList.innerHTML = '<div class="mini-card muted">지금 바로 배차 가능한 기사가 없어요. 기사 가입과 계약 동의를 먼저 끝내야 합니다.</div>';
+    }
+  }
+  if (!list) return;
   list.innerHTML = '';
 
   drivers.forEach((driver) => {
@@ -395,8 +394,10 @@ async function loadDrivers() {
 }
 
 function renderSettlementSummary(summary = {}) {
-  document.getElementById('settlementSummary').textContent = `대기 ${money(summary.approvedAmount)} / 보류 ${money(summary.heldAmount)}`;
+  const summaryEl = document.getElementById('settlementSummary');
   const cards = document.getElementById('settlementCards');
+  if (!summaryEl || !cards) return;
+  summaryEl.textContent = `대기 ${money(summary.approvedAmount)} / 보류 ${money(summary.heldAmount)}`;
   cards.innerHTML = `
     <div class="summary-card">
       <div class="muted">지급 대기</div>
@@ -417,6 +418,11 @@ function renderSettlementSummary(summary = {}) {
 }
 
 async function loadPricingDashboard() {
+  const pricingModeText = document.getElementById('pricingModeText');
+  const pricingSummaryCards = document.getElementById('pricingSummaryCards');
+  const pricingRecommendation = document.getElementById('pricingRecommendation');
+  const channelList = document.getElementById('pricingChannelList');
+  if (!pricingModeText || !pricingSummaryCards || !pricingRecommendation || !channelList) return;
   const res = await adminFetch(`${api('get-pricing-dashboard')}?hours=50`);
   const data = await res.json();
   if (!data.success) {
@@ -428,8 +434,8 @@ async function loadPricingDashboard() {
   const recommendation = data.recommendation || {};
   const metrics = recommendation.metrics || {};
 
-  document.getElementById('pricingModeText').textContent = `${pricing.mode || 'auto'} / 현재 ${Number(pricing.current_multiplier || 0).toFixed(3)}`;
-  document.getElementById('pricingSummaryCards').innerHTML = `
+  pricingModeText.textContent = `${pricing.mode || 'auto'} / 현재 ${Number(pricing.current_multiplier || 0).toFixed(3)}`;
+  pricingSummaryCards.innerHTML = `
       <div class="summary-card">
       <div class="muted">최근 50시간 광고비</div>
       <strong>${money(metrics.spend)}</strong>
@@ -447,14 +453,13 @@ async function loadPricingDashboard() {
     </div>
   `;
 
-  document.getElementById('pricingRecommendation').innerHTML = `
+  pricingRecommendation.innerHTML = `
     <strong>추천 배율</strong>
     <div class="row">현재 ${Number(recommendation.currentMultiplier || pricing.current_multiplier || 0).toFixed(3)} → 추천 ${Number(recommendation.nextMultiplier || pricing.current_multiplier || 0).toFixed(3)}</div>
     <div class="row">사유: ${escapeHtml(recommendation.reason || '추천 없음')}</div>
       <div class="row">결제 전환율: ${Number((metrics.paidConversionRate || 0) * 100).toFixed(1)}% / 최근 50시간 기준</div>
   `;
 
-  const channelList = document.getElementById('pricingChannelList');
   channelList.innerHTML = '';
   (data.channels || []).forEach((channel) => {
     const card = document.createElement('div');
@@ -490,6 +495,11 @@ async function markSettlementsPaid(driverId, periodKey) {
 }
 
 async function loadSettlementDashboard() {
+  const groupsEl = document.getElementById('settlementGroups');
+  const heldEl = document.getElementById('heldSettlementList');
+  const paidEl = document.getElementById('paidSettlementList');
+  const settlementSummary = document.getElementById('settlementSummary');
+  if (!groupsEl && !heldEl && !paidEl && !settlementSummary) return;
   const res = await adminFetch(api('get-settlement-dashboard'));
   const data = await res.json();
   if (!data.success) {
@@ -499,7 +509,6 @@ async function loadSettlementDashboard() {
 
   renderSettlementSummary(data.summary);
 
-  const groupsEl = document.getElementById('settlementGroups');
   groupsEl.innerHTML = '';
   (data.approvedGroups || []).forEach((group) => {
     const card = document.createElement('div');
@@ -539,7 +548,6 @@ async function loadSettlementDashboard() {
     groupsEl.innerHTML = '<div class="mini-card muted">지급 대기 중인 2주 정산 묶음이 없어요.</div>';
   }
 
-  const heldEl = document.getElementById('heldSettlementList');
   heldEl.innerHTML = '';
   (data.held || []).forEach((item) => {
     const card = document.createElement('div');
@@ -555,7 +563,6 @@ async function loadSettlementDashboard() {
     heldEl.innerHTML = '<div class="mini-card muted">보류 중인 정산이 없어요.</div>';
   }
 
-  const paidEl = document.getElementById('paidSettlementList');
   paidEl.innerHTML = '';
   (data.paid || []).forEach((item) => {
     const card = document.createElement('div');
@@ -647,12 +654,11 @@ async function copyCancelLink(jobId) {
 }
 
 async function loadAll() {
-  const results = await Promise.allSettled([
-    loadJobs(),
-    loadDrivers(),
-    loadSettlementDashboard(),
-    loadPricingDashboard()
-  ]);
+  let tasks = [];
+  if (adminPage === 'orders') tasks = [loadJobs(), loadDrivers()];
+  if (adminPage === 'drivers') tasks = [loadDrivers()];
+  if (adminPage === 'finance') tasks = [loadSettlementDashboard(), loadPricingDashboard()];
+  const results = await Promise.allSettled(tasks);
   const firstRejected = results.find((result) => result.status === 'rejected');
   if (firstRejected) {
     console.warn('운영툴 일부 패널 로드 실패', firstRejected.reason);
@@ -661,10 +667,19 @@ async function loadAll() {
 
 async function bootstrapAdmin() {
   showAdminApp();
-  await loadJobs();
-  loadDrivers().catch((error) => console.warn('기사 패널 로드 실패', error));
-  loadSettlementDashboard().catch((error) => console.warn('정산 패널 로드 실패', error));
-  loadPricingDashboard().catch((error) => console.warn('가격 패널 로드 실패', error));
+  if (adminPage === 'orders') {
+    await loadJobs();
+    loadDrivers().catch((error) => console.warn('기사 패널 로드 실패', error));
+    return;
+  }
+  if (adminPage === 'drivers') {
+    await loadDrivers();
+    return;
+  }
+  if (adminPage === 'finance') {
+    await loadSettlementDashboard();
+    loadPricingDashboard().catch((error) => console.warn('가격 패널 로드 실패', error));
+  }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -705,24 +720,20 @@ document.addEventListener('DOMContentLoaded', () => {
       loadJobs();
     });
   });
-  document.querySelectorAll('.admin-tab').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      setAdminSection(btn.dataset.tab || 'orders');
-    });
+  document.getElementById('btnRefresh')?.addEventListener('click', (e) => {
+    withButtonBusy(e.currentTarget, '새로고침 중...', () => loadAll());
   });
-
-  document.getElementById('btnRefresh').onclick = (e) => withButtonBusy(e.currentTarget, '새로고침 중...', () => loadAll());
-  btnLogout.onclick = () => {
+  btnLogout?.addEventListener('click', () => {
     clearAdminToken();
     showAdminGate('로그아웃했어요.');
-  };
-  document.getElementById('btnAutoDispatch').onclick = async (e) => withButtonBusy(e.currentTarget, '재배차 중...', async () => {
+  });
+  document.getElementById('btnAutoDispatch')?.addEventListener('click', async (e) => withButtonBusy(e.currentTarget, '재배차 중...', async () => {
     const res = await adminFetch(api('auto-dispatch'));
     const data = await res.json();
     alert(`자동 재배차 처리: ${data.count || 0}건`);
     await loadAll();
-  });
-  document.getElementById('btnCloseDialog').onclick = () => document.getElementById('detailDialog').close();
+  }));
+  document.getElementById('btnCloseDialog')?.addEventListener('click', () => document.getElementById('detailDialog')?.close());
   const marketingDateInput = document.querySelector('#marketingForm input[name="metricAt"]');
   if (marketingDateInput && !marketingDateInput.value) {
     const now = new Date();
@@ -730,7 +741,7 @@ document.addEventListener('DOMContentLoaded', () => {
     marketingDateInput.value = local;
   }
 
-  document.getElementById('quickForm').addEventListener('submit', async (e) => {
+  document.getElementById('quickForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
     const payload = {
@@ -764,7 +775,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.getElementById('marketingForm').addEventListener('submit', async (e) => {
+  document.getElementById('marketingForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();
     const fd = new FormData(e.target);
       const payload = {
@@ -791,7 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  document.getElementById('btnRecomputePricing').onclick = async (e) => withButtonBusy(e.currentTarget, '계산 중...', async () => {
+  document.getElementById('btnRecomputePricing')?.addEventListener('click', async (e) => withButtonBusy(e.currentTarget, '계산 중...', async () => {
     const res = await adminFetch(api('recompute-pricing'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -801,9 +812,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (!data.success) return alert(data.error || '배율 재계산 실패');
     alert(`배율을 ${Number(data.recommendation?.nextMultiplier || 0).toFixed(3)}로 계산했어요.`);
     await loadPricingDashboard();
-  });
+  }));
   const existingToken = getAdminToken();
-  setAdminSection('orders');
   if (existingToken) {
     bootstrapAdmin().catch((error) => {
       clearAdminToken();

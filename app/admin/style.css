@@ -14,11 +14,9 @@
 .filters{padding:16px 24px;display:flex;gap:8px;flex-wrap:wrap}.filter,.btn{border:none;border-radius:10px;padding:10px 14px;cursor:pointer;background:#fff}
 .filter.active,.btn.primary{background:var(--primary);color:#fff}.btn.danger{background:var(--danger);color:#fff}
 .btn:disabled,.btn.is-busy{opacity:.72;cursor:progress}
-.admin-tabs{padding:0 24px 16px;display:flex;gap:8px;flex-wrap:wrap}
-.admin-tab{border:none;border-radius:999px;padding:10px 16px;cursor:pointer;background:#e5e7eb;color:#334155;font-weight:700}
-.admin-tab.is-active{background:#111827;color:#fff}
-.admin-section{display:none}
-.admin-section.is-active{display:grid}
+.admin-nav{padding:16px 24px;display:flex;gap:8px;flex-wrap:wrap;background:#fff;border-bottom:1px solid var(--line)}
+.admin-link{text-decoration:none;border-radius:999px;padding:10px 16px;background:#e5e7eb;color:#334155;font-weight:700}
+.admin-link.is-active{background:#111827;color:#fff}
 .layout{padding:0 24px 24px;display:grid;grid-template-columns:1.3fr .9fr;gap:18px}.layout-secondary{padding-top:0;grid-template-columns:1fr 1.2fr}.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
 .panel-wide{grid-column:span 2}
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.job-list{display:grid;gap:12px}
