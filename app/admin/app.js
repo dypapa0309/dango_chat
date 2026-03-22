@@ -225,6 +225,15 @@ function buildDriverRecruitMessage(url) {
   ].join('\n');
 }
 
+function buildDriverGuideMessage(url) {
+  return [
+    '당고 기사 사용 안내입니다.',
+    '가입과 계약 동의, 배차 수락, 출발과 도착, 완료 요청, 정산 흐름을 한 번에 볼 수 있습니다.',
+    url,
+    '실제 배차가 잡히면 기사님마다 별도 배차 링크가 따로 전달됩니다.'
+  ].join('\n');
+}
+
 async function withButtonBusy(button, busyText, job) {
   if (!button) return job();
   const prevText = button.textContent;
@@ -495,6 +504,7 @@ async function loadDrivers() {
       <div class="driver-actions">
         <button class="btn" data-action="copy-join">개별 온보딩 링크 복사</button>
         <button class="btn" data-action="copy-message">개별 온보딩 문구 복사</button>
+        <button class="btn" data-action="copy-guide">기사 사용 안내 문구 복사</button>
         <button class="btn primary" data-action="save-driver">기사 정보 저장</button>
       </div>
     `;
@@ -511,6 +521,12 @@ async function loadDrivers() {
       const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
       await navigator.clipboard.writeText(buildDriverJoinMessage(driver, url));
       alert('기사 안내 문구를 복사했어요.');
+    });
+
+    card.querySelector('[data-action="copy-guide"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+      const url = `${location.origin}/driver/guide.html`;
+      await navigator.clipboard.writeText(buildDriverGuideMessage(url));
+      alert('기사 사용 안내 문구를 복사했어요.');
     });
 
     card.querySelector('[data-action="save-driver"]').onclick = async (e) => withButtonBusy(e.currentTarget, '저장 중...', async () => {
@@ -902,6 +918,16 @@ document.addEventListener('DOMContentLoaded', () => {
     const url = `${location.origin}/driver/apply.html`;
     await navigator.clipboard.writeText(buildDriverRecruitMessage(url));
     alert('신규 기사 모집 문구를 복사했어요.');
+  }));
+  document.getElementById('btnCopyDriverGuideLink')?.addEventListener('click', (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+    const url = `${location.origin}/driver/guide.html`;
+    await navigator.clipboard.writeText(url);
+    alert('기사 사용 안내 링크를 복사했어요.');
+  }));
+  document.getElementById('btnCopyDriverGuideMessage')?.addEventListener('click', (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+    const url = `${location.origin}/driver/guide.html`;
+    await navigator.clipboard.writeText(buildDriverGuideMessage(url));
+    alert('기사 사용 안내 문구를 복사했어요.');
   }));
   btnLogout?.addEventListener('click', () => {
     clearAdminToken();
