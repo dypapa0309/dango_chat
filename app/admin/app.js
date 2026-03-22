@@ -3,9 +3,19 @@ const ADMIN_TOKEN_KEY = 'dang_o_admin_token';
 let runtimeAdminToken = '';
 const adminPage = document.body?.dataset?.adminPage || 'orders';
 let latestSettlementDashboard = null;
+let manualOrderDraft = null;
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
 const api = (name) => `${window.dd.apiBase}/${name}`;
+
+function normalizePhone(value) {
+  return String(value || '').replace(/[^0-9]/g, '');
+}
+
+function parseWon(value) {
+  const number = Number(String(value || '').replace(/[^0-9.-]/g, ''));
+  return Number.isFinite(number) ? number : 0;
+}
 
 function escapeHtml(str) {
   return String(str).replace(/[&<>\"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
@@ -293,6 +303,216 @@ function renderJobDetail(job) {
       <summary>원본 데이터 보기</summary>
       <pre class="codebox">${escapeHtml(JSON.stringify(job, null, 2))}</pre>
     </details>
+  `;
+}
+
+function parseCountMapText(value) {
+  const result = {};
+  const text = String(value || '').trim();
+  if (!text || text === '선택 없음' || text === '미사용') return result;
+  text.split(/\s*,\s*/).forEach((part) => {
+    const match = part.match(/(.+?)\s+(\d+)개$/);
+    if (match) {
+      result[match[1].trim()] = Number(match[2]);
+    }
+  });
+  return result;
+}
+
+function parseThrowLine(value) {
+  const result = { throwFrom: {}, throwTo: {} };
+  const text = String(value || '').trim();
+  if (!text || text === '미사용') return result;
+  text.split(/\s*\/\s*/).forEach((part) => {
+    const [label, detail] = part.split(/\s*:\s*/);
+    if (!detail) return;
+    if (label.includes('출발')) result.throwFrom = parseCountMapText(detail);
+    if (label.includes('도착')) result.throwTo = parseCountMapText(detail);
+  });
+  return result;
+}
+
+function parseLoadLevel(value) {
+  const text = String(value || '').trim();
+  const map = {
+    '없음': 0,
+    '1~5개': 1,
+    '6~10개': 2,
+    '11~15개': 3,
+    '16~20개': 4,
+    '짐 거의 없음': 0,
+    '가벼운 편': 1,
+    '보통': 2,
+    '많은 편': 3,
+    '매우 많음': 4
+  };
+  return map[text] ?? 0;
+}
+
+function parseMoveType(value) {
+  const text = String(value || '').trim();
+  if (text.includes('반포장')) return 'half';
+  if (text.includes('보관')) return 'storage';
+  return 'normal';
+}
+
+function parseFloorFromCarry(value) {
+  const text = String(value || '');
+  const matches = [...text.matchAll(/(\d+)층/g)].map((match) => Number(match[1]));
+  if (!matches.length) return 0;
+  return Math.max(...matches);
+}
+
+function estimateWeightFromLoadLevel(loadLevel) {
+  const map = { 0: 20, 1: 80, 2: 180, 3: 320, 4: 480 };
+  return map[loadLevel] ?? 100;
+}
+
+function parseInquiryTextToPayload(rawText, customerName, customerPhone) {
+  const text = String(rawText || '').trim();
+  if (!text) throw new Error('주문서 내용을 붙여넣어주세요.');
+
+  const lines = text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const findLine = (keyword) => lines.find((line) => line.includes(keyword)) || '';
+
+  const lineMap = new Map();
+  lines.forEach((line) => {
+    const idx = line.indexOf(':');
+    if (idx <= 0) return;
+    const key = line.slice(0, idx).trim();
+    const value = line.slice(idx + 1).trim();
+    if (!lineMap.has(key)) lineMap.set(key, value);
+  });
+
+  const service = lineMap.get('서비스') || '이사·용달';
+  const vehicle = lineMap.get('차량') || '';
+  const moveTypeText = lineMap.get('이사 방식') || '일반이사';
+  const moveType = parseMoveType(moveTypeText);
+  const schedule = lineMap.get('일정') || '';
+  const [moveDateRaw] = schedule.split('/').map((part) => part.trim());
+  const moveDate = moveDateRaw || '';
+  const startAddress = lineMap.get('출발지') || '';
+  const endAddress = lineMap.get('도착지') || '';
+  const viaAddress = lineMap.get('경유지') || null;
+  const distanceKm = Number(String(lineMap.get('거리') || '').replace(/[^0-9.]/g, '')) || 0;
+  const loadLevel = parseLoadLevel(lineMap.get('짐양'));
+  const itemSummary = {
+    vehicle,
+    moveType,
+    loadLevel,
+    items: parseCountMapText((lineMap.get('가구·가전') || '').replace(/^가구·가전:\s*/, '')),
+    waypointItems: parseCountMapText((lineMap.get('경유지 가구·가전') || '').replace(/^경유지 가구·가전:\s*/, '')),
+    ride: Number(String(lineMap.get('동승') || '').replace(/[^0-9]/g, '')) || 0
+  };
+  const throwData = parseThrowLine(lineMap.get('버려주세요') || '');
+  itemSummary.throwFrom = throwData.throwFrom;
+  itemSummary.throwTo = throwData.throwTo;
+
+  const helperLine = lineMap.get('인부') || '';
+  const directCarryLine = lineMap.get('직접 나르기 어려움') || '';
+  const ladderLine = lineMap.get('사다리차') || '';
+  const optionSummary = {
+    helper: helperLine && !helperLine.includes('미사용'),
+    helperFrom: helperLine.includes('출발'),
+    helperTo: helperLine.includes('도착'),
+    packing: moveType === 'half',
+    cleaning: Boolean(lineMap.get('입주청소 문의') || lineMap.get('입주청소')),
+    via_stop: Boolean(viaAddress),
+    ladderFrom: ladderLine.includes('출발'),
+    ladderTo: ladderLine.includes('도착'),
+    cantCarryFrom: directCarryLine.includes('출발'),
+    cantCarryTo: directCarryLine.includes('도착')
+  };
+
+  const floor = Math.max(
+    parseFloorFromCarry(findLine('출발 엘베없음')),
+    parseFloorFromCarry(findLine('도착 엘베없음')),
+    parseFloorFromCarry(lineMap.get('경유지 계단') || ''),
+    parseFloorFromCarry(ladderLine)
+  );
+  const weightKg = estimateWeightFromLoadLevel(loadLevel);
+  const total = parseWon(lineMap.get('홈페이지 예상 견적') || lineMap.get('예상 견적'));
+  const companyAmount = Math.round(total * 0.2);
+  const driverAmount = total - companyAmount;
+
+  const extraNotes = [
+    lineMap.get('가구·가전 기타사항') ? `가구·가전 기타사항: ${lineMap.get('가구·가전 기타사항')}` : null,
+    lineMap.get('경유지 짐 기타사항') ? `경유지 짐 기타사항: ${lineMap.get('경유지 짐 기타사항')}` : null,
+    lineMap.get('버려주세요 기타사항') ? `버려주세요 기타사항: ${lineMap.get('버려주세요 기타사항')}` : null,
+    lineMap.get('경유지 버려주세요 기타사항') ? `경유지 버려주세요 기타사항: ${lineMap.get('경유지 버려주세요 기타사항')}` : null,
+    lineMap.get('기타') ? `기타: ${lineMap.get('기타')}` : null
+  ].filter(Boolean);
+
+  if (!customerName?.trim()) throw new Error('고객명을 같이 넣어주세요.');
+  if (normalizePhone(customerPhone).length < 10) throw new Error('연락처를 같이 정확히 넣어주세요.');
+  if (!moveDate || !startAddress || !endAddress) throw new Error('일정, 출발지, 도착지는 주문서에 꼭 있어야 합니다.');
+
+  return {
+    payload: {
+      customer_name: customerName.trim(),
+      customer_phone: normalizePhone(customerPhone),
+      customer_note: extraNotes.join('\n') || null,
+      move_date: moveDate,
+      start_address: startAddress,
+      end_address: endAddress,
+      via_address: viaAddress,
+      distance_km: distanceKm,
+      floor,
+      weight_kg: weightKg,
+      item_summary: itemSummary,
+      option_summary: optionSummary,
+      raw_text: text,
+      acquisition_source: 'manual',
+      acquisition_medium: 'operator-copy',
+      acquisition_campaign: service,
+      created_by: 'admin-manual',
+      updated_by: 'admin-manual',
+      price_override: total > 0 ? {
+        total,
+        deposit: Math.round(total * 0.2),
+        balance: total - Math.round(total * 0.2),
+        driverAmount,
+        companyAmount,
+        version: 'manual-text-override'
+      } : null
+    },
+    preview: {
+      service,
+      vehicle,
+      moveTypeText,
+      moveDate,
+      startAddress,
+      viaAddress,
+      endAddress,
+      distanceKm,
+      loadLevelText: lineMap.get('짐양') || '-',
+      total
+    }
+  };
+}
+
+function renderManualOrderPreview(preview, paymentUrl = '') {
+  if (!preview) return '아직 파싱한 주문서가 없어요.';
+  return `
+    <div class="detail-kv">
+      <div><span>서비스</span><strong>${escapeHtml(preview.service || '-')}</strong></div>
+      <div><span>차량</span><strong>${escapeHtml(preview.vehicle || '-')}</strong></div>
+      <div><span>이사 방식</span><strong>${escapeHtml(preview.moveTypeText || '-')}</strong></div>
+      <div><span>일정</span><strong>${escapeHtml(preview.moveDate || '-')}</strong></div>
+      <div><span>출발지</span><strong>${escapeHtml(preview.startAddress || '-')}</strong></div>
+      <div><span>도착지</span><strong>${escapeHtml(preview.endAddress || '-')}</strong></div>
+      <div><span>거리</span><strong>${Number(preview.distanceKm || 0).toFixed(1)}km</strong></div>
+      <div><span>짐양</span><strong>${escapeHtml(preview.loadLevelText || '-')}</strong></div>
+      <div><span>총 결제</span><strong>${money(preview.total || 0)}</strong></div>
+    </div>
+    ${
+      paymentUrl
+        ? `<div class="preview-paylink"><strong>결제 링크</strong><div class="row"><a href="${escapeHtml(paymentUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(paymentUrl)}</a></div></div>`
+        : ''
+    }
   `;
 }
 
@@ -1075,39 +1295,91 @@ document.addEventListener('DOMContentLoaded', () => {
     marketingDateInput.value = local;
   }
 
-  document.getElementById('quickForm')?.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const fd = new FormData(e.target);
-    const payload = {
-      customer_name: fd.get('customer_name'),
-      customer_phone: fd.get('customer_phone'),
-      move_date: fd.get('move_date'),
-      start_address: fd.get('start_address'),
-      end_address: fd.get('end_address'),
-      distance_km: Number(fd.get('distance_km') || 0),
-      floor: Number(fd.get('floor') || 0),
-      weight_kg: Number(fd.get('weight_kg') || 0),
-      option_summary: {
-        helper: fd.get('helper') === 'on',
-        packing: fd.get('packing') === 'on',
-        cleaning: fd.get('cleaning') === 'on'
-      }
-    };
+  const manualForm = document.getElementById('manualOrderForm');
+  const manualTextEl = document.getElementById('manualOrderText');
+  const manualStatusEl = document.getElementById('manualOrderStatus');
+  const manualPreviewEl = document.getElementById('manualOrderPreview');
+  const manualCreateBtn = document.getElementById('btnCreateManualOrder');
+  const manualCopyPayLinkBtn = document.getElementById('btnCopyManualPayLink');
+  const renderManualState = (message = '문자 주문서를 붙여넣으면 같은 주문 흐름으로 등록할 수 있어요.') => {
+    if (manualStatusEl) manualStatusEl.textContent = message;
+    if (manualPreviewEl) {
+      manualPreviewEl.classList.toggle('is-ready', Boolean(manualOrderDraft));
+      manualPreviewEl.innerHTML = renderManualOrderPreview(manualOrderDraft?.preview, manualOrderDraft?.paymentUrl || '');
+    }
+    if (manualCreateBtn) manualCreateBtn.disabled = !manualOrderDraft?.payload;
+    if (manualCopyPayLinkBtn) manualCopyPayLinkBtn.disabled = !manualOrderDraft?.paymentUrl;
+  };
 
-    const submitButton = e.target.querySelector('button[type="submit"]');
+  document.getElementById('btnParseManualOrder')?.addEventListener('click', async (e) => {
+    await withButtonBusy(e.currentTarget, '파싱 중...', async () => {
+      try {
+        manualOrderDraft = null;
+        const parsed = parseInquiryTextToPayload(
+          document.getElementById('manualOrderText')?.value || '',
+          document.getElementById('manualCustomerName')?.value || '',
+          document.getElementById('manualCustomerPhone')?.value || ''
+        );
+        manualOrderDraft = parsed;
+        renderManualState('주문서 파싱이 끝났어요. 확인 후 주문 생성으로 넘기면 됩니다.');
+      } catch (error) {
+        renderManualState(error.message || '주문서 파싱에 실패했어요.');
+      }
+    });
+  });
+
+  manualForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    if (!manualOrderDraft?.payload) {
+      renderManualState('먼저 주문서를 파싱해주세요.');
+      return;
+    }
+    const submitButton = e.target.querySelector('#btnCreateManualOrder');
     await withButtonBusy(submitButton, '생성 중...', async () => {
       const res = await adminFetch(api('create-job'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(manualOrderDraft.payload)
       });
       const data = await res.json();
-      if (!data.success) return alert(data.error || '주문 생성 실패');
-      alert(`주문 생성 완료 / 총액 ${money(data.job.total_price)}`);
-      e.target.reset();
+      if (!data.job?.id) {
+        renderManualState(data.error || '주문 생성에 실패했어요.');
+        return;
+      }
+      manualOrderDraft = {
+        ...manualOrderDraft,
+        jobId: data.job.id,
+        paymentUrl: `${location.origin}/customer/pay.html?jobId=${encodeURIComponent(data.job.id)}`
+      };
+      renderManualState(`주문이 등록됐어요. 결제 링크를 고객에게 보내면 됩니다. 총 결제는 ${money(data.job.total_price)}입니다.`);
       await loadAll();
     });
   });
+
+  manualCopyPayLinkBtn?.addEventListener('click', async (e) => {
+    await withButtonBusy(e.currentTarget, '복사 중...', async () => {
+      if (!manualOrderDraft?.paymentUrl) {
+        renderManualState('먼저 주문을 만든 뒤 결제 링크를 복사해주세요.');
+        return;
+      }
+      await navigator.clipboard.writeText(manualOrderDraft.paymentUrl);
+      renderManualState('결제 링크를 복사했어요. 고객에게 그대로 보내면 됩니다.');
+    });
+  });
+
+  manualTextEl?.addEventListener('input', () => {
+    manualOrderDraft = null;
+    renderManualState('주문서 내용이 바뀌었어요. 다시 파싱해주세요.');
+  });
+  document.getElementById('manualCustomerName')?.addEventListener('input', () => {
+    manualOrderDraft = null;
+    renderManualState('고객 정보가 바뀌었어요. 다시 파싱해주세요.');
+  });
+  document.getElementById('manualCustomerPhone')?.addEventListener('input', () => {
+    manualOrderDraft = null;
+    renderManualState('고객 정보가 바뀌었어요. 다시 파싱해주세요.');
+  });
+  renderManualState();
 
   document.getElementById('marketingForm')?.addEventListener('submit', async (e) => {
     e.preventDefault();

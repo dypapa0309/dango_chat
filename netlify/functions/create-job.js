@@ -67,8 +67,8 @@ export async function handler(event) {
       acquisition_campaign: body.acquisition_campaign || null,
       status: 'deposit_pending',
       dispatch_status: 'idle',
-      created_by: 'customer-form',
-      updated_by: 'customer-form'
+      created_by: body.created_by || 'customer-form',
+      updated_by: body.updated_by || body.created_by || 'customer-form'
     };
 
     let insertPayload = payload;
