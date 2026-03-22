@@ -50,6 +50,8 @@
 .pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#eef2ff;font-size:12px}
 .pill.warn{background:#fff7ed;color:#9a3412}.pill.ok{background:#ecfdf5;color:#166534}.pill.off{background:#f3f4f6;color:#6b7280}
 .eligible-driver{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.eligible-driver{cursor:pointer;transition:transform .15s ease,box-shadow .15s ease}
+.eligible-driver:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
 .eligible-driver strong{display:block}
 .settlement-items{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px}
 .settlement-items li{padding:10px;border-radius:10px;background:#f8fafc}

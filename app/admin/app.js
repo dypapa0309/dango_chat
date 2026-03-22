@@ -2,6 +2,7 @@ let currentFilter = 'all';
 const ADMIN_TOKEN_KEY = 'dang_o_admin_token';
 let runtimeAdminToken = '';
 const adminPage = document.body?.dataset?.adminPage || 'orders';
+let latestSettlementDashboard = null;
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
 const api = (name) => `${window.dd.apiBase}/${name}`;
@@ -65,6 +66,96 @@ function renderLogItems(logs = []) {
       <div class="row">${formatDateTime(log.created_at)} / ${escapeHtml(log.message || '-')}</div>
     </div>
   `).join('')}</div>`;
+}
+
+function buildDriverSettlementSnapshot(driverId) {
+  const fallback = {
+    approvedCount: 0,
+    approvedNetAmount: 0,
+    approvedWithholdingAmount: 0,
+    approvedTotalAmount: 0,
+    heldCount: 0,
+    heldNetAmount: 0,
+    heldWithholdingAmount: 0,
+    heldTotalAmount: 0,
+    paidCount: 0,
+    paidNetAmount: 0,
+    paidWithholdingAmount: 0,
+    paidTotalAmount: 0,
+    nextPeriodLabel: '정산 기간 없음',
+    latestPaidAt: null
+  };
+  const dashboard = latestSettlementDashboard;
+  if (!dashboard || !driverId) return fallback;
+
+  const approvedGroups = (dashboard.approvedGroups || []).filter((group) => group.driverId === driverId);
+  const heldItems = (dashboard.held || []).filter((item) => item.driver_id === driverId);
+  const paidItems = (dashboard.paid || []).filter((item) => item.driver_id === driverId);
+
+  return {
+    approvedCount: approvedGroups.reduce((acc, group) => acc + Number(group.count || 0), 0),
+    approvedNetAmount: approvedGroups.reduce((acc, group) => acc + Number(group.netAmount || 0), 0),
+    approvedWithholdingAmount: approvedGroups.reduce((acc, group) => acc + Number(group.withholdingAmount || 0), 0),
+    approvedTotalAmount: approvedGroups.reduce((acc, group) => acc + Number(group.totalAmount || 0), 0),
+    heldCount: heldItems.length,
+    heldNetAmount: heldItems.reduce((acc, item) => acc + Number(item.net_amount || 0), 0),
+    heldWithholdingAmount: heldItems.reduce((acc, item) => acc + Number(item.withholding_amount || 0), 0),
+    heldTotalAmount: heldItems.reduce((acc, item) => acc + Number(item.amount || 0), 0),
+    paidCount: paidItems.length,
+    paidNetAmount: paidItems.reduce((acc, item) => acc + Number(item.net_amount || 0), 0),
+    paidWithholdingAmount: paidItems.reduce((acc, item) => acc + Number(item.withholding_amount || 0), 0),
+    paidTotalAmount: paidItems.reduce((acc, item) => acc + Number(item.amount || 0), 0),
+    nextPeriodLabel: approvedGroups[0]?.periodLabel || heldItems[0]?.payout_period_key || '정산 기간 없음',
+    latestPaidAt: paidItems[0]?.paid_at || null
+  };
+}
+
+function renderDriverSummaryDetail(driver) {
+  const settlement = buildDriverSettlementSnapshot(driver.id);
+  return `
+    <div class="detail-grid">
+      <section class="detail-card">
+        <h4>기본 정보</h4>
+        <div class="detail-kv">
+          <div><span>이름</span><strong>${escapeHtml(driver.name || '기사')}</strong></div>
+          <div><span>전화번호</span><strong>${escapeHtml(driver.phone || '-')}</strong></div>
+          <div><span>차량</span><strong>${escapeHtml(driver.vehicle_type || '-')}</strong></div>
+          <div><span>차량 번호</span><strong>${escapeHtml(driver.vehicle_number || '-')}</strong></div>
+          <div><span>상태</span><strong>${escapeHtml(driver.status || '-')}</strong></div>
+          <div><span>배차 허용</span><strong>${driver.dispatch_enabled ? '허용' : '꺼짐'}</strong></div>
+        </div>
+      </section>
+      <section class="detail-card">
+        <h4>기사 실적</h4>
+        <div class="detail-kv">
+          <div><span>완료 건수</span><strong>${Number(driver.completed_jobs || 0)}건</strong></div>
+          <div><span>평점</span><strong>${Number(driver.rating || 0).toFixed(2)}</strong></div>
+          <div><span>수락률</span><strong>${Number(driver.acceptance_rate || 0)}%</strong></div>
+          <div><span>응답 점수</span><strong>${Number(driver.response_score || 0)}점</strong></div>
+        </div>
+      </section>
+      <section class="detail-card">
+        <h4>정산 현황</h4>
+        <div class="detail-kv">
+          <div><span>지급 대기</span><strong>${money(settlement.approvedNetAmount)}</strong></div>
+          <div><span>보류 금액</span><strong>${money(settlement.heldNetAmount)}</strong></div>
+          <div><span>최근 지급 완료</span><strong>${money(settlement.paidNetAmount)}</strong></div>
+          <div><span>미정산 건수</span><strong>${Number(settlement.approvedCount || 0) + Number(settlement.heldCount || 0)}건</strong></div>
+          <div><span>다음 정산 기간</span><strong>${escapeHtml(settlement.nextPeriodLabel)}</strong></div>
+          <div><span>최근 지급일</span><strong>${formatDateTime(settlement.latestPaidAt)}</strong></div>
+        </div>
+      </section>
+      <section class="detail-card">
+        <h4>정산 계좌</h4>
+        <div class="detail-kv">
+          <div><span>은행</span><strong>${escapeHtml(driver.bank_name || '-')}</strong></div>
+          <div><span>계좌</span><strong>${escapeHtml(maskAccountNumber(driver.account_number))}</strong></div>
+          <div><span>예금주</span><strong>${escapeHtml(driver.account_holder || '-')}</strong></div>
+          <div><span>정산 가능</span><strong>${driver.payout_enabled ? '가능' : '보류'}</strong></div>
+        </div>
+      </section>
+    </div>
+  `;
 }
 
 function summarizeCountMap(obj = {}) {
@@ -404,6 +495,15 @@ async function loadDrivers() {
   const res = await adminFetch(api('get-drivers'));
   const data = await res.json();
   const drivers = data.drivers || [];
+  if (eligibleList) {
+    try {
+      const settlementRes = await adminFetch(api('get-settlement-dashboard'));
+      const settlementData = await settlementRes.json();
+      if (settlementData.success) latestSettlementDashboard = settlementData;
+    } catch (error) {
+      console.warn('기사 정산 스냅샷 로드 실패', error);
+    }
+  }
   if (driverCountEl) driverCountEl.textContent = `${drivers.length}명`;
   const pendingDrivers = drivers.filter((driver) => driver.status === 'pending_review');
   const activeDrivers = drivers.filter((driver) => driver.status === 'active');
@@ -451,6 +551,7 @@ async function loadDrivers() {
         <div class="row">${escapeHtml(driver.phone || '-')} / ${escapeHtml(driver.vehicle_type || '-')}</div>
         <div class="row">계약 완료 / 배차 허용 / 완료 ${Number(driver.completed_jobs || 0)}건</div>
       `;
+      item.onclick = () => showDriverSummary(driver);
       eligibleList.appendChild(item);
     });
     if (!eligibleList.innerHTML.trim()) {
@@ -782,6 +883,14 @@ async function showDetail(jobId) {
   document.getElementById('detailDialog').showModal();
 }
 
+function showDriverSummary(driver) {
+  const body = document.getElementById('driverDetailBody');
+  const dialog = document.getElementById('driverDetailDialog');
+  if (!body || !dialog) return;
+  body.innerHTML = renderDriverSummaryDetail(driver);
+  dialog.showModal();
+}
+
 async function updateStatus(jobId, status, dispatchStatus, note) {
   const res = await adminFetch(api('update-job-status'), {
     method: 'POST',
@@ -958,6 +1067,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadAll();
   }));
   document.getElementById('btnCloseDialog')?.addEventListener('click', () => document.getElementById('detailDialog')?.close());
+  document.getElementById('btnCloseDriverDialog')?.addEventListener('click', () => document.getElementById('driverDetailDialog')?.close());
   const marketingDateInput = document.querySelector('#marketingForm input[name="metricAt"]');
   if (marketingDateInput && !marketingDateInput.value) {
     const now = new Date();
