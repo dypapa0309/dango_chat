@@ -363,7 +363,7 @@ async function loadJobs() {
         <button class="btn primary" data-action="confirm">결제 확인</button>
         <button class="btn primary" data-action="assign">배차 요청</button>
         <button class="btn danger" data-action="cancel">요청 취소</button>
-        <button class="btn" data-action="complete">예외 완료</button>
+        <button class="btn" data-action="complete">관리자 강제 완료</button>
         <button class="btn" data-action="complete-link">완료 링크</button>
         <button class="btn" data-action="cancel-link">취소 링크</button>
         <button class="btn" data-action="paylink">결제 링크</button>
@@ -481,7 +481,11 @@ async function loadDrivers() {
         <label class="check"><input type="checkbox" data-field="payoutEnabled" ${driver.payout_enabled ? 'checked' : ''} /> 정산 가능</label>
         <textarea data-field="payoutNote" placeholder="정산 메모">${escapeHtml(driver.payout_note || '')}</textarea>
         <input type="text" data-field="taxName" value="${escapeHtml(driver.tax_name || '')}" placeholder="세금 신고용 이름" />
-        <input type="date" data-field="taxBirthDate" value="${escapeHtml(driver.tax_birth_date || '')}" aria-label="생년월일" />
+        <label class="field-card date-field">
+          <span class="field-title">생년월일</span>
+          <span class="field-help">칸 아무 곳이나 눌러 날짜를 선택합니다.</span>
+          <input type="date" data-field="taxBirthDate" value="${escapeHtml(driver.tax_birth_date || '')}" aria-label="생년월일" />
+        </label>
         <input type="text" data-field="taxIdNumber" value="${escapeHtml(driver.tax_id_number || '')}" placeholder="주민등록번호 또는 사업자등록번호" />
         <input type="email" data-field="taxEmail" value="${escapeHtml(driver.tax_email || '')}" placeholder="세금 신고용 이메일" />
         <label class="check"><input type="checkbox" data-field="taxWithholdingAgreed" ${driver.tax_withholding_agreed ? 'checked' : ''} /> 3.3% 세금 정산 동의</label>

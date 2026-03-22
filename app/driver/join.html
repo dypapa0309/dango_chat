@@ -29,7 +29,11 @@
           <p class="tax-help">프리랜서 3.3% 원천징수 정산과 지급명세서 정리에 필요한 정보를 입력합니다.</p>
           <div class="form-grid">
             <input id="taxName" type="text" placeholder="세금 신고용 이름" />
-            <input id="taxBirthDate" type="date" aria-label="생년월일" />
+            <label class="field-card date-field" for="taxBirthDate">
+              <span class="field-title">생년월일</span>
+              <span class="field-help">칸 아무 곳이나 눌러 날짜를 선택해요.</span>
+              <input id="taxBirthDate" type="date" aria-label="생년월일" />
+            </label>
             <input id="taxIdNumber" type="text" placeholder="주민등록번호 또는 사업자등록번호" />
             <input id="taxEmail" type="email" placeholder="세금 신고용 이메일" />
           </div>
