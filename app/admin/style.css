@@ -13,7 +13,13 @@
 .topbar-note{margin-top:8px !important;font-size:13px;color:#94a3b8 !important}
 .filters{padding:16px 24px;display:flex;gap:8px;flex-wrap:wrap}.filter,.btn{border:none;border-radius:10px;padding:10px 14px;cursor:pointer;background:#fff}
 .filter.active,.btn.primary{background:var(--primary);color:#fff}.btn.danger{background:var(--danger);color:#fff}
+.admin-tabs{padding:0 24px 16px;display:flex;gap:8px;flex-wrap:wrap}
+.admin-tab{border:none;border-radius:999px;padding:10px 16px;cursor:pointer;background:#e5e7eb;color:#334155;font-weight:700}
+.admin-tab.is-active{background:#111827;color:#fff}
+.admin-section{display:none}
+.admin-section.is-active{display:grid}
 .layout{padding:0 24px 24px;display:grid;grid-template-columns:1.3fr .9fr;gap:18px}.layout-secondary{padding-top:0;grid-template-columns:1fr 1.2fr}.panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px}
+.panel-wide{grid-column:span 2}
 .panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.job-list{display:grid;gap:12px}
 .job-card{border:1px solid var(--line);border-radius:12px;padding:14px}.job-top{display:flex;justify-content:space-between;gap:12px;align-items:center}
 .badges{display:flex;gap:8px;flex-wrap:wrap}.badge{font-size:12px;padding:4px 8px;border-radius:999px;background:#eef2ff}
@@ -32,6 +38,8 @@
 .settlement-meta{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .pill{display:inline-flex;align-items:center;padding:5px 9px;border-radius:999px;background:#eef2ff;font-size:12px}
 .pill.warn{background:#fff7ed;color:#9a3412}.pill.ok{background:#ecfdf5;color:#166534}.pill.off{background:#f3f4f6;color:#6b7280}
+.eligible-driver{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.eligible-driver strong{display:block}
 .settlement-items{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px}
 .settlement-items li{padding:10px;border-radius:10px;background:#f8fafc}
 .mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
@@ -48,4 +56,4 @@ dialog{width:min(900px,calc(100vw - 32px));border:none;border-radius:16px;paddin
 .detail-kv div:last-child{border-bottom:none}
 .detail-kv span{color:var(--muted)}
 .detail-debug{margin-top:12px}
-@media (max-width: 960px){.layout,.layout-secondary{grid-template-columns:1fr}.quick-form,.driver-grid,.summary-grid{grid-template-columns:1fr}}
+@media (max-width: 960px){.layout,.layout-secondary{grid-template-columns:1fr}.panel-wide{grid-column:auto}.quick-form,.driver-grid,.summary-grid{grid-template-columns:1fr}}

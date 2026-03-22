@@ -114,6 +114,15 @@ function renderJobDetail(job) {
   `;
 }
 
+function setAdminSection(section) {
+  document.querySelectorAll('.admin-tab').forEach((button) => {
+    button.classList.toggle('is-active', button.dataset.tab === section);
+  });
+  document.querySelectorAll('.admin-section').forEach((panel) => {
+    panel.classList.toggle('is-active', panel.dataset.section === section);
+  });
+}
+
 function normalizeAdminToken(value) {
   const token = String(value || '').trim();
   if (!token) return '';
@@ -260,6 +269,30 @@ async function loadDrivers() {
   const data = await res.json();
   const drivers = data.drivers || [];
   document.getElementById('driverCount').textContent = `${drivers.length}명`;
+  const eligibleDrivers = drivers.filter((driver) =>
+    driver.status === 'active' &&
+    driver.dispatch_enabled &&
+    driver.consign_contract_agreed &&
+    driver.commercial_plate_confirmed
+  );
+  document.getElementById('eligibleDriverCount').textContent = `${eligibleDrivers.length}명`;
+  document.getElementById('eligibleDriverSummary').textContent =
+    `활성 ${drivers.filter((driver) => driver.status === 'active').length}명 / 배차허용 ${drivers.filter((driver) => driver.dispatch_enabled).length}명 / 계약완료 ${drivers.filter((driver) => driver.consign_contract_agreed && driver.commercial_plate_confirmed).length}명`;
+  const eligibleList = document.getElementById('eligibleDriverList');
+  eligibleList.innerHTML = '';
+  eligibleDrivers.forEach((driver) => {
+    const item = document.createElement('div');
+    item.className = 'eligible-driver';
+    item.innerHTML = `
+      <strong>${escapeHtml(driver.name || '기사')}</strong>
+      <div class="row">${escapeHtml(driver.phone || '-')} / ${escapeHtml(driver.vehicle_type || '-')}</div>
+      <div class="row">계약 완료 / 배차 허용 / 완료 ${Number(driver.completed_jobs || 0)}건</div>
+    `;
+    eligibleList.appendChild(item);
+  });
+  if (!eligibleList.innerHTML.trim()) {
+    eligibleList.innerHTML = '<div class="mini-card muted">지금 바로 배차 가능한 기사가 없어요. 기사 가입과 계약 동의를 먼저 끝내야 합니다.</div>';
+  }
   const list = document.getElementById('driverList');
   list.innerHTML = '';
 
@@ -635,6 +668,11 @@ document.addEventListener('DOMContentLoaded', () => {
       loadJobs();
     });
   });
+  document.querySelectorAll('.admin-tab').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      setAdminSection(btn.dataset.tab || 'orders');
+    });
+  });
 
   document.getElementById('btnRefresh').onclick = loadAll;
   btnLogout.onclick = () => {
@@ -722,6 +760,7 @@ document.addEventListener('DOMContentLoaded', () => {
     await loadPricingDashboard();
   };
   const existingToken = getAdminToken();
+  setAdminSection('orders');
   if (existingToken) {
     bootstrapAdmin().catch((error) => {
       clearAdminToken();
