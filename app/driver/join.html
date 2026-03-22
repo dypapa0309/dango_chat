@@ -24,6 +24,18 @@
 
         <textarea id="payoutNote" rows="3" placeholder="정산 메모가 있으면 적어주세요."></textarea>
 
+        <div class="tax-box">
+          <strong>3.3% 세금 정산 정보</strong>
+          <p class="tax-help">프리랜서 3.3% 원천징수 정산에 필요한 정보를 입력합니다.</p>
+          <div class="form-grid">
+            <input id="taxName" type="text" placeholder="세금 신고용 이름" />
+            <input id="taxBirthDate" type="date" />
+            <input id="taxIdNumber" type="text" placeholder="주민등록번호 또는 사업자등록번호" />
+            <input id="taxEmail" type="email" placeholder="세금 신고용 이메일" />
+          </div>
+          <textarea id="taxAddress" rows="3" placeholder="세금 신고용 주소"></textarea>
+        </div>
+
         <details class="agreement-box agreement-toggle">
           <summary>
             <strong>위탁운송 계약 내용 보기</strong>
@@ -46,6 +58,7 @@
 
         <label class="checkline"><input id="commercialPlateConfirmed" type="checkbox" /> 영업용 차량 기준과 자격 요건을 확인했고 적법한 운송 자격으로 운행해요.</label>
         <label class="checkline"><input id="contractAgreed" type="checkbox" /> 위탁운송 계약 내용과 법령 준수 책임에 동의해요.</label>
+        <label class="checkline"><input id="taxWithholdingAgreed" type="checkbox" /> 프리랜서 3.3% 원천징수 정산용 정보 제공과 정산 처리에 동의해요.</label>
 
         <div class="actions">
           <button id="btnJoin" class="btn primary" disabled>가입 완료</button>

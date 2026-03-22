@@ -26,14 +26,25 @@ export async function handler(event) {
       accountNumber,
       accountHolder,
       payoutNote,
+      taxName,
+      taxBirthDate,
+      taxIdNumber,
+      taxEmail,
+      taxAddress,
       commercialPlateConfirmed,
-      contractAgreed
+      contractAgreed,
+      taxWithholdingAgreed
     } = parseBody(event);
 
     if (!(name || '').trim()) return fail('이름을 입력해주세요.');
     if (!normalizePhone(phone)) return fail('연락처를 입력해주세요.');
     if (!contractAgreed) return fail('위탁운송 계약 동의가 필요합니다.');
     if (!commercialPlateConfirmed) return fail('영업용 차량 기준 확인이 필요합니다.');
+    if (!taxWithholdingAgreed) return fail('3.3% 세금 정산 동의가 필요합니다.');
+    if (!(taxName || '').trim()) return fail('세금 신고용 이름을 입력해주세요.');
+    if (!(taxBirthDate || '').trim()) return fail('생년월일을 입력해주세요.');
+    if (!(taxIdNumber || '').trim()) return fail('세금 식별번호를 입력해주세요.');
+    if (!(taxAddress || '').trim()) return fail('세금 신고용 주소를 입력해주세요.');
 
     const supabase = adminClient();
     const phoneValue = normalizePhone(phone);
@@ -54,6 +65,13 @@ export async function handler(event) {
       account_number: normalizeAccountNumber(accountNumber) || null,
       account_holder: (accountHolder || '').trim() || null,
       payout_note: (payoutNote || '').trim() || null,
+      tax_name: (taxName || '').trim() || null,
+      tax_birth_date: (taxBirthDate || '').trim() || null,
+      tax_id_number: (taxIdNumber || '').trim() || null,
+      tax_email: (taxEmail || '').trim() || null,
+      tax_address: (taxAddress || '').trim() || null,
+      tax_withholding_type: 'freelancer_3_3',
+      tax_withholding_agreed: true,
       commercial_plate_confirmed: true,
       consign_contract_agreed: true,
       consign_contract_version: CONTRACT_VERSION,

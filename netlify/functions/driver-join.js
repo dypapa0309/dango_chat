@@ -6,7 +6,7 @@ const CONTRACT_VERSION = '2026-03-21-v1';
 async function loadDriverByToken(supabase, token) {
   const { data, error } = await supabase
     .from('drivers')
-    .select('id, name, phone, vehicle_type, vehicle_note, vehicle_number, bank_name, account_number, account_holder, payout_enabled, payout_note, dispatch_enabled, status, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token')
+    .select('id, name, phone, vehicle_type, vehicle_note, vehicle_number, bank_name, account_number, account_holder, payout_enabled, payout_note, dispatch_enabled, status, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed')
     .eq('join_token', token)
     .single();
   if (error) throw error;
@@ -39,13 +39,24 @@ export async function handler(event) {
       accountNumber,
       accountHolder,
       payoutNote,
+      taxName,
+      taxBirthDate,
+      taxIdNumber,
+      taxEmail,
+      taxAddress,
       commercialPlateConfirmed,
-      contractAgreed
+      contractAgreed,
+      taxWithholdingAgreed
     } = parseBody(event);
 
     if (!token) return fail('token이 필요합니다.');
     if (!contractAgreed) return fail('위탁운송 계약 동의가 필요합니다.');
     if (!commercialPlateConfirmed) return fail('영업용 차량 확인이 필요합니다.');
+    if (!taxWithholdingAgreed) return fail('3.3% 세금 정산 동의가 필요합니다.');
+    if (!(taxName || '').trim()) return fail('세금 신고용 이름을 입력해주세요.');
+    if (!(taxBirthDate || '').trim()) return fail('생년월일을 입력해주세요.');
+    if (!(taxIdNumber || '').trim()) return fail('세금 식별번호를 입력해주세요.');
+    if (!(taxAddress || '').trim()) return fail('세금 신고용 주소를 입력해주세요.');
 
     const driver = await loadDriverByToken(supabase, token);
 
@@ -60,6 +71,13 @@ export async function handler(event) {
         account_number: (accountNumber || '').trim() || null,
         account_holder: (accountHolder || '').trim() || null,
         payout_note: (payoutNote || '').trim() || null,
+        tax_name: (taxName || '').trim() || null,
+        tax_birth_date: (taxBirthDate || '').trim() || null,
+        tax_id_number: (taxIdNumber || '').trim() || null,
+        tax_email: (taxEmail || '').trim() || null,
+        tax_address: (taxAddress || '').trim() || null,
+        tax_withholding_type: 'freelancer_3_3',
+        tax_withholding_agreed: true,
         commercial_plate_confirmed: true,
         consign_contract_agreed: true,
         consign_contract_version: CONTRACT_VERSION,
@@ -68,7 +86,7 @@ export async function handler(event) {
         updated_by: 'driver-join'
       })
       .eq('id', driver.id)
-      .select('id, name, phone, vehicle_type, vehicle_number, bank_name, account_number, account_holder, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token')
+      .select('id, name, phone, vehicle_type, vehicle_number, bank_name, account_number, account_holder, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed')
       .single();
 
     if (error) throw error;

@@ -2,5 +2,8 @@ body{margin:0;font-family:Arial,sans-serif;background:#f4f6f8;color:#111}.wrap{m
 .job-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .info-block{padding:12px;border-radius:10px;background:#fff;border:1px solid #e5e7eb}
 .info-block strong{display:block;margin-bottom:8px}
+.tax-box{background:#f8fafc;border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-bottom:16px}
+.tax-box strong{display:block;margin-bottom:6px}
+.tax-help{margin:0 0 12px;color:#6b7280;font-size:14px}
 @media (max-width:640px){.form-grid{grid-template-columns:1fr}.actions{flex-direction:column}}
 @media (max-width:640px){.job-grid{grid-template-columns:1fr}}

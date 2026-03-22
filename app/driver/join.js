@@ -7,6 +7,7 @@
   const formBody = document.getElementById('joinFormBody');
   const contractAgreed = document.getElementById('contractAgreed');
   const commercialPlateConfirmed = document.getElementById('commercialPlateConfirmed');
+  const taxWithholdingAgreed = document.getElementById('taxWithholdingAgreed');
 
   const fields = {
     name: document.getElementById('driverName'),
@@ -16,15 +17,21 @@
     bankName: document.getElementById('bankName'),
     accountHolder: document.getElementById('accountHolder'),
     accountNumber: document.getElementById('accountNumber'),
-    payoutNote: document.getElementById('payoutNote')
+    payoutNote: document.getElementById('payoutNote'),
+    taxName: document.getElementById('taxName'),
+    taxBirthDate: document.getElementById('taxBirthDate'),
+    taxIdNumber: document.getElementById('taxIdNumber'),
+    taxEmail: document.getElementById('taxEmail'),
+    taxAddress: document.getElementById('taxAddress')
   };
 
   function syncButton() {
-    joinBtn.disabled = !(contractAgreed.checked && commercialPlateConfirmed.checked);
+    joinBtn.disabled = !(contractAgreed.checked && commercialPlateConfirmed.checked && taxWithholdingAgreed.checked);
   }
 
   contractAgreed.addEventListener('change', syncButton);
   commercialPlateConfirmed.addEventListener('change', syncButton);
+  taxWithholdingAgreed.addEventListener('change', syncButton);
 
   if (!token) {
     statusEl.innerHTML = '<strong>유효하지 않은 가입 링크입니다.</strong><div>신규 기사 지원은 공용 지원 링크를 사용하고, 기존 등록 기사 온보딩은 운영툴에서 복사한 전체 개별 링크로 다시 열어주세요.</div>';
@@ -47,10 +54,16 @@
     fields.accountHolder.value = driver.account_holder || '';
     fields.accountNumber.value = driver.account_number || '';
     fields.payoutNote.value = driver.payout_note || '';
+    fields.taxName.value = driver.tax_name || driver.name || '';
+    fields.taxBirthDate.value = driver.tax_birth_date || '';
+    fields.taxIdNumber.value = driver.tax_id_number || '';
+    fields.taxEmail.value = driver.tax_email || '';
+    fields.taxAddress.value = driver.tax_address || '';
 
-    if (driver.consign_contract_agreed && driver.commercial_plate_confirmed) {
+    if (driver.consign_contract_agreed && driver.commercial_plate_confirmed && driver.tax_withholding_agreed) {
       contractAgreed.checked = true;
       commercialPlateConfirmed.checked = true;
+      taxWithholdingAgreed.checked = true;
       joinBtn.disabled = false;
       resultEl.textContent = '이미 가입과 계약 동의가 끝난 기사예요. 필요하면 정보를 다시 저장할 수 있어요.';
     }
@@ -74,8 +87,14 @@
       accountHolder: fields.accountHolder.value.trim(),
       accountNumber: fields.accountNumber.value.trim(),
       payoutNote: fields.payoutNote.value.trim(),
+      taxName: fields.taxName.value.trim(),
+      taxBirthDate: fields.taxBirthDate.value,
+      taxIdNumber: fields.taxIdNumber.value.trim(),
+      taxEmail: fields.taxEmail.value.trim(),
+      taxAddress: fields.taxAddress.value.trim(),
       commercialPlateConfirmed: commercialPlateConfirmed.checked,
-      contractAgreed: contractAgreed.checked
+      contractAgreed: contractAgreed.checked,
+      taxWithholdingAgreed: taxWithholdingAgreed.checked
     };
 
     const res = await fetch('/.netlify/functions/driver-join', {

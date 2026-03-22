@@ -3,6 +3,7 @@
   const joinBtn = document.getElementById('btnJoin');
   const contractAgreed = document.getElementById('contractAgreed');
   const commercialPlateConfirmed = document.getElementById('commercialPlateConfirmed');
+  const taxWithholdingAgreed = document.getElementById('taxWithholdingAgreed');
 
   const fields = {
     name: document.getElementById('driverName'),
@@ -12,15 +13,21 @@
     bankName: document.getElementById('bankName'),
     accountHolder: document.getElementById('accountHolder'),
     accountNumber: document.getElementById('accountNumber'),
-    payoutNote: document.getElementById('payoutNote')
+    payoutNote: document.getElementById('payoutNote'),
+    taxName: document.getElementById('taxName'),
+    taxBirthDate: document.getElementById('taxBirthDate'),
+    taxIdNumber: document.getElementById('taxIdNumber'),
+    taxEmail: document.getElementById('taxEmail'),
+    taxAddress: document.getElementById('taxAddress')
   };
 
   function syncButton() {
-    joinBtn.disabled = !(contractAgreed.checked && commercialPlateConfirmed.checked);
+    joinBtn.disabled = !(contractAgreed.checked && commercialPlateConfirmed.checked && taxWithholdingAgreed.checked);
   }
 
   contractAgreed.addEventListener('change', syncButton);
   commercialPlateConfirmed.addEventListener('change', syncButton);
+  taxWithholdingAgreed.addEventListener('change', syncButton);
 
   joinBtn.onclick = async () => {
     joinBtn.disabled = true;
@@ -35,8 +42,14 @@
       accountHolder: fields.accountHolder.value.trim(),
       accountNumber: fields.accountNumber.value.trim(),
       payoutNote: fields.payoutNote.value.trim(),
+      taxName: fields.taxName.value.trim(),
+      taxBirthDate: fields.taxBirthDate.value,
+      taxIdNumber: fields.taxIdNumber.value.trim(),
+      taxEmail: fields.taxEmail.value.trim(),
+      taxAddress: fields.taxAddress.value.trim(),
       commercialPlateConfirmed: commercialPlateConfirmed.checked,
-      contractAgreed: contractAgreed.checked
+      contractAgreed: contractAgreed.checked,
+      taxWithholdingAgreed: taxWithholdingAgreed.checked
     };
 
     const res = await fetch('/.netlify/functions/driver-apply', {

@@ -463,6 +463,7 @@ async function loadDrivers() {
         <div class="settlement-meta">
           <span class="pill ${driver.payout_enabled ? 'ok' : 'off'}">${driver.payout_enabled ? '정산 가능' : '정산 보류'}</span>
           <span class="pill ${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? 'ok' : 'warn'}">${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? '계약 완료' : '계약 필요'}</span>
+          <span class="pill ${driver.tax_withholding_agreed && driver.tax_id_number && driver.tax_address ? 'ok' : 'warn'}">${driver.tax_withholding_agreed && driver.tax_id_number && driver.tax_address ? '세금정보 완료' : '세금정보 필요'}</span>
           <span class="pill">${escapeHtml(driver.status || '-')}</span>
         </div>
       </div>
@@ -479,6 +480,12 @@ async function loadDrivers() {
         <input type="text" data-field="accountNumber" value="${escapeHtml(driver.account_number || '')}" placeholder="계좌번호" />
         <label class="check"><input type="checkbox" data-field="payoutEnabled" ${driver.payout_enabled ? 'checked' : ''} /> 정산 가능</label>
         <textarea data-field="payoutNote" placeholder="정산 메모">${escapeHtml(driver.payout_note || '')}</textarea>
+        <input type="text" data-field="taxName" value="${escapeHtml(driver.tax_name || '')}" placeholder="세금 신고용 이름" />
+        <input type="date" data-field="taxBirthDate" value="${escapeHtml(driver.tax_birth_date || '')}" />
+        <input type="text" data-field="taxIdNumber" value="${escapeHtml(driver.tax_id_number || '')}" placeholder="주민등록번호 또는 사업자등록번호" />
+        <input type="email" data-field="taxEmail" value="${escapeHtml(driver.tax_email || '')}" placeholder="세금 신고용 이메일" />
+        <label class="check"><input type="checkbox" data-field="taxWithholdingAgreed" ${driver.tax_withholding_agreed ? 'checked' : ''} /> 3.3% 세금 정산 동의</label>
+        <textarea data-field="taxAddress" placeholder="세금 신고용 주소">${escapeHtml(driver.tax_address || '')}</textarea>
         <textarea data-field="internalMemo" placeholder="기사 내부 메모">${escapeHtml(driver.internal_memo || '')}</textarea>
       </div>
       <div class="driver-actions">
@@ -512,6 +519,12 @@ async function loadDrivers() {
         accountNumber: card.querySelector('[data-field="accountNumber"]').value,
         payoutEnabled: card.querySelector('[data-field="payoutEnabled"]').checked,
         payoutNote: card.querySelector('[data-field="payoutNote"]').value,
+        taxName: card.querySelector('[data-field="taxName"]').value,
+        taxBirthDate: card.querySelector('[data-field="taxBirthDate"]').value,
+        taxIdNumber: card.querySelector('[data-field="taxIdNumber"]').value,
+        taxEmail: card.querySelector('[data-field="taxEmail"]').value,
+        taxAddress: card.querySelector('[data-field="taxAddress"]').value,
+        taxWithholdingAgreed: card.querySelector('[data-field="taxWithholdingAgreed"]').checked,
         internalMemo: card.querySelector('[data-field="internalMemo"]').value
       };
 
