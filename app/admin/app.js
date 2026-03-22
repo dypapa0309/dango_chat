@@ -143,9 +143,13 @@ function setAdminSection(section) {
   document.querySelectorAll('.admin-tab').forEach((button) => {
     button.classList.toggle('is-active', button.dataset.tab === section);
   });
+  let activePanel = null;
   document.querySelectorAll('.admin-section').forEach((panel) => {
-    panel.classList.toggle('is-active', panel.dataset.section === section);
+    const isActive = panel.dataset.section === section;
+    panel.classList.toggle('is-active', isActive);
+    if (isActive) activePanel = panel;
   });
+  activePanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function normalizeAdminToken(value) {
