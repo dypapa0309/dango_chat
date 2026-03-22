@@ -55,4 +55,5 @@ dialog{width:min(900px,calc(100vw - 32px));border:none;border-radius:16px;paddin
 .detail-kv div:last-child{border-bottom:none}
 .detail-kv span{color:var(--muted)}
 .detail-debug{margin-top:12px}
+.plain-note{margin:8px 0 0;padding:12px;border-radius:10px;background:#f8fafc;color:#0f172a;white-space:pre-wrap;word-break:break-word;font:inherit}
 @media (max-width: 960px){.layout,.layout-secondary{grid-template-columns:1fr}.panel-wide{grid-column:auto}.quick-form,.driver-grid,.summary-grid{grid-template-columns:1fr}}

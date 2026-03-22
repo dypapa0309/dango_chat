@@ -67,6 +67,92 @@ function renderLogItems(logs = []) {
   `).join('')}</div>`;
 }
 
+function summarizeCountMap(obj = {}) {
+  const entries = Object.entries(obj || {}).filter(([, value]) => Number(value || 0) > 0);
+  if (!entries.length) return '선택 없음';
+  return entries.map(([key, value]) => `${escapeHtml(key)} ${Number(value)}개`).join(', ');
+}
+
+function formatMoveType(moveType) {
+  const map = {
+    normal: '일반이사',
+    half: '반포장이사',
+    storage: '보관이사'
+  };
+  return map[moveType] || moveType || '-';
+}
+
+function formatLoadLevel(loadLevel) {
+  const map = {
+    0: '짐 거의 없음',
+    1: '가벼운 편',
+    2: '보통',
+    3: '많은 편',
+    4: '매우 많음'
+  };
+  return map[String(loadLevel ?? '')] || '-';
+}
+
+function renderRequestSummary(job) {
+  const item = job.item_summary || {};
+  const option = job.option_summary || {};
+  const lines = [];
+  if (item.vehicle) lines.push(`<div><span>차량</span><strong>${escapeHtml(item.vehicle)}</strong></div>`);
+  if (item.moveType) lines.push(`<div><span>이사 방식</span><strong>${escapeHtml(formatMoveType(item.moveType))}</strong></div>`);
+  if (item.loadLevel !== undefined) lines.push(`<div><span>짐양</span><strong>${escapeHtml(formatLoadLevel(item.loadLevel))}</strong></div>`);
+  if (job.distance_km != null) lines.push(`<div><span>이동 거리</span><strong>${Number(job.distance_km || 0).toFixed(1)}km</strong></div>`);
+  if (job.weight_kg != null) lines.push(`<div><span>예상 무게</span><strong>${Number(job.weight_kg || 0)}kg</strong></div>`);
+  if (job.via_address) lines.push(`<div><span>경유지</span><strong>${escapeHtml(job.via_address)}</strong></div>`);
+  if (item.ride) lines.push(`<div><span>동승</span><strong>${Number(item.ride || 0)}명</strong></div>`);
+  return `
+    <div class="detail-kv">${lines.join('') || '<div><span>요약</span><strong>저장된 신청 요약이 없어요.</strong></div>'}</div>
+    <div class="detail-list" style="margin-top:12px;">
+      <div class="detail-item">
+        <strong>가구 · 가전</strong>
+        <div class="row">${summarizeCountMap(item.items)}</div>
+      </div>
+      <div class="detail-item">
+        <strong>경유지 짐</strong>
+        <div class="row">${summarizeCountMap(item.waypointItems)}</div>
+      </div>
+      <div class="detail-item">
+        <strong>버릴 물건</strong>
+        <div class="row">출발지: ${summarizeCountMap(item.throwFrom)}</div>
+        <div class="row">도착지: ${summarizeCountMap(item.throwTo)}</div>
+      </div>
+      <div class="detail-item">
+        <strong>옵션</strong>
+        <div class="row">
+          ${
+            [
+              option.helper ? '기사 도움' : null,
+              option.helperFrom ? '출발지 도움' : null,
+              option.helperTo ? '도착지 도움' : null,
+              option.packing ? '반포장' : null,
+              option.cleaning ? '청소 연계' : null,
+              option.via_stop ? '경유지 있음' : null,
+              option.ladderFrom ? '출발지 사다리차' : null,
+              option.ladderTo ? '도착지 사다리차' : null,
+              option.cantCarryFrom ? '출발지 직접나르기 어려움' : null,
+              option.cantCarryTo ? '도착지 직접나르기 어려움' : null
+            ].filter(Boolean).join(', ') || '선택 없음'
+          }
+        </div>
+      </div>
+      ${
+        job.customer_note
+          ? `<div class="detail-item"><strong>고객 메모</strong><div class="row">${escapeHtml(job.customer_note).replace(/\n/g, '<br />')}</div></div>`
+          : ''
+      }
+      ${
+        job.raw_text
+          ? `<div class="detail-item"><strong>문의 원문</strong><pre class="plain-note">${escapeHtml(job.raw_text)}</pre></div>`
+          : ''
+      }
+    </div>
+  `;
+}
+
 function renderJobDetail(job) {
   return `
     <div class="detail-grid">
@@ -90,6 +176,10 @@ function renderJobDetail(job) {
           <div><span>거리</span><strong>${Number(job.distance_km || 0).toFixed(1)}km</strong></div>
           <div><span>작성일</span><strong>${formatDateTime(job.created_at)}</strong></div>
         </div>
+      </section>
+      <section class="detail-card">
+        <h4>신청 내용</h4>
+        ${renderRequestSummary(job)}
       </section>
       <section class="detail-card">
         <h4>배차 이력</h4>

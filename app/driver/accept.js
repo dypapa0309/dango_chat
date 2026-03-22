@@ -14,6 +14,98 @@
   const startBtn = document.getElementById('btnStart');
   const requestCompleteBtn = document.getElementById('btnRequestComplete');
 
+  function escapeHtml(str) {
+    return String(str || '').replace(/[&<>\"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  }
+
+  function summarizeCountMap(obj = {}) {
+    const entries = Object.entries(obj || {}).filter(([, value]) => Number(value || 0) > 0);
+    if (!entries.length) return '선택 없음';
+    return entries.map(([key, value]) => `${escapeHtml(key)} ${Number(value)}개`).join(', ');
+  }
+
+  function formatMoveType(moveType) {
+    const map = { normal: '일반이사', half: '반포장이사', storage: '보관이사' };
+    return map[moveType] || moveType || '-';
+  }
+
+  function formatLoadLevel(loadLevel) {
+    const map = {
+      0: '짐 거의 없음',
+      1: '가벼운 편',
+      2: '보통',
+      3: '많은 편',
+      4: '매우 많음'
+    };
+    return map[String(loadLevel ?? '')] || '-';
+  }
+
+  function renderJobSummary(job) {
+    const item = job.item_summary || {};
+    const option = job.option_summary || {};
+    return `
+      <div class="job-grid">
+        <div class="info-block">
+          <strong>기본 정보</strong>
+          <div>날짜: ${escapeHtml(job.move_date || '-')}</div>
+          <div>출발: ${escapeHtml(job.start_address || '-')}</div>
+          <div>도착: ${escapeHtml(job.end_address || '-')}</div>
+          <div>경유지: ${escapeHtml(job.via_address || '없음')}</div>
+        </div>
+        <div class="info-block">
+          <strong>기사 기준 운임</strong>
+          <div>총 결제: ${Number(job.total_price || 0).toLocaleString()}원</div>
+          <div>기사 정산 예정: ${Number(job.driver_amount || 0).toLocaleString()}원</div>
+          <div>당고 수수료: ${Number(job.company_amount || 0).toLocaleString()}원</div>
+        </div>
+      </div>
+      <div class="job-grid" style="margin-top:12px;">
+        <div class="info-block">
+          <strong>신청 요약</strong>
+          <div>차량: ${escapeHtml(item.vehicle || '-')}</div>
+          <div>이사 방식: ${escapeHtml(formatMoveType(item.moveType))}</div>
+          <div>짐양: ${escapeHtml(formatLoadLevel(item.loadLevel))}</div>
+          <div>동승: ${Number(item.ride || 0)}명</div>
+          <div>거리: ${job.distance_km != null ? `${Number(job.distance_km || 0).toFixed(1)}km` : '미기록'}</div>
+        </div>
+        <div class="info-block">
+          <strong>옵션</strong>
+          <div>${
+            [
+              option.helper ? '기사 도움' : null,
+              option.packing ? '반포장' : null,
+              option.cleaning ? '청소 연계' : null,
+              option.via_stop ? '경유지 있음' : null,
+              option.ladderFrom ? '출발지 사다리차' : null,
+              option.ladderTo ? '도착지 사다리차' : null,
+              option.cantCarryFrom ? '출발지 직접나르기 어려움' : null,
+              option.cantCarryTo ? '도착지 직접나르기 어려움' : null
+            ].filter(Boolean).join(', ') || '선택 없음'
+          }</div>
+        </div>
+      </div>
+      <div class="info-block" style="margin-top:12px;">
+        <strong>가구 · 가전</strong>
+        <div>${summarizeCountMap(item.items)}</div>
+      </div>
+      ${
+        item.waypointItems && Object.keys(item.waypointItems).length
+          ? `<div class="info-block" style="margin-top:12px;"><strong>경유지 짐</strong><div>${summarizeCountMap(item.waypointItems)}</div></div>`
+          : ''
+      }
+      ${
+        (item.throwFrom && Object.keys(item.throwFrom).length) || (item.throwTo && Object.keys(item.throwTo).length)
+          ? `<div class="info-block" style="margin-top:12px;"><strong>버릴 물건</strong><div>출발지: ${summarizeCountMap(item.throwFrom)}</div><div>도착지: ${summarizeCountMap(item.throwTo)}</div></div>`
+          : ''
+      }
+      ${
+        job.customer_note
+          ? `<div class="info-block" style="margin-top:12px;"><strong>고객 메모</strong><div>${escapeHtml(job.customer_note).replace(/\n/g, '<br />')}</div></div>`
+          : ''
+      }
+    `;
+  }
+
   function disablePrimary(disabled) {
     acceptBtn.disabled = declineBtn.disabled = disabled;
   }
@@ -60,7 +152,7 @@
     }
 
     const job = data.job || {};
-    info.innerHTML = `<div><strong>날짜:</strong> ${job.move_date || '-'}</div><div><strong>출발:</strong> ${job.start_address || '-'}</div><div><strong>도착:</strong> ${job.end_address || '-'}</div><div><strong>운임:</strong> ${Number(job.total_price || 0).toLocaleString()}원</div>`;
+    info.innerHTML = renderJobSummary(job);
 
     if (data.agreementRequired) {
       agreementGate.hidden = false;
