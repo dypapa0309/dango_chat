@@ -464,49 +464,67 @@ async function loadDrivers() {
     const card = document.createElement('div');
     card.className = 'driver-card';
     card.innerHTML = `
-      <div class="job-top">
-        <div>
-          <strong>${escapeHtml(driver.name || '기사')}</strong>
-          <div class="row">${escapeHtml(driver.phone || '-')} · 완료 ${Number(driver.completed_jobs || 0)}건</div>
+      <details class="driver-detail">
+        <summary class="driver-summary">
+          <div class="driver-summary-copy">
+            <strong>${escapeHtml(driver.name || '기사')}</strong>
+            <div class="row">${escapeHtml(driver.phone || '-')}</div>
+          </div>
+          <div class="driver-summary-side">
+            <span class="pill ${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? 'ok' : 'warn'}">${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? '계약 완료' : '계약 필요'}</span>
+            <span class="pill">${escapeHtml(driver.status || '-')}</span>
+          </div>
+        </summary>
+        <div class="driver-detail-body">
+          <div class="driver-meta-grid">
+            <div class="mini-card">
+              <strong>기본 상태</strong>
+              <div class="row">차량 ${escapeHtml(driver.vehicle_type || '-')} / 번호 ${escapeHtml(driver.vehicle_number || '-')}</div>
+              <div class="row">완료 ${Number(driver.completed_jobs || 0)}건</div>
+              <div class="settlement-meta">
+                <span class="pill ${driver.payout_enabled ? 'ok' : 'off'}">${driver.payout_enabled ? '정산 가능' : '정산 보류'}</span>
+                <span class="pill ${driver.tax_withholding_agreed && driver.tax_id_number && driver.tax_address ? 'ok' : 'warn'}">${driver.tax_withholding_agreed && driver.tax_id_number && driver.tax_address ? '세금정보 완료' : '세금정보 필요'}</span>
+              </div>
+            </div>
+            <div class="mini-card">
+              <strong>기사 링크</strong>
+              <div class="row">가입과 계약 동의, 기사 사용 안내 문구를 여기서 복사합니다.</div>
+              <div class="driver-actions compact">
+                <button class="btn" data-action="copy-join">개별 온보딩 링크 복사</button>
+                <button class="btn" data-action="copy-message">개별 온보딩 문구 복사</button>
+                <button class="btn" data-action="copy-guide">기사 사용 안내 문구 복사</button>
+              </div>
+            </div>
+          </div>
+          <div class="driver-grid">
+            <select data-field="status">
+              <option value="pending_review" ${driver.status === 'pending_review' ? 'selected' : ''}>지원 대기</option>
+              <option value="active" ${driver.status === 'active' ? 'selected' : ''}>활성</option>
+              <option value="inactive" ${driver.status === 'inactive' ? 'selected' : ''}>비활성</option>
+            </select>
+            <label class="check"><input type="checkbox" data-field="dispatchEnabled" ${driver.dispatch_enabled ? 'checked' : ''} /> 배차 허용</label>
+            <input type="text" data-field="bankName" value="${escapeHtml(driver.bank_name || '')}" placeholder="은행명" />
+            <input type="text" data-field="accountHolder" value="${escapeHtml(driver.account_holder || '')}" placeholder="예금주" />
+            <input type="text" data-field="accountNumber" value="${escapeHtml(driver.account_number || '')}" placeholder="계좌번호" />
+            <label class="check"><input type="checkbox" data-field="payoutEnabled" ${driver.payout_enabled ? 'checked' : ''} /> 정산 가능</label>
+            <textarea data-field="payoutNote" placeholder="정산 메모">${escapeHtml(driver.payout_note || '')}</textarea>
+            <input type="text" data-field="taxName" value="${escapeHtml(driver.tax_name || '')}" placeholder="세금 신고용 이름" />
+            <label class="field-card date-field">
+              <span class="field-title">생년월일</span>
+              <span class="field-help">칸 아무 곳이나 눌러 날짜를 선택합니다.</span>
+              <input type="date" data-field="taxBirthDate" value="${escapeHtml(driver.tax_birth_date || '')}" aria-label="생년월일" />
+            </label>
+            <input type="text" data-field="taxIdNumber" value="${escapeHtml(driver.tax_id_number || '')}" placeholder="주민등록번호 또는 사업자등록번호" />
+            <input type="email" data-field="taxEmail" value="${escapeHtml(driver.tax_email || '')}" placeholder="세금 신고용 이메일" />
+            <label class="check"><input type="checkbox" data-field="taxWithholdingAgreed" ${driver.tax_withholding_agreed ? 'checked' : ''} /> 3.3% 세금 정산 동의</label>
+            <textarea data-field="taxAddress" placeholder="세금 신고용 주소">${escapeHtml(driver.tax_address || '')}</textarea>
+            <textarea data-field="internalMemo" placeholder="기사 내부 메모">${escapeHtml(driver.internal_memo || '')}</textarea>
+          </div>
+          <div class="driver-actions">
+            <button class="btn primary" data-action="save-driver">기사 정보 저장</button>
+          </div>
         </div>
-        <div class="settlement-meta">
-          <span class="pill ${driver.payout_enabled ? 'ok' : 'off'}">${driver.payout_enabled ? '정산 가능' : '정산 보류'}</span>
-          <span class="pill ${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? 'ok' : 'warn'}">${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? '계약 완료' : '계약 필요'}</span>
-          <span class="pill ${driver.tax_withholding_agreed && driver.tax_id_number && driver.tax_address ? 'ok' : 'warn'}">${driver.tax_withholding_agreed && driver.tax_id_number && driver.tax_address ? '세금정보 완료' : '세금정보 필요'}</span>
-          <span class="pill">${escapeHtml(driver.status || '-')}</span>
-        </div>
-      </div>
-      <div class="row">차량 ${escapeHtml(driver.vehicle_type || '-')} / 번호 ${escapeHtml(driver.vehicle_number || '-')}</div>
-      <div class="driver-grid">
-        <select data-field="status">
-          <option value="pending_review" ${driver.status === 'pending_review' ? 'selected' : ''}>지원 대기</option>
-          <option value="active" ${driver.status === 'active' ? 'selected' : ''}>활성</option>
-          <option value="inactive" ${driver.status === 'inactive' ? 'selected' : ''}>비활성</option>
-        </select>
-        <label class="check"><input type="checkbox" data-field="dispatchEnabled" ${driver.dispatch_enabled ? 'checked' : ''} /> 배차 허용</label>
-        <input type="text" data-field="bankName" value="${escapeHtml(driver.bank_name || '')}" placeholder="은행명" />
-        <input type="text" data-field="accountHolder" value="${escapeHtml(driver.account_holder || '')}" placeholder="예금주" />
-        <input type="text" data-field="accountNumber" value="${escapeHtml(driver.account_number || '')}" placeholder="계좌번호" />
-        <label class="check"><input type="checkbox" data-field="payoutEnabled" ${driver.payout_enabled ? 'checked' : ''} /> 정산 가능</label>
-        <textarea data-field="payoutNote" placeholder="정산 메모">${escapeHtml(driver.payout_note || '')}</textarea>
-        <input type="text" data-field="taxName" value="${escapeHtml(driver.tax_name || '')}" placeholder="세금 신고용 이름" />
-        <label class="field-card date-field">
-          <span class="field-title">생년월일</span>
-          <span class="field-help">칸 아무 곳이나 눌러 날짜를 선택합니다.</span>
-          <input type="date" data-field="taxBirthDate" value="${escapeHtml(driver.tax_birth_date || '')}" aria-label="생년월일" />
-        </label>
-        <input type="text" data-field="taxIdNumber" value="${escapeHtml(driver.tax_id_number || '')}" placeholder="주민등록번호 또는 사업자등록번호" />
-        <input type="email" data-field="taxEmail" value="${escapeHtml(driver.tax_email || '')}" placeholder="세금 신고용 이메일" />
-        <label class="check"><input type="checkbox" data-field="taxWithholdingAgreed" ${driver.tax_withholding_agreed ? 'checked' : ''} /> 3.3% 세금 정산 동의</label>
-        <textarea data-field="taxAddress" placeholder="세금 신고용 주소">${escapeHtml(driver.tax_address || '')}</textarea>
-        <textarea data-field="internalMemo" placeholder="기사 내부 메모">${escapeHtml(driver.internal_memo || '')}</textarea>
-      </div>
-      <div class="driver-actions">
-        <button class="btn" data-action="copy-join">개별 온보딩 링크 복사</button>
-        <button class="btn" data-action="copy-message">개별 온보딩 문구 복사</button>
-        <button class="btn" data-action="copy-guide">기사 사용 안내 문구 복사</button>
-        <button class="btn primary" data-action="save-driver">기사 정보 저장</button>
-      </div>
+      </details>
     `;
 
     card.querySelector('[data-action="copy-join"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {

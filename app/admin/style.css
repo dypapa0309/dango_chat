@@ -27,10 +27,22 @@
 .panel-subhead{margin:18px 0 10px}.panel-subhead h3{margin:0;font-size:15px}
 .stack-list{display:grid;gap:12px}.stack-list.compact{gap:10px}
 .driver-card,.settlement-card,.mini-card{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff}
+.driver-card{padding:0;overflow:hidden}
+.driver-detail{display:block}
+.driver-detail summary{list-style:none;cursor:pointer}
+.driver-detail summary::-webkit-details-marker{display:none}
+.driver-summary{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 18px;background:#fff}
+.driver-summary-copy strong{display:block;font-size:18px}
+.driver-summary-copy .row{margin-top:4px}
+.driver-summary-side{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.driver-detail-body{padding:0 18px 18px;border-top:1px solid var(--line);background:#fcfcfd}
+.driver-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
 .driver-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
 .driver-grid input,.driver-grid textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit}
 .driver-grid textarea,.driver-grid button{grid-column:1/-1}.driver-grid textarea{min-height:84px;resize:vertical}
 .driver-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.driver-actions.compact{margin-top:10px}
+.driver-actions.compact .btn{padding:9px 12px}
 .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .summary-card{padding:14px;border-radius:12px;background:#f8fafc;border:1px solid var(--line)}
 .summary-card strong{display:block;font-size:20px;margin-top:6px}
@@ -56,4 +68,4 @@ dialog{width:min(900px,calc(100vw - 32px));border:none;border-radius:16px;paddin
 .detail-kv span{color:var(--muted)}
 .detail-debug{margin-top:12px}
 .plain-note{margin:8px 0 0;padding:12px;border-radius:10px;background:#f8fafc;color:#0f172a;white-space:pre-wrap;word-break:break-word;font:inherit}
-@media (max-width: 960px){.layout,.layout-secondary{grid-template-columns:1fr}.panel-wide{grid-column:auto}.quick-form,.driver-grid,.summary-grid{grid-template-columns:1fr}}
+@media (max-width: 960px){.layout,.layout-secondary{grid-template-columns:1fr}.panel-wide{grid-column:auto}.quick-form,.driver-grid,.summary-grid,.driver-meta-grid{grid-template-columns:1fr}}
