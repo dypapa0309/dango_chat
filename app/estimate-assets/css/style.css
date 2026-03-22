@@ -5,24 +5,24 @@
 
 :root{
   /* neutrals */
-  --bg:#F5F7FA;
-  --card:#FFFFFF;
-  --card2:#F8FAFC;
-  --text:#111827;
-  --muted:#6B7280;
-  --line:rgba(17,24,39,0.08);
-  --line2:rgba(17,24,39,0.14);
+  --bg:#F7F1E8;
+  --card:#FFFDF9;
+  --card2:#FBF4EA;
+  --text:#2A211B;
+  --muted:#74675C;
+  --line:rgba(83,62,40,0.08);
+  --line2:rgba(83,62,40,0.14);
 
   /* accents */
-  --accent:#2F80ED;
-  --accent2:#60A5FA;
-  --danger:#EF4444;
-  --ok:#16A34A;
+  --accent:#D97846;
+  --accent2:#E89E73;
+  --danger:#D95C4C;
+  --ok:#728E79;
 
   /* shape */
   --radius:16px;
-  --shadow:0 8px 24px rgba(15,23,42,0.06);
-  --shadow2:0 16px 40px rgba(15,23,42,0.10);
+  --shadow:0 10px 28px rgba(90,63,34,0.08);
+  --shadow2:0 18px 44px rgba(90,63,34,0.12);
 
   /* layout */
   --max: 720px;
@@ -51,8 +51,11 @@ html, body{
 
 body{
   margin:0;
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
-  background:linear-gradient(180deg, #F8FAFC 0%, #F5F7FA 100%);
+  font-family:'SUIT', system-ui, -apple-system, Segoe UI, Roboto, "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(236, 208, 172, 0.72), transparent 28%),
+    radial-gradient(circle at top right, rgba(190, 210, 194, 0.28), transparent 26%),
+    linear-gradient(180deg, #F6ECDD 0%, #F7F1E8 100%);
   color:var(--text);
   padding-top:16px;
   padding-bottom:calc(var(--bottom-safe) + var(--stickybar-h));
@@ -84,8 +87,8 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
 }
 .lang-pill[aria-current="page"]{
   color:var(--accent);
-  border-color:rgba(47,128,237,0.24);
-  background:rgba(47,128,237,0.08);
+  border-color:rgba(217,120,70,0.24);
+  background:rgba(217,120,70,0.08);
 }
 
 
@@ -98,9 +101,9 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   width:min(210px, calc(100vw - 24px));
   padding:10px 12px;
   border-radius:16px;
-  border:1px solid rgba(47,128,237,0.16);
-  background:rgba(255,255,255,0.94);
-  box-shadow:0 12px 30px rgba(15,23,42,0.12);
+  border:1px solid rgba(217,120,70,0.16);
+  background:rgba(255,252,247,0.94);
+  box-shadow:0 12px 30px rgba(90,63,34,0.12);
   backdrop-filter:blur(10px);
   transition:transform .18s ease, box-shadow .18s ease, opacity .18s ease;
 }
@@ -116,7 +119,7 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   align-items:center;
   gap:6px;
   margin-bottom:6px;
-  color:#2F80ED;
+  color:var(--accent);
   font-size:11px;
   font-weight:900;
   letter-spacing:-0.02em;
@@ -139,7 +142,7 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   line-height:1;
   font-weight:1000;
   letter-spacing:-0.04em;
-  color:#0F172A;
+  color:var(--text);
 }
 .ga-floating-badge__unit{
   font-size:13px;
@@ -214,8 +217,8 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   position:static;
   top:auto;
   z-index:var(--z-wizardtop);
-  background:rgba(255,255,255,0.92);
-  border:1px solid rgba(17,24,39,0.08);
+  background:rgba(255,252,247,0.92);
+  border:1px solid rgba(83,62,40,0.08);
   border-radius:16px;
   padding:12px 12px 10px;
   box-shadow:var(--shadow);
@@ -251,7 +254,7 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   height:100%;
   width:0%;
   border-radius:999px;
-  background:linear-gradient(90deg, #2F80ED 0%, #60A5FA 100%);
+  background:linear-gradient(90deg, var(--accent) 0%, var(--accent2) 100%);
   transition:width .22s ease;
 }
 .wizard-cheer{
@@ -271,9 +274,9 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   margin-top:12px;
 }
 .stage-pill{
-  border:1px solid rgba(17,24,39,0.08);
-  background:#F8FAFC;
-  color:#64748B;
+  border:1px solid rgba(83,62,40,0.08);
+  background:#FCF6EE;
+  color:#8A7A6C;
   border-radius:14px;
   padding:10px 8px;
   font-size:12px;
@@ -283,14 +286,14 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   text-wrap:balance;
 }
 .stage-pill.is-active{
-  background:#FFF7ED;
-  color:#C2410C;
-  border-color:rgba(234,88,12,0.18);
+  background:#FFF3E7;
+  color:var(--brand-deep, #945535);
+  border-color:rgba(217,120,70,0.18);
 }
 .stage-pill.is-done{
-  background:#ECFDF5;
-  color:#166534;
-  border-color:rgba(22,163,74,0.16);
+  background:#EEF6F0;
+  color:#567160;
+  border-color:rgba(114,142,121,0.18);
 }
 .stage-pill.is-upcoming{
   opacity:.72;
@@ -303,13 +306,13 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   line-height:1.25;
   letter-spacing:-0.02em;
   font-weight:1000;
-  color:#0F172A;
+  color:var(--text);
   text-wrap:balance;
 }
 
 .card{
   background:var(--card);
-  border:1px solid rgba(17,24,39,0.08);
+  border:1px solid rgba(83,62,40,0.08);
   border-radius:18px;
   box-shadow:var(--shadow);
   padding:18px;
@@ -319,13 +322,13 @@ hr{ border:none; border-top:1px solid var(--line); margin:14px 0; }
   margin-top:12px;
   padding:12px;
   border-radius:16px;
-  border:1px solid rgba(17,24,39,0.08);
-  background:#F8FAFC;
+  border:1px solid rgba(83,62,40,0.08);
+  background:#FCF6EE;
   overflow:hidden;
 }
 
 .sub{ color:var(--muted); font-weight:800; font-size:13px; line-height:1.5; }
-.hint{ color:#64748B; font-size:12px; line-height:1.5; }
+.hint{ color:#8A7A6C; font-size:12px; line-height:1.5; }
 
 .option{
   cursor:pointer;
@@ -406,14 +409,14 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
 
 .wizard-primary{
   width:100%;
-  border:1px solid rgba(47,128,237,0.18);
+  border:1px solid rgba(217,120,70,0.18);
   border-radius:14px;
   padding:14px 14px;
   font-weight:1000;
   font-size:15px;
   color:#FFFFFF;
-  background:linear-gradient(180deg, #2F80ED 0%, #2563EB 100%);
-  box-shadow:0 8px 18px rgba(47,128,237,0.18);
+  background:linear-gradient(180deg, #de8454 0%, #d97846 100%);
+  box-shadow:0 8px 18px rgba(217,120,70,0.18);
   cursor:pointer;
 }
 .wizard-primary:hover{ filter:brightness(1.02); }
@@ -422,15 +425,15 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
 .calc-btn{
   width:100%;
   margin-top:12px;
-  border:1px solid rgba(47,128,237,0.18);
-  background:#EFF6FF;
-  color:#1D4ED8;
+  border:1px solid rgba(217,120,70,0.18);
+  background:#F9EFE4;
+  color:#9b5d3a;
   border-radius:14px;
   padding:12px;
   font-weight:1000;
   cursor:pointer;
 }
-.calc-btn:hover{ background:#DBEAFE; }
+.calc-btn:hover{ background:#f5e5d3; }
 .calc-btn:disabled{ opacity:.55; cursor:not-allowed; }
 
 .address-input{
@@ -446,16 +449,16 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
 }
 .address-input::placeholder{ color:#9CA3AF; }
 .address-input:focus{
-  border-color:rgba(47,128,237,0.34);
-  box-shadow:0 0 0 4px rgba(47,128,237,0.10);
+  border-color:rgba(217,120,70,0.34);
+  box-shadow:0 0 0 4px rgba(217,120,70,0.10);
 }
 
 .distance-result{
   margin-top:12px;
   padding:12px;
   border-radius:16px;
-  border:1px solid rgba(47,128,237,0.12);
-  background:#F8FBFF;
+  border:1px solid rgba(217,120,70,0.12);
+  background:#FCF6EE;
 }
 
 .service-grid{
@@ -476,12 +479,12 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
 .service-card:hover{ background:#F8FAFC; }
 .service-card.is-active,
 .service-card.active{
-  background:#EFF6FF;
-  border-color:rgba(47,128,237,0.24);
+  background:#FFF3E7;
+  border-color:rgba(217,120,70,0.24);
 }
 .service-emoji{ font-size:22px; }
 .service-title{ margin-top:8px; font-weight:1100; letter-spacing:-0.02em; }
-.service-desc{ margin-top:4px; font-size:12px; color:#64748B; font-weight:900; }
+.service-desc{ margin-top:4px; font-size:12px; color:#8A7A6C; font-weight:900; }
 
 @media (max-width: 520px){
   .service-grid{ grid-template-columns:1fr; }
@@ -499,8 +502,8 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
 }
 .vehicle.active,
 .vehicle.selected{
-  background:#EFF6FF;
-  border-color:rgba(47,128,237,0.24);
+  background:#FFF3E7;
+  border-color:rgba(217,120,70,0.24);
 }
 
 .option{
@@ -707,10 +710,10 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
   border-radius:18px;
   padding:16px 16px;
   min-height:58px;
-  background:linear-gradient(180deg, #2F80ED 0%, #2563EB 100%);
-  border:1px solid rgba(47,128,237,0.18);
+  background:linear-gradient(180deg, #de8454 0%, #d97846 100%);
+  border:1px solid rgba(217,120,70,0.18);
   color:#FFFFFF;
-  box-shadow:0 14px 28px rgba(47,128,237,0.22);
+  box-shadow:0 14px 28px rgba(217,120,70,0.22);
 }
 .contact-btn.mega .cta-text .title{
   font-size:16px;
@@ -733,7 +736,7 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
 .contact-btn.mega:focus,
 .contact-btn.mega:focus-visible{
   outline:none;
-  box-shadow:0 0 0 3px rgba(47,128,237,0.18), 0 14px 28px rgba(47,128,237,0.22);
+  box-shadow:0 0 0 3px rgba(217,120,70,0.18), 0 14px 28px rgba(217,120,70,0.22);
 }
 .contact-btn.mega::before{
   content:"";
