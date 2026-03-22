@@ -31,7 +31,7 @@
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
 
-  --stickybar-h: 110px;
+  --stickybar-h: 86px;
   --topbar-h: calc(var(--safe-top) + 10px + var(--stickybar-h) + 16px);
   --bottomnav-h: 86px;
   --bottom-safe: calc(var(--bottomnav-h) + var(--safe-bottom) + 20px);
@@ -774,9 +774,9 @@ button[disabled].wizard-btn{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  gap:12px;
-  padding:12px 12px;
-  border-radius:16px;
+  gap:10px;
+  padding:9px 10px;
+  border-radius:14px;
   background:rgba(255,255,255,0.88);
   color:var(--text);
   border:1px solid rgba(17,24,39,0.08);
@@ -793,14 +793,14 @@ button[disabled].wizard-btn{
   transform:translateX(-50%) translateY(14px);
 }
 
-#stickyPriceBar .sticky-left{ display:flex; flex-direction:column; gap:2px; }
+#stickyPriceBar .sticky-left{ display:flex; flex-direction:column; gap:1px; }
 #stickyPriceBar .sticky-label{
-  font-size:12px;
+  font-size:11px;
   font-weight:900;
   color:var(--muted);
 }
 #stickyPriceBar .sticky-price{
-  font-size:20px;
+  font-size:18px;
   font-weight:1100;
   letter-spacing:-0.02em;
   line-height:1.1;
@@ -808,9 +808,10 @@ button[disabled].wizard-btn{
   color:#0F172A;
 }
 #stickyPriceBar .sticky-under{
-  font-size:12px;
-  font-weight:900;
+  font-size:11px;
+  font-weight:800;
   color:#64748B;
+  line-height:1.35;
 }
 
 .wizard-nav{
@@ -1629,8 +1630,8 @@ button:active{ transform:scale(0.97); }
   align-items:center;
   justify-content:space-between;
   gap:12px;
-  margin-top:6px;
-  font-size:13px;
+  margin-top:4px;
+  font-size:12px;
   color:var(--muted);
 }
 .sticky-subamount-value{
@@ -2344,7 +2345,7 @@ body{
 }
 
 .sticky-ga-slot{
-  flex:0 0 250px;
+  flex:0 0 206px;
   display:flex;
   align-items:stretch;
   justify-content:flex-end;
@@ -2353,26 +2354,26 @@ body{
 .ga-floating-badge--inline{
   position:static;
   width:100%;
-  max-width:250px;
-  padding:12px 14px;
-  border-radius:16px;
+  max-width:206px;
+  padding:9px 10px;
+  border-radius:14px;
   box-shadow:none;
   border:1px solid rgba(237,107,47,0.14);
   background:rgba(255,255,255,0.78);
 }
 
 .ga-floating-badge--inline .ga-floating-badge__hero-copy{
-  font-size:12px;
-}
-
-.ga-floating-badge--inline .ga-floating-badge__desc{
-  margin-top:6px;
   font-size:11px;
 }
 
+.ga-floating-badge--inline .ga-floating-badge__desc{
+  margin-top:4px;
+  font-size:10px;
+}
+
 .ga-floating-badge--inline .ga-floating-badge__stat{
-  padding:8px 10px;
-  border-radius:12px;
+  padding:6px 8px;
+  border-radius:10px;
 }
 
 .wizard-btn{
@@ -2420,6 +2421,10 @@ body{
 }
 
 @media (max-width: 640px){
+  :root{
+    --stickybar-h: 76px;
+  }
+
   .landing-eyebrow{
     font-size:12px;
     padding:9px 12px;
@@ -2455,6 +2460,8 @@ body{
   #stickyPriceBar .sticky-inner{
     display:grid;
     grid-template-columns:1fr;
+    gap:8px;
+    padding:8px 9px;
   }
 
   .sticky-ga-slot{
@@ -2464,9 +2471,18 @@ body{
 
   .ga-floating-badge--inline{
     max-width:none;
+    padding:8px 9px;
   }
 
   .ga-floating-badge--inline .ga-floating-badge__desc{
     display:none;
+  }
+
+  #stickyPriceBar .sticky-price{
+    font-size:17px;
+  }
+
+  #stickyPriceBar .sticky-under{
+    font-size:10px;
   }
 }
