@@ -25,6 +25,62 @@ async function loadStats() {
   }
 }
 
+function initReveal() {
+  const blockSelectors = [
+    '.hero-copy',
+    '.hero-panel',
+    '.quick-band-card',
+    '.section-surface',
+    '.driver-proof-shell .section-head',
+    '.faq-shell',
+    '.final-cta',
+    '.footer-service-card',
+    '.biz-footer'
+  ];
+
+  const staggerSelectors = [
+    '.stats-grid',
+    '.quick-tags',
+    '.trust-strip',
+    '.flow-grid',
+    '.driver-proof-grid',
+    '.trust-grid',
+    '.faq-list'
+  ];
+
+  const blockElements = blockSelectors.flatMap((selector) => Array.from(document.querySelectorAll(selector)));
+  const staggerElements = staggerSelectors.flatMap((selector) => Array.from(document.querySelectorAll(selector)));
+
+  const targets = [
+    ...blockElements.map((element) => ({ element, className: 'reveal-block' })),
+    ...staggerElements.map((element) => ({ element, className: 'reveal-stagger' }))
+  ];
+
+  if (!targets.length) return;
+
+  targets.forEach(({ element, className }) => {
+    element.classList.add(className);
+  });
+
+  if (!('IntersectionObserver' in window)) {
+    targets.forEach(({ element }) => element.classList.add('is-visible'));
+    return;
+  }
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add('is-visible');
+      observer.unobserve(entry.target);
+    });
+  }, {
+    threshold: 0.18,
+    rootMargin: '0px 0px -10% 0px'
+  });
+
+  targets.forEach(({ element }) => observer.observe(element));
+}
+
 function captureAttribution() {
   const qs = new URLSearchParams(location.search);
   const source = qs.get('utm_source') || qs.get('source') || qs.get('channel');
@@ -44,4 +100,5 @@ function captureAttribution() {
 document.addEventListener('DOMContentLoaded', () => {
   captureAttribution();
   loadStats();
+  initReveal();
 });
