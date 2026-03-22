@@ -7,6 +7,10 @@ function sumAmounts(items) {
   return items.reduce((acc, item) => acc + Number(item.amount || 0), 0);
 }
 
+function sumField(items, field) {
+  return items.reduce((acc, item) => acc + Number(item?.[field] || 0), 0);
+}
+
 export async function handler(event) {
   const opt = handleOptions(event);
   if (opt) return opt;
@@ -23,6 +27,9 @@ export async function handler(event) {
         driver_id,
         status,
         amount,
+        withholding_rate,
+        withholding_amount,
+        net_amount,
         approved_at,
         paid_at,
         held_at,
@@ -100,7 +107,9 @@ export async function handler(event) {
       .map((group) => ({
         ...group,
         count: group.items.length,
-        totalAmount: sumAmounts(group.items)
+        totalAmount: sumAmounts(group.items),
+        withholdingAmount: sumField(group.items, 'withholding_amount'),
+        netAmount: sumField(group.items, 'net_amount')
       }))
       .sort((a, b) => {
         const dateA = a.periodStart || '';
@@ -111,10 +120,16 @@ export async function handler(event) {
     const summary = {
       approvedCount: approvedGroups.reduce((acc, group) => acc + group.count, 0),
       approvedAmount: approvedGroups.reduce((acc, group) => acc + group.totalAmount, 0),
+      approvedWithholdingAmount: approvedGroups.reduce((acc, group) => acc + group.withholdingAmount, 0),
+      approvedNetAmount: approvedGroups.reduce((acc, group) => acc + group.netAmount, 0),
       heldCount: held.length,
       heldAmount: sumAmounts(held),
+      heldWithholdingAmount: sumField(held, 'withholding_amount'),
+      heldNetAmount: sumField(held, 'net_amount'),
       paidCount: paid.length,
-      paidAmount: sumAmounts(paid)
+      paidAmount: sumAmounts(paid),
+      paidWithholdingAmount: sumField(paid, 'withholding_amount'),
+      paidNetAmount: sumField(paid, 'net_amount')
     };
 
     return ok({

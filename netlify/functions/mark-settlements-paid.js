@@ -17,7 +17,7 @@ export async function handler(event) {
     const supabase = adminClient();
     const { data, error } = await supabase
       .from('settlements')
-      .select('id, driver_id, amount, status, approved_at, created_at, payout_period_key, payout_period_start, payout_period_end')
+      .select('id, driver_id, amount, withholding_rate, withholding_amount, net_amount, status, approved_at, created_at, payout_period_key, payout_period_start, payout_period_end')
       .eq('driver_id', driverId)
       .eq('status', 'approved');
 
@@ -54,7 +54,9 @@ export async function handler(event) {
     return ok({
       settlements: updated || [],
       count: ids.length,
-      totalAmount: targetRows.reduce((acc, row) => acc + Number(row.amount || 0), 0)
+      totalAmount: targetRows.reduce((acc, row) => acc + Number(row.amount || 0), 0),
+      totalWithholdingAmount: targetRows.reduce((acc, row) => acc + Number(row.withholding_amount || 0), 0),
+      totalNetAmount: targetRows.reduce((acc, row) => acc + Number(row.net_amount || 0), 0)
     });
   } catch (error) {
     return fail('지급 완료 처리 실패', error.message, 500);

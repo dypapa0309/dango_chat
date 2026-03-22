@@ -49,8 +49,8 @@ function renderSettlementItems(settlements = []) {
   if (!settlements.length) return '<div class="mini-card muted">정산 내역이 아직 없어요.</div>';
   return `<div class="detail-list">${settlements.map((settlement) => `
     <div class="detail-item">
-      <strong>${money(settlement.amount)} · ${escapeHtml(settlement.status || '-')}</strong>
-      <div class="row">정산기간 ${escapeHtml(settlement.period_key || '-')} / 지급 ${formatDateTime(settlement.paid_at)}</div>
+      <strong>총 ${money(settlement.amount)} / 세금 ${money(settlement.withholding_amount)} / 실지급 ${money(settlement.net_amount)} · ${escapeHtml(settlement.status || '-')}</strong>
+      <div class="row">정산기간 ${escapeHtml(settlement.payout_period_key || settlement.period_key || '-')} / 지급 ${formatDateTime(settlement.paid_at)}</div>
       <div class="row">${escapeHtml(settlement.paid_by || '-')} / ${escapeHtml(settlement.payout_memo || '-')}</div>
     </div>
   `).join('')}</div>`;
@@ -548,21 +548,24 @@ function renderSettlementSummary(summary = {}) {
   const summaryEl = document.getElementById('settlementSummary');
   const cards = document.getElementById('settlementCards');
   if (!summaryEl || !cards) return;
-  summaryEl.textContent = `대기 ${money(summary.approvedAmount)} / 보류 ${money(summary.heldAmount)}`;
+  summaryEl.textContent = `대기 실지급 ${money(summary.approvedNetAmount)} / 보류 실지급 ${money(summary.heldNetAmount)}`;
   cards.innerHTML = `
     <div class="summary-card">
       <div class="muted">지급 대기</div>
-      <strong>${money(summary.approvedAmount)}</strong>
+      <strong>${money(summary.approvedNetAmount)}</strong>
+      <div class="row">총 ${money(summary.approvedAmount)} / 세금 ${money(summary.approvedWithholdingAmount)}</div>
       <div class="row">${Number(summary.approvedCount || 0)}건</div>
     </div>
     <div class="summary-card">
       <div class="muted">보류 중</div>
-      <strong>${money(summary.heldAmount)}</strong>
+      <strong>${money(summary.heldNetAmount)}</strong>
+      <div class="row">총 ${money(summary.heldAmount)} / 세금 ${money(summary.heldWithholdingAmount)}</div>
       <div class="row">${Number(summary.heldCount || 0)}건</div>
     </div>
     <div class="summary-card">
       <div class="muted">최근 지급 완료</div>
-      <strong>${money(summary.paidAmount)}</strong>
+      <strong>${money(summary.paidNetAmount)}</strong>
+      <div class="row">총 ${money(summary.paidAmount)} / 세금 ${money(summary.paidWithholdingAmount)}</div>
       <div class="row">${Number(summary.paidCount || 0)}건</div>
     </div>
   `;
@@ -641,7 +644,7 @@ async function markSettlementsPaid(driverId, periodKey) {
   });
   const data = await res.json();
   if (!data.success) return alert(data.error || '지급 완료 처리 실패');
-  alert(`지급 완료 처리 ${data.count || 0}건 / ${money(data.totalAmount)}`);
+  alert(`지급 완료 처리 ${data.count || 0}건 / 총 ${money(data.totalAmount)} / 세금 ${money(data.totalWithholdingAmount)} / 실지급 ${money(data.totalNetAmount)}`);
   await loadSettlementDashboard();
 }
 
@@ -670,17 +673,19 @@ async function loadSettlementDashboard() {
           <strong>${escapeHtml(group.driverName || '기사 미확인')}</strong>
           <div class="row">${escapeHtml(group.periodLabel || '-')} · ${group.count}건</div>
         </div>
-        <div class="price">${money(group.totalAmount)}</div>
+        <div class="price">${money(group.netAmount)}</div>
       </div>
       <div class="settlement-meta">
         <span class="pill ${group.payoutEnabled ? 'ok' : 'warn'}">${group.payoutEnabled ? '정산 가능' : '계좌 확인 필요'}</span>
         <span class="pill">${escapeHtml(group.bankName || '은행 미등록')}</span>
         <span class="pill mono">${escapeHtml(maskAccountNumber(group.accountNumber))}</span>
       </div>
+      <div class="row" style="margin:8px 0 12px;">총 ${money(group.totalAmount)} / 3.3% ${money(group.withholdingAmount)} / 실지급 ${money(group.netAmount)}</div>
       <ul class="settlement-items">
         ${group.items.map((item) => `
           <li>
-            <strong>${money(item.amount)}</strong>
+            <strong>${money(item.net_amount)}</strong>
+            <div class="row">총 ${money(item.amount)} / 세금 ${money(item.withholding_amount)}</div>
             <div class="row">${escapeHtml(item.jobs?.customer_name || '고객')} · ${escapeHtml(item.jobs?.move_date || '-')}</div>
             <div class="row">${escapeHtml(item.jobs?.start_address || '-')} → ${escapeHtml(item.jobs?.end_address || '-')}</div>
           </li>
@@ -704,7 +709,8 @@ async function loadSettlementDashboard() {
     const card = document.createElement('div');
     card.className = 'mini-card';
     card.innerHTML = `
-      <strong>${escapeHtml(item.drivers?.name || '기사 미확인')} · ${money(item.amount)}</strong>
+      <strong>${escapeHtml(item.drivers?.name || '기사 미확인')} · 실지급 ${money(item.net_amount)}</strong>
+      <div class="row">총 ${money(item.amount)} / 세금 ${money(item.withholding_amount)}</div>
       <div class="row">${escapeHtml(item.hold_reason || '보류 사유 없음')}</div>
       <div class="row">${escapeHtml(item.jobs?.customer_name || '고객')} / ${escapeHtml(item.jobs?.move_date || '-')}</div>
     `;
@@ -719,7 +725,8 @@ async function loadSettlementDashboard() {
     const card = document.createElement('div');
     card.className = 'mini-card';
     card.innerHTML = `
-      <strong>${escapeHtml(item.drivers?.name || '기사 미확인')} · ${money(item.amount)}</strong>
+      <strong>${escapeHtml(item.drivers?.name || '기사 미확인')} · 실지급 ${money(item.net_amount)}</strong>
+      <div class="row">총 ${money(item.amount)} / 세금 ${money(item.withholding_amount)}</div>
       <div class="row">${escapeHtml(item.paid_at || '-')} · ${escapeHtml(item.paid_by || '운영자')}</div>
       <div class="row">${escapeHtml(item.payout_memo || '수동 이체 완료')}</div>
     `;

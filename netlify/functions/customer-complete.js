@@ -1,6 +1,6 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
-import { buildApprovedSettlementFields } from '../../shared/settlements.js';
+import { buildApprovedSettlementFields, calculateFreelancerWithholding } from '../../shared/settlements.js';
 
 async function loadJobByToken(supabase, token) {
   const { data, error } = await supabase
@@ -53,12 +53,16 @@ export async function handler(event) {
 
     if (job.assigned_driver_id) {
       const existingSettlement = Array.isArray(job.settlements) ? job.settlements[0] : null;
+      const withholding = calculateFreelancerWithholding(job.driver_amount || existingSettlement?.amount || 0);
       if (existingSettlement) {
         const { error: settlementError } = await supabase
           .from('settlements')
           .update({
             ...buildApprovedSettlementFields(new Date(), {
-              amount: job.driver_amount || existingSettlement.amount || 0,
+              amount: withholding.grossAmount,
+              withholding_rate: withholding.withholdingRate,
+              withholding_amount: withholding.withholdingAmount,
+              net_amount: withholding.netAmount,
               driver_id: job.assigned_driver_id
             }),
             memo: note || '고객 완료 확인으로 정산 승인'
@@ -69,7 +73,10 @@ export async function handler(event) {
         const { error: createSettlementError } = await supabase.from('settlements').insert({
           job_id: job.id,
           driver_id: job.assigned_driver_id,
-          amount: job.driver_amount || 0,
+          amount: withholding.grossAmount,
+          withholding_rate: withholding.withholdingRate,
+          withholding_amount: withholding.withholdingAmount,
+          net_amount: withholding.netAmount,
           ...buildApprovedSettlementFields(new Date()),
           memo: note || '고객 완료 확인으로 정산 승인'
         });

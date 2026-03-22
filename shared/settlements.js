@@ -42,6 +42,20 @@ export function buildApprovedSettlementFields(input, overrides = {}) {
   };
 }
 
+export function calculateFreelancerWithholding(grossAmount, rate = 0.033) {
+  const gross = Math.max(0, Number(grossAmount || 0));
+  const normalizedRate = Number(rate || 0.033);
+  const withholdingAmount = Math.round(gross * normalizedRate);
+  const netAmount = Math.max(0, gross - withholdingAmount);
+
+  return {
+    grossAmount: gross,
+    withholdingRate: normalizedRate,
+    withholdingAmount,
+    netAmount
+  };
+}
+
 export function getSettlementPeriod(row) {
   if (row?.payout_period_key && row?.payout_period_start && row?.payout_period_end) {
     return {

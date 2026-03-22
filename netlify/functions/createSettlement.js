@@ -1,6 +1,6 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
-import { buildApprovedSettlementFields } from '../../shared/settlements.js';
+import { buildApprovedSettlementFields, calculateFreelancerWithholding } from '../../shared/settlements.js';
 import { requireAdmin } from '../../shared/admin-auth.js';
 
 export async function handler(event) {
@@ -25,12 +25,18 @@ export async function handler(event) {
       .limit(1)
       .maybeSingle();
 
+    const grossAmount = job.driver_amount || existing?.amount || 0;
+    const withholding = calculateFreelancerWithholding(grossAmount);
+
     if (existing) {
       const { data, error: updateError } = await supabase
         .from('settlements')
         .update({
           driver_id: job.assigned_driver_id,
-          amount: job.driver_amount || existing.amount || 0,
+          amount: withholding.grossAmount,
+          withholding_rate: withholding.withholdingRate,
+          withholding_amount: withholding.withholdingAmount,
+          net_amount: withholding.netAmount,
           ...buildApprovedSettlementFields(new Date()),
           memo: '완료 처리로 정산 승인'
         })
@@ -44,7 +50,10 @@ export async function handler(event) {
     const { data, error: createError } = await supabase.from('settlements').insert({
       job_id: job.id,
       driver_id: job.assigned_driver_id,
-      amount: job.driver_amount || 0,
+      amount: withholding.grossAmount,
+      withholding_rate: withholding.withholdingRate,
+      withholding_amount: withholding.withholdingAmount,
+      net_amount: withholding.netAmount,
       ...buildApprovedSettlementFields(new Date()),
       memo: '자동 정산 생성'
     }).select('*').single();
