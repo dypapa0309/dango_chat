@@ -777,7 +777,15 @@ async function cancelAssign(jobId) {
     body: JSON.stringify({ jobId })
   });
   const data = await res.json();
-  if (!data.success) alert(data.error || '취소 실패');
+  if (!data.success) {
+    alert(data.error || '취소 실패');
+    return;
+  }
+  if (Number(data.canceledCount || 0) > 0) {
+    alert(`배차 요청 ${Number(data.canceledCount || 0)}건을 취소했습니다. 현재 상태는 ${data.dispatchStatus || 'idle'}입니다.`);
+  } else {
+    alert(data.message || '취소할 배차 요청이 없어요.');
+  }
   await loadAll();
 }
 
