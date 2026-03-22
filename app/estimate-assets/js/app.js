@@ -2274,9 +2274,9 @@ function normalizeItemKey(k) {
     helperFee(state.helperTo);
 
   // ✅ 작업비 덩어리(배율 대상)
-  let workSubtotal = base + load + stairs + cantCarry + helpers;
+  let workSubtotal = base + load + stairs + cantCarry;
 
-  // ✅ 배율 제외(거리/사다리/동승/가전/폐기/청소옵션/보관비 등)
+  // ✅ 배율 제외(인부/사다리차 포함)
   const distance = moveDistanceFee(state.distanceKm);
 
   const ladders =
@@ -2310,7 +2310,6 @@ function normalizeItemKey(k) {
   let moveOnlyPrice =
     workSubtotal +
     distance +
-    ladders +
     ride +
     cleanOpt +
     items +
@@ -2320,9 +2319,9 @@ function normalizeItemKey(k) {
     moveOnlyPrice *= 2;
   }
 
-  let price = moveOnlyPrice + storageFee;
+  let price = (moveOnlyPrice + storageFee) * PRICE_MULTIPLIER;
 
-  price *= PRICE_MULTIPLIER;
+  price += helpers + ladders;
   return price;
 }
 
