@@ -125,6 +125,16 @@ function buildDriverJoinMessage(driver, url) {
   ].join('\n');
 }
 
+function buildDriverRecruitMessage(url) {
+  return [
+    '당고 신규 기사 모집 안내입니다.',
+    '소형이사와 소형청소 배차를 받을 기사님을 모집하고 있습니다.',
+    '아래 공용 지원 링크에서 정보 입력과 계약 동의를 진행해주세요.',
+    url,
+    '지원이 접수되면 운영팀 확인 후 배차 가능 상태를 안내드립니다.'
+  ].join('\n');
+}
+
 async function withButtonBusy(button, busyText, job) {
   if (!button) return job();
   const prevText = button.textContent;
@@ -289,17 +299,44 @@ async function loadDrivers() {
   const eligibleDriverSummaryEl = document.getElementById('eligibleDriverSummary');
   const eligibleList = document.getElementById('eligibleDriverList');
   const list = document.getElementById('driverList');
-  if (!driverCountEl && !eligibleDriverCountEl && !eligibleDriverSummaryEl && !eligibleList && !list) return;
+  const driverStatusSummaryEl = document.getElementById('driverStatusSummary');
+  const driverSummaryCardsEl = document.getElementById('driverSummaryCards');
+  if (!driverCountEl && !eligibleDriverCountEl && !eligibleDriverSummaryEl && !eligibleList && !list && !driverStatusSummaryEl && !driverSummaryCardsEl) return;
   const res = await adminFetch(api('get-drivers'));
   const data = await res.json();
   const drivers = data.drivers || [];
   if (driverCountEl) driverCountEl.textContent = `${drivers.length}명`;
+  const pendingDrivers = drivers.filter((driver) => driver.status === 'pending_review');
+  const activeDrivers = drivers.filter((driver) => driver.status === 'active');
+  const contractReadyDrivers = drivers.filter((driver) => driver.consign_contract_agreed && driver.commercial_plate_confirmed);
   const eligibleDrivers = drivers.filter((driver) =>
     driver.status === 'active' &&
     driver.dispatch_enabled &&
     driver.consign_contract_agreed &&
     driver.commercial_plate_confirmed
   );
+  if (driverStatusSummaryEl) {
+    driverStatusSummaryEl.textContent = `지원대기 ${pendingDrivers.length}명 / 활성 ${activeDrivers.length}명`;
+  }
+  if (driverSummaryCardsEl) {
+    driverSummaryCardsEl.innerHTML = `
+      <div class="summary-card">
+        <div class="muted">지원 대기</div>
+        <strong>${pendingDrivers.length}명</strong>
+        <div class="row">공용 모집 링크 접수 기준</div>
+      </div>
+      <div class="summary-card">
+        <div class="muted">계약 완료</div>
+        <strong>${contractReadyDrivers.length}명</strong>
+        <div class="row">계약 동의 + 영업용 확인 완료</div>
+      </div>
+      <div class="summary-card">
+        <div class="muted">배차 가능</div>
+        <strong>${eligibleDrivers.length}명</strong>
+        <div class="row">활성 + 배차허용 + 계약완료</div>
+      </div>
+    `;
+  }
   if (eligibleDriverCountEl) eligibleDriverCountEl.textContent = `${eligibleDrivers.length}명`;
   if (eligibleDriverSummaryEl) {
     eligibleDriverSummaryEl.textContent =
@@ -341,16 +378,23 @@ async function loadDrivers() {
       </div>
       <div class="row">차량 ${escapeHtml(driver.vehicle_type || '-')} / 번호 ${escapeHtml(driver.vehicle_number || '-')}</div>
       <div class="driver-grid">
+        <select data-field="status">
+          <option value="pending_review" ${driver.status === 'pending_review' ? 'selected' : ''}>지원 대기</option>
+          <option value="active" ${driver.status === 'active' ? 'selected' : ''}>활성</option>
+          <option value="inactive" ${driver.status === 'inactive' ? 'selected' : ''}>비활성</option>
+        </select>
+        <label class="check"><input type="checkbox" data-field="dispatchEnabled" ${driver.dispatch_enabled ? 'checked' : ''} /> 배차 허용</label>
         <input type="text" data-field="bankName" value="${escapeHtml(driver.bank_name || '')}" placeholder="은행명" />
         <input type="text" data-field="accountHolder" value="${escapeHtml(driver.account_holder || '')}" placeholder="예금주" />
         <input type="text" data-field="accountNumber" value="${escapeHtml(driver.account_number || '')}" placeholder="계좌번호" />
         <label class="check"><input type="checkbox" data-field="payoutEnabled" ${driver.payout_enabled ? 'checked' : ''} /> 정산 가능</label>
         <textarea data-field="payoutNote" placeholder="정산 메모">${escapeHtml(driver.payout_note || '')}</textarea>
+        <textarea data-field="internalMemo" placeholder="기사 내부 메모">${escapeHtml(driver.internal_memo || '')}</textarea>
       </div>
       <div class="driver-actions">
-        <button class="btn" data-action="copy-join">가입 링크 복사</button>
-        <button class="btn" data-action="copy-message">안내 문구 복사</button>
-        <button class="btn primary" data-action="save-driver">계좌 저장</button>
+        <button class="btn" data-action="copy-join">개별 온보딩 링크 복사</button>
+        <button class="btn" data-action="copy-message">개별 온보딩 문구 복사</button>
+        <button class="btn primary" data-action="save-driver">기사 정보 저장</button>
       </div>
     `;
 
@@ -371,11 +415,14 @@ async function loadDrivers() {
     card.querySelector('[data-action="save-driver"]').onclick = async (e) => withButtonBusy(e.currentTarget, '저장 중...', async () => {
       const payload = {
         driverId: driver.id,
+        status: card.querySelector('[data-field="status"]').value,
+        dispatchEnabled: card.querySelector('[data-field="dispatchEnabled"]').checked,
         bankName: card.querySelector('[data-field="bankName"]').value,
         accountHolder: card.querySelector('[data-field="accountHolder"]').value,
         accountNumber: card.querySelector('[data-field="accountNumber"]').value,
         payoutEnabled: card.querySelector('[data-field="payoutEnabled"]').checked,
-        payoutNote: card.querySelector('[data-field="payoutNote"]').value
+        payoutNote: card.querySelector('[data-field="payoutNote"]').value,
+        internalMemo: card.querySelector('[data-field="internalMemo"]').value
       };
 
       const saveRes = await adminFetch(api('update-driver-payout'), {
@@ -385,7 +432,8 @@ async function loadDrivers() {
       });
       const saveData = await saveRes.json();
       if (!saveData.success) return alert(saveData.error || '기사 계좌 저장 실패');
-      alert('기사 계좌 정보를 저장했어요.');
+      alert('기사 정보를 저장했어요.');
+      loadDrivers();
       loadSettlementDashboard();
     });
 
@@ -723,6 +771,16 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnRefresh')?.addEventListener('click', (e) => {
     withButtonBusy(e.currentTarget, '새로고침 중...', () => loadAll());
   });
+  document.getElementById('btnCopyRecruitLink')?.addEventListener('click', (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+    const url = `${location.origin}/driver/apply.html`;
+    await navigator.clipboard.writeText(url);
+    alert('신규 기사 모집 링크를 복사했어요.');
+  }));
+  document.getElementById('btnCopyRecruitMessage')?.addEventListener('click', (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+    const url = `${location.origin}/driver/apply.html`;
+    await navigator.clipboard.writeText(buildDriverRecruitMessage(url));
+    alert('신규 기사 모집 문구를 복사했어요.');
+  }));
   btnLogout?.addEventListener('click', () => {
     clearAdminToken();
     showAdminGate('로그아웃했어요.');

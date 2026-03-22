@@ -39,6 +39,23 @@
 
     <main class="layout layout-secondary admin-page">
       <section class="panel">
+        <div class="panel-head"><h2>신규 기사 모집</h2><span id="driverRecruitSummary">공용 링크</span></div>
+        <div class="mini-card">
+          <strong>불특정 다수 신규 기사 지원 링크</strong>
+          <div class="row">새 기사 지원자는 공용 링크로 지원서를 넣고, 관리자는 기사 관리에서 승인합니다.</div>
+        </div>
+        <div class="driver-actions">
+          <button id="btnCopyRecruitLink" class="btn">모집 링크 복사</button>
+          <button id="btnCopyRecruitMessage" class="btn primary">모집 안내 문구 복사</button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>기사 현황</h2><span id="driverStatusSummary">0명</span></div>
+        <div id="driverSummaryCards" class="summary-grid"></div>
+      </section>
+
+      <section class="panel">
         <div class="panel-head"><h2>배차 가능 기사</h2><span id="eligibleDriverCount">0명</span></div>
         <div id="eligibleDriverSummary" class="mini-card muted">기사를 불러오고 있습니다.</div>
         <div id="eligibleDriverList" class="stack-list compact"></div>
@@ -46,7 +63,7 @@
 
       <section class="panel panel-wide">
         <div class="panel-head"><h2>기사 관리</h2><span id="driverCount">0명</span></div>
-        <p class="muted">기존 등록 기사별 가입 마무리, 계약 완료 상태, 계좌 정보, 정산 가능 여부를 관리합니다.</p>
+        <p class="muted">공용 모집 링크로 들어온 신규 기사와 기존 등록 기사 상태를 여기서 승인하고 관리합니다.</p>
         <div id="driverList" class="stack-list"></div>
       </section>
     </main>

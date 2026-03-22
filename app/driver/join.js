@@ -27,7 +27,7 @@
   commercialPlateConfirmed.addEventListener('change', syncButton);
 
   if (!token) {
-    statusEl.innerHTML = '<strong>유효하지 않은 가입 링크예요.</strong><div>운영툴에서 복사한 전체 가입 링크로 다시 열어주세요.</div>';
+    statusEl.innerHTML = '<strong>유효하지 않은 가입 링크입니다.</strong><div>신규 기사 지원은 공용 지원 링크를 사용하고, 기존 등록 기사 온보딩은 운영툴에서 복사한 전체 개별 링크로 다시 열어주세요.</div>';
     formBody.hidden = true;
     return;
   }

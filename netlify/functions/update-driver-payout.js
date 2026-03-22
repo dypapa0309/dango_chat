@@ -14,23 +14,26 @@ export async function handler(event) {
   if (denied) return denied;
 
   try {
-    const { driverId, bankName, accountNumber, accountHolder, payoutEnabled, payoutNote } = parseBody(event);
+    const { driverId, status, dispatchEnabled, bankName, accountNumber, accountHolder, payoutEnabled, payoutNote, internalMemo } = parseBody(event);
     if (!driverId) return fail('driverId가 필요합니다.');
 
     const supabase = adminClient();
     const payload = {
+      status: (status || '').trim() || 'pending_review',
+      dispatch_enabled: Boolean(dispatchEnabled),
       bank_name: (bankName || '').trim() || null,
       account_number: normalizeAccountNumber(accountNumber) || null,
       account_holder: (accountHolder || '').trim() || null,
       payout_enabled: Boolean(payoutEnabled),
-      payout_note: (payoutNote || '').trim() || null
+      payout_note: (payoutNote || '').trim() || null,
+      internal_memo: (internalMemo || '').trim() || null
     };
 
     const { data, error } = await supabase
       .from('drivers')
       .update(payload)
       .eq('id', driverId)
-      .select('id, name, phone, bank_name, account_number, account_holder, payout_enabled, payout_note')
+      .select('id, name, phone, status, dispatch_enabled, bank_name, account_number, account_holder, payout_enabled, payout_note, internal_memo')
       .single();
 
     if (error) throw error;

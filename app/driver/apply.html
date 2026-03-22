@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 신규 기사 지원</title>
+  <link rel="stylesheet" href="./accept.css" />
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <h1>당고 신규 기사 지원</h1>
+      <div id="joinStatus" class="job-info">
+        <strong>공용 기사 모집 링크입니다.</strong>
+        <div>정보와 계약 동의를 남기면 운영팀이 확인 후 배차 가능 상태를 안내합니다.</div>
+      </div>
+      <div id="joinFormBody">
+        <div class="form-grid">
+          <input id="driverName" type="text" placeholder="이름" />
+          <input id="driverPhone" type="tel" placeholder="연락처" />
+          <input id="vehicleType" type="text" placeholder="차량 종류 예: 1톤 카고" />
+          <input id="vehicleNumber" type="text" placeholder="차량 번호" />
+          <input id="bankName" type="text" placeholder="은행명" />
+          <input id="accountHolder" type="text" placeholder="예금주" />
+          <input id="accountNumber" type="text" placeholder="계좌번호" />
+        </div>
+
+        <textarea id="payoutNote" rows="3" placeholder="정산 메모가 있으면 적어주세요."></textarea>
+
+        <details class="agreement-box agreement-toggle">
+          <summary>
+            <strong>위탁운송 계약 내용 보기</strong>
+            <span class="agreement-summary">눌러서 자세히 확인합니다.</span>
+          </summary>
+          <div class="agreement-body">
+            <p>아래 내용은 기사 지원과 배차 수행 전 확인용 요약입니다. 실제 법령 준수 책임은 기사 본인에게 있습니다.</p>
+            <ul>
+              <li><strong>화물자동차 운수사업법 제2조</strong> 기준상 유상 화물운송은 화물자동차 운송사업, 운송주선사업, 운송가맹사업 체계 안에서 운영됩니다.</li>
+              <li><strong>화물자동차 운수사업법 제56조</strong> 기준상 자가용 화물자동차를 유상 화물운송용으로 제공하거나 임대하는 것은 원칙적으로 금지됩니다.</li>
+              <li><strong>화물자동차 운수사업법 시행규칙 제38조의3 제3호</strong>에는 자가용 화물자동차 소유자 또는 사용자에게 화물운송을 주선하지 말아야 한다고 규정돼 있습니다.</li>
+              <li><strong>화물자동차 운수사업법 제2조 제11호</strong>에는 화물을 직접 운송하는 화물차주 범위에 개인 운송사업자와 위·수탁차주가 포함됩니다.</li>
+              <li>기사 본인은 적법한 운송 자격, 영업용 차량 기준, 보험 가입 여부를 스스로 확인한 뒤 배차를 수행해야 합니다.</li>
+              <li>영업용 번호판, 허가, 보험, 자격 미충족 상태에서 운행해 생기는 행정처분, 민형사상 책임, 손해배상 책임은 기사 본인에게 있습니다.</li>
+              <li>당고는 기사 본인의 허위 확인, 무자격 운행, 자가용 유상운송, 보험 미가입 운행으로 생기는 법적 책임을 부담하지 않습니다.</li>
+            </ul>
+            <p class="agreement-source">참고 법령: 화물자동차 운수사업법 제2조, 제56조 / 화물자동차 운수사업법 시행규칙 제38조의3</p>
+          </div>
+        </details>
+
+        <label class="checkline"><input id="commercialPlateConfirmed" type="checkbox" /> 영업용 차량 기준과 자격 요건을 확인했고 적법한 운송 자격으로 운행합니다.</label>
+        <label class="checkline"><input id="contractAgreed" type="checkbox" /> 위탁운송 계약 내용과 법령 준수 책임에 동의합니다.</label>
+
+        <div class="actions">
+          <button id="btnJoin" class="btn primary" disabled>지원 접수</button>
+        </div>
+      </div>
+      <p id="joinResult" class="result"></p>
+    </div>
+  </main>
+  <script src="./apply.js"></script>
+</body>
+</html>
