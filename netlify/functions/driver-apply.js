@@ -50,7 +50,7 @@ export async function handler(event) {
     const phoneValue = normalizePhone(phone);
     const { data: existing } = await supabase
       .from('drivers')
-      .select('id, join_token, status')
+      .select('id, status')
       .eq('phone', phoneValue)
       .order('created_at', { ascending: false })
       .limit(1)
@@ -78,8 +78,7 @@ export async function handler(event) {
       consign_contract_accepted_at: new Date().toISOString(),
       dispatch_enabled: false,
       payout_enabled: false,
-      status: existing?.status === 'active' ? 'active' : 'pending_review',
-      updated_by: 'driver-apply'
+      status: existing?.status === 'active' ? 'active' : 'pending_review'
     };
 
     let data;
@@ -97,6 +96,49 @@ export async function handler(event) {
         .insert([payload])
         .select('id, name, phone, join_token, status')
         .single());
+    }
+
+    if (error && /column .* does not exist/i.test(error.message || '')) {
+      const fallbackMemo = [
+        payoutNote ? `정산 메모: ${payoutNote}` : null,
+        vehicleNumber ? `차량 번호: ${vehicleNumber}` : null,
+        `세금 이름: ${(taxName || '').trim()}`,
+        `생년월일: ${(taxBirthDate || '').trim()}`,
+        `세금 식별번호: ${(taxIdNumber || '').trim()}`,
+        taxEmail ? `세금 이메일: ${taxEmail}` : null,
+        `세금 주소: ${(taxAddress || '').trim()}`,
+        '3.3% 세금 정산 동의: 예',
+        '영업용 차량 기준 확인: 예',
+        `계약 동의 버전: ${CONTRACT_VERSION}`
+      ].filter(Boolean).join('\n');
+
+      const fallbackPayload = {
+        name: (name || '').trim(),
+        phone: phoneValue,
+        vehicle_type: (vehicleType || '').trim() || null,
+        vehicle_note: (vehicleNumber || '').trim() || null,
+        bank_name: (bankName || '').trim() || null,
+        bank_account: normalizeAccountNumber(accountNumber) || null,
+        account_holder: (accountHolder || '').trim() || null,
+        internal_memo: fallbackMemo,
+        dispatch_enabled: false,
+        status: existing?.status === 'active' ? 'active' : 'pending_review'
+      };
+
+      if (existing?.id) {
+        ({ data, error } = await supabase
+          .from('drivers')
+          .update(fallbackPayload)
+          .eq('id', existing.id)
+          .select('id, name, phone, status')
+          .single());
+      } else {
+        ({ data, error } = await supabase
+          .from('drivers')
+          .insert([fallbackPayload])
+          .select('id, name, phone, status')
+          .single());
+      }
     }
 
     if (error) throw error;
