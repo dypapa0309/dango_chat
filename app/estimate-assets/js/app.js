@@ -2365,7 +2365,40 @@ function normalizeItemKey(k) {
       const soilMul =
         state.cleanSoil === "heavy" ? 1.2 : state.cleanSoil === "normal" ? 1.1 : 1.0;
       const per = 11000;
-      return p * per * typeMul * soilMul;
+      const rawBase = p * per * typeMul * soilMul;
+      return Math.max(rawBase, getCleanMinimumBasePrice());
+    }
+
+    function getCleanMinimumBasePrice() {
+      const p = Math.max(1, toInt(state.cleanPyeong, 9));
+      const floorByType = {
+        movein: [
+          { max: 4, amount: 110000 },
+          { max: 9, amount: 140000 },
+          { max: 18, amount: 180000 },
+        ],
+        moveout: [
+          { max: 4, amount: 120000 },
+          { max: 9, amount: 150000 },
+          { max: 18, amount: 190000 },
+        ],
+        occupied: [
+          { max: 4, amount: 130000 },
+          { max: 9, amount: 160000 },
+          { max: 18, amount: 200000 },
+        ],
+      };
+      const rows = floorByType[state.cleanType] || floorByType.movein;
+      const matched = rows.find((row) => p <= row.max);
+      return matched?.amount || 0;
+    }
+
+    function getCleanMinimumGuideText() {
+      const p = Math.max(1, toInt(state.cleanPyeong, 9));
+      if (p <= 4) return "4평 이하 최소금액 11만원부터 반영돼요.";
+      if (p <= 9) return "9평 이하 원룸 기준 최소금액이 반영돼요.";
+      if (p <= 18) return "10~18평 구간 최소금액이 반영돼요.";
+      return "평수와 옵션에 맞춰 바로 계산돼요.";
     }
 
     function cleanOptionPrice() {
@@ -2985,6 +3018,14 @@ const borderColors = comparison.labels.map((label) =>
 
       if (priceEl) priceEl.textContent = formatWon(pricing.total || display);
       if (stickyPriceEl) stickyPriceEl.textContent = formatWon(pricing.total || display);
+
+      const priceUnder = $("#priceUnder");
+      const stickyPriceDetail = $("#stickyPriceDetail");
+      if (state.activeService === SERVICE.CLEAN) {
+        const guide = getCleanMinimumGuideText();
+        if (priceUnder) priceUnder.innerHTML = `${guide} <b>옵션은 별도로 더해져요.</b>`;
+        if (stickyPriceDetail) stickyPriceDetail.textContent = guide;
+      }
 
       $("#deposit") && ($("#deposit").textContent = formatWon(pricing.deposit));
       $("#balance") && ($("#balance").textContent = formatWon(pricing.balance));
