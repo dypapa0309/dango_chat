@@ -332,6 +332,79 @@
 
   const GENERIC_SERVICES = new Set(Object.keys(GENERIC_SERVICE_CONFIG));
 
+  const DETAIL_SELECTION_CONFIG = {
+    organize: {
+      title: "정리할 공간을 골라주세요.",
+      summaryTitle: "정리할 공간",
+      unit: "곳",
+      items: {
+        closet: { label: "옷장", desc: "붙박이장, 작은 옷장 정리", price: 30000 },
+        dressroom: { label: "드레스룸", desc: "드레스룸 전체 구역 정리", price: 50000 },
+        kitchen: { label: "주방", desc: "상부장, 하부장, 조리대 정리", price: 40000 },
+        pantry: { label: "팬트리", desc: "팬트리, 수납장, 창고형 선반", price: 35000 },
+        kidsroom: { label: "아이방", desc: "장난감, 책장, 수납함 정리", price: 35000 },
+        storage: { label: "창고", desc: "베란다, 다용도실, 창고 정리", price: 30000 },
+        study: { label: "서재", desc: "책상, 책장, 문서 정리", price: 30000 }
+      }
+    },
+    ac_clean: {
+      title: "청소할 에어컨 종류와 대수를 골라주세요.",
+      summaryTitle: "에어컨 종류",
+      unit: "대",
+      items: {
+        wall: { label: "벽걸이", desc: "가정용 벽걸이 에어컨", price: 90000 },
+        stand: { label: "스탠드", desc: "스탠드형 에어컨", price: 120000 },
+        twoinone: { label: "2in1", desc: "벽걸이+스탠드 세트", price: 180000 },
+        system1: { label: "시스템 1way", desc: "천장형 1way", price: 130000 },
+        system2: { label: "시스템 2way", desc: "천장형 2way", price: 160000 },
+        system4: { label: "시스템 4way", desc: "천장형 4way", price: 220000 }
+      }
+    },
+    appliance_clean: {
+      title: "청소할 가전 종류와 수량을 골라주세요.",
+      summaryTitle: "가전 종류",
+      unit: "대",
+      items: {
+        topWasher: { label: "통돌이 세탁기", desc: "통돌이 분해 세척", price: 90000 },
+        drumWasher: { label: "드럼 세탁기", desc: "드럼 세탁기 분해 세척", price: 110000 },
+        dryer: { label: "건조기", desc: "건조기 먼지와 필터 청소", price: 80000 },
+        sideFridge: { label: "양문형 냉장고", desc: "양문형 냉장고 내부 청소", price: 80000 },
+        regularFridge: { label: "일반 냉장고", desc: "일반형 냉장고 청소", price: 70000 },
+        hood: { label: "주방후드", desc: "후드망과 내부 기름때 청소", price: 60000 },
+        oven: { label: "오븐", desc: "오븐 내부 기름때 청소", price: 65000 },
+        dishwasher: { label: "식기세척기", desc: "필터와 내부 세척", price: 70000 }
+      }
+    },
+    interior: {
+      title: "필요한 공정이나 범위를 골라주세요.",
+      summaryTitle: "공사 범위",
+      unit: "항목",
+      items: {
+        wallpaper: { label: "도배", desc: "벽지 교체와 마감", price: 180000 },
+        flooring: { label: "장판", desc: "장판 또는 바닥재 교체", price: 180000 },
+        lighting: { label: "조명", desc: "등기구 교체와 설치", price: 90000 },
+        tile: { label: "타일", desc: "욕실, 주방, 부분 타일", price: 200000 },
+        paint: { label: "도장", desc: "페인트 도장 작업", price: 150000 },
+        film: { label: "필름", desc: "문, 몰딩, 가구 필름 시공", price: 170000 },
+        builtin: { label: "붙박이장", desc: "붙박이장 제작 또는 교체", price: 250000 },
+        demolition: { label: "부분 철거", desc: "철거와 폐기 정리 포함", price: 220000 }
+      }
+    },
+    interior_help: {
+      title: "보조가 필요한 작업을 골라주세요.",
+      summaryTitle: "보조 작업",
+      unit: "건",
+      items: {
+        material: { label: "자재 운반", desc: "현장 자재 이동 보조", price: 100000 },
+        moving: { label: "가구 이동", desc: "가구, 집기 현장 이동", price: 90000 },
+        waste: { label: "폐기물 정리", desc: "잔재와 폐기물 정리 보조", price: 110000 },
+        lifting: { label: "양중", desc: "상하차, 층간 운반", price: 130000 },
+        cleanup: { label: "현장 청소", desc: "작업 후 현장 정리", price: 85000 },
+        demolitionHelp: { label: "철거 보조", desc: "철거 현장 보조 작업", price: 120000 }
+      }
+    }
+  };
+
   const WASTE_ITEM_PRICES = {
     chair: 10000,
     table: 20000,
@@ -370,7 +443,8 @@
     errandQty: 1,
     errandRoundTrip: false,
     errandWaitMinutes: 0,
-    errandUrgent: false
+    errandUrgent: false,
+    detailSelections: {}
   };
 
   function $(selector) {
@@ -428,6 +502,37 @@
     return GENERIC_SERVICE_CONFIG[SERVICE]?.categories || {};
   }
 
+  function detailSelectionConfig() {
+    return DETAIL_SELECTION_CONFIG[SERVICE] || null;
+  }
+
+  function ensureDetailSelectionState() {
+    const config = detailSelectionConfig();
+    if (!config) return;
+    Object.keys(config.items).forEach((key) => {
+      if (typeof state.detailSelections[key] !== "number") {
+        state.detailSelections[key] = 0;
+      }
+    });
+  }
+
+  function getDetailSelectionEntries() {
+    const config = detailSelectionConfig();
+    if (!config) return [];
+    return Object.entries(config.items).filter(([key]) => Number(state.detailSelections[key] || 0) > 0);
+  }
+
+  function getDetailSelectionTotalQty() {
+    return getDetailSelectionEntries().reduce((sum, [key]) => sum + Number(state.detailSelections[key] || 0), 0);
+  }
+
+  function getDetailSelectionTotalPrice() {
+    return getDetailSelectionEntries().reduce(
+      (sum, [key, item]) => sum + Number(item.price || 0) * Number(state.detailSelections[key] || 0),
+      0
+    );
+  }
+
   function readState() {
     if (SERVICE === "errand") {
       state.address = $("#serviceAddressFrom")?.value?.trim() || "";
@@ -481,7 +586,17 @@
 
     if (GENERIC_SERVICES.has(SERVICE)) {
       state.category = $('input[name="serviceCategory"]:checked')?.value || "";
-      state.genericQty = Number($("#genericQty")?.value || 1);
+      if (detailSelectionConfig()) {
+        ensureDetailSelectionState();
+        $$(".detail-select-card[data-detail-key]").forEach((card) => {
+          const key = card.dataset.detailKey;
+          const qty = Number(card.querySelector(".detail-select-qty")?.textContent || state.detailSelections[key] || 0);
+          state.detailSelections[key] = qty;
+        });
+        state.genericQty = getDetailSelectionTotalQty();
+      } else {
+        state.genericQty = Number($("#genericQty")?.value || 1);
+      }
       state.modelName = $("#serviceDetailName")?.value?.trim() || "";
       state.drilling = !!$("#optionVisitEstimate")?.checked;
       state.anchorFix = !!$("#optionHomeVisit")?.checked;
@@ -538,8 +653,12 @@
 
   function calculateGenericPrice() {
     const base = genericCategoryMap()[state.category]?.base || 70000;
+    const detailConfig = detailSelectionConfig();
     const qty = Math.max(1, Number(state.genericQty || 1));
     let total = base + Math.max(0, qty - 1) * Math.round(base * 0.4);
+    if (detailConfig) {
+      total = base + getDetailSelectionTotalPrice();
+    }
     if (state.drilling) total += 30000;
     if (state.anchorFix) total += 25000;
     if (state.electric) total += 20000;
@@ -581,7 +700,10 @@
     if (step === 3) {
       if (SERVICE === "waste") return Object.values(state.wasteItems).some((value) => Number(value || 0) > 0);
       if (SERVICE === "install") return Number(state.installQty || 0) > 0;
-      if (GENERIC_SERVICES.has(SERVICE)) return Number(state.genericQty || 0) > 0;
+      if (GENERIC_SERVICES.has(SERVICE)) {
+        if (detailSelectionConfig()) return getDetailSelectionTotalQty() > 0;
+        return Number(state.genericQty || 0) > 0;
+      }
       return Number(state.errandQty || 0) > 0;
     }
     return true;
@@ -652,7 +774,11 @@
       `접수 유형: ${labelFromMap(genericCategoryMap(), state.category, "-")}`,
       `방문 주소: ${state.address || "-"}`,
       `희망 날짜: ${state.moveDate || "-"}`,
-      `건수: ${Math.max(1, Number(state.genericQty || 1))}건`,
+      detailSelectionConfig()
+        ? `${
+            detailSelectionConfig().summaryTitle
+          }: ${getDetailSelectionEntries().length ? getDetailSelectionEntries().map(([key, item]) => `${item.label} ${state.detailSelections[key]}${detailSelectionConfig().unit}`).join(", ") : "선택 없음"}`
+        : `건수: ${Math.max(1, Number(state.genericQty || 1))}건`,
       `상세 내용: ${state.modelName || "미입력"}`,
       `추가 요청: ${[
         state.drilling ? "사전 방문 견적" : null,
@@ -749,7 +875,8 @@
               : {
                   category: state.category,
                   quantity: state.genericQty,
-                  detailName: state.modelName
+                  detailName: state.modelName,
+                  detailSelections: detailSelectionConfig() ? { ...state.detailSelections } : null
                 },
       option_summary:
         SERVICE === "waste"
@@ -848,6 +975,124 @@
         renderPrice();
       });
     });
+  }
+
+  function renderDetailSelectionSummary() {
+    const config = detailSelectionConfig();
+    const summary = $("#detailSelectionSummary");
+    const modalSummary = $("#detailSelectionModalSummary");
+    const launchStrong = $(".detail-picker-launch strong");
+    if (!config || !summary) return;
+    const entries = getDetailSelectionEntries();
+    if (launchStrong) {
+      launchStrong.textContent = `${config.summaryTitle} ${getDetailSelectionTotalQty()}${config.unit}`;
+    }
+    if (!entries.length) {
+      summary.innerHTML = `<div class="detail-selection-empty">${config.summaryTitle}을 아직 고르지 않았어요. 버튼을 눌러 필요한 항목을 선택해보세요.</div>`;
+    } else {
+      summary.innerHTML = `
+        <div class="detail-selection-list">
+          ${entries
+            .map(
+              ([key, item]) => `
+                <div class="detail-selection-chip">
+                  <span>${item.label}</span>
+                  <strong>${state.detailSelections[key]}${config.unit}</strong>
+                </div>
+              `
+            )
+            .join("")}
+        </div>
+        <div class="detail-selection-meta">선택 ${getDetailSelectionTotalQty()}${config.unit} / 추가 금액 ${formatWon(getDetailSelectionTotalPrice())}</div>
+      `;
+    }
+    if (modalSummary) {
+      modalSummary.textContent = entries.length
+        ? `${config.summaryTitle} ${getDetailSelectionTotalQty()}${config.unit} 선택`
+        : `${config.summaryTitle}을 아직 고르지 않았어요.`;
+    }
+  }
+
+  function renderDetailSelectionModal() {
+    const config = detailSelectionConfig();
+    const grid = $("#detailSelectionGrid");
+    if (!config || !grid) return;
+    grid.innerHTML = Object.entries(config.items)
+      .map(([key, item]) => {
+        const qty = Number(state.detailSelections[key] || 0);
+        return `
+          <div class="detail-select-card ${qty > 0 ? "is-selected" : ""}" data-detail-key="${key}">
+            <div class="detail-select-card__head">
+              <div>
+                <div class="detail-select-card__title">${item.label}</div>
+                <div class="detail-select-card__desc">${item.desc}</div>
+              </div>
+              <div class="detail-select-card__price">${formatWon(item.price)}</div>
+            </div>
+            <div class="detail-select-stepper">
+              <button type="button" class="detail-step-btn" data-detail-dir="-1" aria-label="${item.label} 줄이기">−</button>
+              <div class="detail-select-qty">${qty}</div>
+              <button type="button" class="detail-step-btn" data-detail-dir="1" aria-label="${item.label} 늘리기">+</button>
+            </div>
+          </div>
+        `;
+      })
+      .join("");
+    renderDetailSelectionSummary();
+  }
+
+  function mountDetailSelectionUi() {
+    const config = detailSelectionConfig();
+    if (!config) return;
+    ensureDetailSelectionState();
+    const step3 = document.querySelector('.step-card[data-step="3"]');
+    if (!step3) return;
+    const heading = step3.querySelector("h2");
+    const content = `
+      <div class="card">
+        <div class="sub">${config.summaryTitle}</div>
+        <button type="button" class="detail-picker-launch" data-open-modal="detailSelectionModal">
+          <span>세부 항목 선택하기</span>
+          <strong>${config.summaryTitle} ${getDetailSelectionTotalQty()}${config.unit}</strong>
+        </button>
+        <div id="detailSelectionSummary" class="detail-selection-summary"></div>
+        <div class="sub" style="margin-top:16px;">상세 요청</div>
+        <input type="text" id="serviceDetailName" class="address-input" placeholder="${GENERIC_SERVICE_CONFIG[SERVICE]?.detailLabel || "요청 내용을 적어주세요."}" />
+      </div>
+    `;
+    if (heading) {
+      heading.insertAdjacentHTML("afterend", content);
+    }
+    step3.querySelectorAll(".card").forEach((card, index) => {
+      if (index > 0) card.remove();
+    });
+
+    if (!$("#detailSelectionModal")) {
+      document.body.insertAdjacentHTML(
+        "beforeend",
+        `
+          <div class="modal" id="detailSelectionModal" hidden aria-hidden="true">
+            <div class="modal-backdrop" data-close-modal></div>
+            <div class="modal-panel modal-panel-wide">
+              <div class="modal-head">
+                <div class="modal-title">${config.title}</div>
+                <button class="modal-x" type="button" data-close-modal aria-label="닫기">×</button>
+              </div>
+              <div class="modal-body">
+                <p class="checkout-modal-copy">${config.summaryTitle}을 실제에 가깝게 골라주세요. 카드 아무 곳이나 누르면 1${config.unit}부터 바로 선택됩니다.</p>
+                <div id="detailSelectionGrid" class="detail-selection-grid"></div>
+              </div>
+              <div class="modal-foot modal-foot--stack">
+                <div id="detailSelectionModalSummary" class="mini-summary">아직 선택한 항목이 없어요.</div>
+                <button type="button" class="wizard-btn primary large" data-close-modal>선택 완료</button>
+              </div>
+            </div>
+          </div>
+        `
+      );
+    }
+    renderDetailSelectionModal();
+    renderDetailSelectionSummary();
   }
 
   function bindWasteItems() {
@@ -966,6 +1211,30 @@
     });
   }
 
+  function bindDetailSelectionCards() {
+    document.addEventListener("click", (event) => {
+      const card = event.target.closest(".detail-select-card[data-detail-key]");
+      if (!card) return;
+      const key = card.dataset.detailKey;
+      const tappedButton = event.target.closest(".detail-step-btn");
+      if (tappedButton) {
+        event.preventDefault();
+        state.detailSelections[key] = Math.max(
+          0,
+          Number(state.detailSelections[key] || 0) + Number(tappedButton.dataset.detailDir || 0)
+        );
+        renderDetailSelectionModal();
+        renderPrice();
+        return;
+      }
+      if (state.detailSelections[key] <= 0) {
+        state.detailSelections[key] = 1;
+        renderDetailSelectionModal();
+        renderPrice();
+      }
+    });
+  }
+
   function bindEvents() {
     bindOptionCards();
     bindSteppers();
@@ -973,6 +1242,7 @@
     bindAddressPickers();
     bindDateAndTimeCards();
     bindModals();
+    bindDetailSelectionCards();
     $$("#wizardStagePills .stage-pill").forEach((pill, index) => {
       pill.addEventListener("click", () => {
         if (index + 1 <= state.currentStep || validateStep(state.currentStep)) {
@@ -1013,6 +1283,7 @@
   function init() {
     const dateInput = $("#moveDate");
     if (dateInput) dateInput.min = new Date().toISOString().slice(0, 10);
+    mountDetailSelectionUi();
     bindEvents();
     renderPrice();
     showStep(1);
