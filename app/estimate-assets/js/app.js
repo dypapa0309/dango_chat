@@ -3596,7 +3596,7 @@ const borderColors = comparison.labels.map((label) =>
     const altServiceLink = document.querySelector(".alt-service-link");
     if (altServiceLink) {
       altServiceLink.setAttribute("href", CROSS_LINK || "/");
-      altServiceLink.textContent = DEFAULT_SERVICE === "clean" ? "🚚 이사도 필요하면 눌러주세요." : "🧼 청소도 필요하면 눌러주세요.";
+      altServiceLink.textContent = DEFAULT_SERVICE === "clean" ? "이사도 필요하면 눌러주세요." : "청소도 필요하면 눌러주세요.";
     }
 
     updateStickyBarVisibility();
