@@ -157,6 +157,27 @@
 
 const gaBadge = createGaFloatingBadge();
 
+function setupStickyBarToggle() {
+  const stickyBar = document.getElementById("stickyPriceBar");
+  const toggleBtn = document.getElementById("stickyToggleBtn");
+  if (!stickyBar || !toggleBtn) return;
+
+  const setExpanded = (expanded) => {
+    stickyBar.classList.toggle("is-expanded", expanded);
+    stickyBar.classList.toggle("is-collapsed", !expanded);
+    toggleBtn.setAttribute("aria-expanded", expanded ? "true" : "false");
+    toggleBtn.textContent = expanded ? "접기" : "상세";
+  };
+
+  setExpanded(false);
+  toggleBtn.addEventListener("click", () => {
+    const expanded = !stickyBar.classList.contains("is-expanded");
+    setExpanded(expanded);
+  });
+}
+
+setupStickyBarToggle();
+
 async function loadGaRealtimeBadge() {
   if (!gaBadge?.badge) return;
 

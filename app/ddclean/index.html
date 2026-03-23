@@ -766,16 +766,17 @@ content="당고 입주청소 상세 견적 페이지입니다. 입주청소, 이
 <!-- =========================
        Sticky Price Bar (항상 표시)
   ========================= -->
-  <div id="stickyPriceBar" aria-hidden="false">
+  <div id="stickyPriceBar" class="is-collapsed" aria-hidden="false">
     <div class="sticky-inner">
       <div class="sticky-left">
         <div class="sticky-label">현재 예상 금액</div>
         <div class="sticky-price" id="stickyPrice">₩0</div>
-        <div class="sticky-under">
+        <div class="sticky-under" id="stickyPriceDetail">
           <br>예상 견적은 <br>평균 견적보다 <br>더 가볍게 나오는 편이에요.
         </div>
       </div>
       <div class="sticky-ga-slot" id="stickyGaSlot" aria-live="polite"></div>
+      <button type="button" class="sticky-toggle" id="stickyToggleBtn" aria-expanded="false" aria-controls="stickyPriceDetail">상세</button>
     </div>
   </div>
 

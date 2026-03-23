@@ -769,6 +769,14 @@ button[disabled].wizard-btn{
   pointer-events:auto;
 }
 
+#stickyPriceBar.is-collapsed{
+  --stickybar-h: 68px;
+}
+
+#stickyPriceBar.is-expanded{
+  --stickybar-h: 150px;
+}
+
 #stickyPriceBar .sticky-inner{
   width:100%;
   display:flex;
@@ -812,6 +820,30 @@ button[disabled].wizard-btn{
   font-weight:800;
   color:#64748B;
   line-height:1.35;
+}
+
+#stickyPriceBar.is-collapsed .sticky-under,
+#stickyPriceBar.is-collapsed .sticky-ga-slot{
+  display:none;
+}
+
+.sticky-toggle{
+  flex:none;
+  align-self:center;
+  min-width:54px;
+  min-height:36px;
+  padding:0 12px;
+  border:none;
+  border-radius:999px;
+  background:#eef4ff;
+  color:#1d4ed8;
+  font-size:11px;
+  font-weight:1000;
+  cursor:pointer;
+}
+
+.sticky-toggle:active{
+  transform:scale(0.98);
 }
 
 .wizard-nav{
@@ -2459,12 +2491,13 @@ body{
 
   #stickyPriceBar .sticky-inner{
     display:grid;
-    grid-template-columns:1fr;
+    grid-template-columns:1fr auto;
     gap:8px;
     padding:8px 9px;
   }
 
   .sticky-ga-slot{
+    grid-column:1 / -1;
     flex-basis:auto;
     width:100%;
   }
@@ -2484,5 +2517,9 @@ body{
 
   #stickyPriceBar .sticky-under{
     font-size:10px;
+  }
+
+  #stickyPriceBar.is-expanded{
+    --stickybar-h: 178px;
   }
 }
