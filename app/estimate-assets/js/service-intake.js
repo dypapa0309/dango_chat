@@ -539,6 +539,35 @@
     });
   }
 
+  function bindDateAndTimeCards() {
+    $$(".date-wrap").forEach((wrap) => {
+      wrap.addEventListener("click", (event) => {
+        if (event.target.closest("input, button")) return;
+        const input = wrap.querySelector('input[type="date"]');
+        if (!input) return;
+        if (typeof input.showPicker === "function") {
+          try {
+            input.showPicker();
+            return;
+          } catch (_) {
+          }
+        }
+        input.focus();
+        input.click();
+      });
+    });
+
+    $$(".time-chip").forEach((chip) => {
+      chip.addEventListener("click", (event) => {
+        const input = chip.querySelector('input[type="radio"]');
+        if (!input || input.disabled) return;
+        event.preventDefault();
+        input.checked = true;
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    });
+  }
+
   function bindOptionCards() {
     document.addEventListener("click", (event) => {
       const optionRow = event.target.closest(".option");
@@ -588,6 +617,7 @@
     bindSteppers();
     bindWasteItems();
     bindAddressPickers();
+    bindDateAndTimeCards();
     bindModals();
     $$("#wizardStagePills .stage-pill").forEach((pill, index) => {
       pill.addEventListener("click", () => {
