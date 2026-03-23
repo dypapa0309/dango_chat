@@ -100,6 +100,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
 
   <!-- ✅ 스타일 -->
+  <link rel="stylesheet" href="../estimate-assets/css/style.css" />
   <link rel="stylesheet" href="style.css" />
 
   <!-- ✅ 카카오맵 SDK -->
@@ -109,31 +110,46 @@
 
 <body data-analytics-page="quick_freight">
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PZCBT88P" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-  <div class="shell">
-    <nav class="page-nav card">
-      <a href="../">홈화면</a>
-      <a href="../estimate/">당고 소형이사</a>
-      <a href="../ddclean/">당고 입주청소</a>
-      <a href="../services/">서비스 선택</a>
-      <a class="is-current" href="./">당고 간편용달</a>
-    </nav>
-    <header class="hero card">
-      <div class="eyebrow">당장 필요할 때, 당장 고고. 당고!</div>
-      <h1>당고 간편용달</h1>
-      <p class="hero-copy">견적 계산기로 바로 계산하세요. 출발지와 도착지 주소를 입력하고, 거리 계산 뒤 짐 종류와 기사 도움 여부만 선택하면 됩니다.</p>
-      <div class="hero-badges">
-        <span>거리 기준 계산</span>
-        <span>복잡한 옵션 제거</span>
-        <span>문자 예약 바로 연결</span>
+  <div class="container">
+    <div class="page-linkbar page-linkbar--space">
+      <div class="page-linkbar__group">
+        <a class="page-link" href="../">홈화면</a>
+        <a class="page-link" href="../estimate/">당고 소형이사</a>
+        <a class="page-link" href="../ddclean/">당고 입주청소</a>
+        <a class="page-link is-current" href="./">당고 간편용달</a>
+        <a class="page-link" href="../services/">서비스 선택</a>
       </div>
-    </header>
+    </div>
 
-    <main class="stack">
-      <section class="card section-card">
-        <div class="section-head">
-          <div class="step">STEP 1</div>
-          <h2>출발지 · 도착지 · 거리 계산</h2>
+    <section class="landing-shell dango-estimate-intro">
+      <div class="landing-hero">
+        <div class="landing-eyebrow">당장 필요할 때, 당장 고고. 당고!</div>
+        <h1 class="landing-title">당고 간편용달<br><span class="accent">견적 계산기로 바로 계산하세요.</span></h1>
+        <p class="landing-copy">출발지와 도착지 주소를 입력하고, 거리 계산 뒤 짐 종류와 기사 도움 여부만 선택하면 됩니다.</p>
+        <div class="dango-estimate-pills">
+          <span>거리 기준 계산</span>
+          <span>복잡한 옵션 없이 입력</span>
+          <span>문자 상담으로 바로 연결</span>
         </div>
+      </div>
+    </section>
+
+    <section class="wizard-top wizard-stage-shell" aria-label="견적 진행 단계">
+      <div class="wizard-progress"><div class="wizard-progress-bar yd-stage-bar"></div></div>
+      <div class="wizard-cheer">좋아요. 이제 하나씩 넣으면 돼요. 주소와 거리부터 먼저 확인하면 됩니다.</div>
+      <div class="stage-pill-row">
+        <button type="button" class="stage-pill is-active">1. 기본 정보</button>
+        <button type="button" class="stage-pill">2. 날짜·시간</button>
+        <button type="button" class="stage-pill">3. 짐 선택</button>
+        <button type="button" class="stage-pill">4. 기사 도움</button>
+        <button type="button" class="stage-pill">5. 결과 확인</button>
+      </div>
+    </section>
+
+    <main class="yd-flow">
+      <section class="section step-card yd-step-card">
+        <h2>출발지 · 도착지 · 거리 계산</h2>
+        <div class="card yd-card">
 
         <div class="field-grid two">
           <label class="field">
@@ -153,13 +169,12 @@
             <div class="distance-line muted" id="distanceMeta">부개동·화곡동·까치산역 같은 러프한 주소도 최대한 계산해드려요.</div>
           </div>
         </div>
+        </div>
       </section>
 
-      <section class="card section-card">
-        <div class="section-head">
-          <div class="step">STEP 2</div>
-          <h2>날짜 · 이동 시간 선택</h2>
-        </div>
+      <section class="section step-card yd-step-card">
+        <h2>날짜 · 이동 시간 선택</h2>
+        <div class="card yd-card">
         <p class="section-copy">기사 배차와 이동 가능 시간을 빠르게 맞추기 위한 정보입니다.</p>
 
         <div class="field-grid two">
@@ -172,13 +187,12 @@
             <input type="time" id="moveTime" />
           </label>
         </div>
+        </div>
       </section>
 
-      <section class="card section-card">
-        <div class="section-head">
-          <div class="step">STEP 3</div>
-          <h2>짐 크기 선택</h2>
-        </div>
+      <section class="section step-card yd-step-card">
+        <h2>짐 크기 선택</h2>
+        <div class="card yd-card">
         <p class="section-copy">품목별 추가요금이 아니라 짐 규모를 빠르게 파악하기 위한 선택입니다.</p>
 
         <div class="size-grid">
@@ -200,13 +214,12 @@
           <div class="summary-label">선택한 짐</div>
           <div id="selectedItemsSummary" class="summary-value empty">아직 선택한 짐이 없어요.</div>
         </div>
+        </div>
       </section>
 
-      <section class="card section-card">
-        <div class="section-head">
-          <div class="step">STEP 4</div>
-          <h2>기사 도움 여부</h2>
-        </div>
+      <section class="section step-card yd-step-card">
+        <h2>기사 도움 여부</h2>
+        <div class="card yd-card">
         <p class="section-copy">기사님이 함께 들어드려야 하는 경우와 동승이 필요한 경우에만 체크해주세요.</p>
 
         <div class="help-grid">
@@ -232,13 +245,12 @@
             </span>
           </label>
         </div>
+        </div>
       </section>
 
-      <section class="card section-card total-card">
-        <div class="section-head">
-          <div class="step">STEP 5</div>
-          <h2>예상 용달비</h2>
-        </div>
+      <section class="section step-card yd-step-card result-step">
+        <h2>예상 용달비</h2>
+        <div class="card yd-card total-card">
 
         <div class="price-breakdown">
           <div class="row"><span>거리 운임</span><b id="distanceFeeText">0원</b></div>
@@ -251,11 +263,7 @@
           <button type="button" class="primary-btn big" id="smsBtn">문자 상담 / 접수하기</button>
           <p class="cta-note">문자 내용에 출발지, 도착지, 거리, 선택 짐, 기사 도움 여부가 자동으로 들어갑니다.</p>
         </div>
-      </section>
-
-      <section class="card transfer-card">
-        <p>짐이 많거나, 포장과 운반까지 함께 필요하신가요?</p>
-        <a class="secondary-btn" href="../estimate/">당고 소형이사 상세 견적 보기</a>
+        </div>
       </section>
     </main>
   </div>
