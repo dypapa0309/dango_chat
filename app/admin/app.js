@@ -855,16 +855,20 @@ async function loadDrivers() {
   if (eligibleList) {
     eligibleList.innerHTML = '';
     eligibleDrivers.forEach((driver) => {
-      const item = document.createElement('div');
-      item.className = 'eligible-driver';
-      item.innerHTML = `
-        <strong>${escapeHtml(driver.name || '기사')}</strong>
-        <div class="row">${escapeHtml(driver.phone || '-')} / ${escapeHtml(driver.vehicle_type || '-')}</div>
-        <div class="row">계약 완료 / 배차 허용 / 완료 ${Number(driver.completed_jobs || 0)}건</div>
-        ${renderDriverServiceBadges(driver)}
-      `;
-      item.onclick = () => showDriverSummary(driver);
-      eligibleList.appendChild(item);
+      try {
+        const item = document.createElement('div');
+        item.className = 'eligible-driver';
+        item.innerHTML = `
+          <strong>${escapeHtml(driver.name || '기사')}</strong>
+          <div class="row">${escapeHtml(driver.phone || '-')} / ${escapeHtml(driver.vehicle_type || '-')}</div>
+          <div class="row">계약 완료 / 배차 허용 / 완료 ${Number(driver.completed_jobs || 0)}건</div>
+          ${renderDriverServiceBadges(driver)}
+        `;
+        item.onclick = () => showDriverSummary(driver);
+        eligibleList.appendChild(item);
+      } catch (error) {
+        console.warn('배차 가능 기사 카드 렌더링 실패', driver?.id, error);
+      }
     });
     if (!eligibleList.innerHTML.trim()) {
       eligibleList.innerHTML = '<div class="mini-card muted">지금 바로 배차 가능한 기사가 없어요. 기사 가입과 계약 동의를 먼저 끝내야 합니다.</div>';
@@ -874,9 +878,10 @@ async function loadDrivers() {
   list.innerHTML = '';
 
   drivers.forEach((driver) => {
-    const card = document.createElement('div');
-    card.className = 'driver-card';
-    card.innerHTML = `
+    try {
+      const card = document.createElement('div');
+      card.className = 'driver-card';
+      card.innerHTML = `
       <details class="driver-detail">
         <summary class="driver-summary">
           <div class="driver-summary-copy">
@@ -944,61 +949,68 @@ async function loadDrivers() {
       </details>
     `;
 
-    card.querySelector('[data-action="copy-join"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
-      if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
-      const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
-      await navigator.clipboard.writeText(url);
-      alert('기사 가입 링크를 복사했어요.');
-    });
-
-    card.querySelector('[data-action="copy-message"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
-      if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
-      const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
-      await navigator.clipboard.writeText(buildDriverJoinMessage(driver, url));
-      alert('기사 안내 문구를 복사했어요.');
-    });
-
-    card.querySelector('[data-action="copy-guide"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
-      const url = `${location.origin}/driver/guide.html`;
-      await navigator.clipboard.writeText(buildDriverGuideMessage(url));
-      alert('기사 사용 안내 문구를 복사했어요.');
-    });
-
-    card.querySelector('[data-action="save-driver"]').onclick = async (e) => withButtonBusy(e.currentTarget, '저장 중...', async () => {
-      const payload = {
-        driverId: driver.id,
-        status: card.querySelector('[data-field="status"]').value,
-        dispatchEnabled: card.querySelector('[data-field="dispatchEnabled"]').checked,
-        bankName: card.querySelector('[data-field="bankName"]').value,
-        accountHolder: card.querySelector('[data-field="accountHolder"]').value,
-        accountNumber: card.querySelector('[data-field="accountNumber"]').value,
-        payoutEnabled: card.querySelector('[data-field="payoutEnabled"]').checked,
-        payoutNote: card.querySelector('[data-field="payoutNote"]').value,
-        taxName: card.querySelector('[data-field="taxName"]').value,
-        taxBirthDate: card.querySelector('[data-field="taxBirthDate"]').value,
-        taxIdNumber: card.querySelector('[data-field="taxIdNumber"]').value,
-        taxEmail: card.querySelector('[data-field="taxEmail"]').value,
-        taxAddress: card.querySelector('[data-field="taxAddress"]').value,
-        taxWithholdingAgreed: card.querySelector('[data-field="taxWithholdingAgreed"]').checked,
-        supportsMove: card.querySelector('[data-field="supportsMove"]').checked,
-        supportsClean: card.querySelector('[data-field="supportsClean"]').checked,
-        supportsYd: card.querySelector('[data-field="supportsYd"]').checked,
-        internalMemo: card.querySelector('[data-field="internalMemo"]').value
-      };
-
-      const saveRes = await adminFetch(api('update-driver-payout'), {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+      card.querySelector('[data-action="copy-join"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+        if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
+        const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
+        await navigator.clipboard.writeText(url);
+        alert('기사 가입 링크를 복사했어요.');
       });
-      const saveData = await saveRes.json();
-      if (!saveData.success) return alert(saveData.error || '기사 계좌 저장 실패');
-      alert('기사 정보를 저장했어요.');
-      loadDrivers();
-      loadSettlementDashboard();
-    });
 
-    list.appendChild(card);
+      card.querySelector('[data-action="copy-message"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+        if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
+        const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
+        await navigator.clipboard.writeText(buildDriverJoinMessage(driver, url));
+        alert('기사 안내 문구를 복사했어요.');
+      });
+
+      card.querySelector('[data-action="copy-guide"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+        const url = `${location.origin}/driver/guide.html`;
+        await navigator.clipboard.writeText(buildDriverGuideMessage(url));
+        alert('기사 사용 안내 문구를 복사했어요.');
+      });
+
+      card.querySelector('[data-action="save-driver"]').onclick = async (e) => withButtonBusy(e.currentTarget, '저장 중...', async () => {
+        const payload = {
+          driverId: driver.id,
+          status: card.querySelector('[data-field="status"]').value,
+          dispatchEnabled: card.querySelector('[data-field="dispatchEnabled"]').checked,
+          bankName: card.querySelector('[data-field="bankName"]').value,
+          accountHolder: card.querySelector('[data-field="accountHolder"]').value,
+          accountNumber: card.querySelector('[data-field="accountNumber"]').value,
+          payoutEnabled: card.querySelector('[data-field="payoutEnabled"]').checked,
+          payoutNote: card.querySelector('[data-field="payoutNote"]').value,
+          taxName: card.querySelector('[data-field="taxName"]').value,
+          taxBirthDate: card.querySelector('[data-field="taxBirthDate"]').value,
+          taxIdNumber: card.querySelector('[data-field="taxIdNumber"]').value,
+          taxEmail: card.querySelector('[data-field="taxEmail"]').value,
+          taxAddress: card.querySelector('[data-field="taxAddress"]').value,
+          taxWithholdingAgreed: card.querySelector('[data-field="taxWithholdingAgreed"]').checked,
+          supportsMove: card.querySelector('[data-field="supportsMove"]').checked,
+          supportsClean: card.querySelector('[data-field="supportsClean"]').checked,
+          supportsYd: card.querySelector('[data-field="supportsYd"]').checked,
+          internalMemo: card.querySelector('[data-field="internalMemo"]').value
+        };
+
+        const saveRes = await adminFetch(api('update-driver-payout'), {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const saveData = await saveRes.json();
+        if (!saveData.success) return alert(saveData.error || '기사 계좌 저장 실패');
+        alert('기사 정보를 저장했어요.');
+        loadDrivers();
+        loadSettlementDashboard();
+      });
+
+      list.appendChild(card);
+    } catch (error) {
+      console.warn('기사 카드 렌더링 실패', driver?.id, error);
+      const fallback = document.createElement('div');
+      fallback.className = 'mini-card muted';
+      fallback.textContent = `${driver?.name || '기사'} 기사 정보를 화면에 그리지 못했어요. 새로고침 후 다시 확인해주세요.`;
+      list.appendChild(fallback);
+    }
   });
 }
 
@@ -1305,7 +1317,15 @@ async function bootstrapAdmin() {
     return;
   }
   if (adminPage === 'drivers') {
-    await loadDrivers();
+    try {
+      await loadDrivers();
+    } catch (error) {
+      console.warn('기사 페이지 로드 실패', error);
+      const list = document.getElementById('driverList');
+      if (list) {
+        list.innerHTML = `<div class="mini-card muted">기사 관리 화면을 불러오지 못했어요. 새로고침 후 다시 확인해주세요.<br />${escapeHtml(error?.message || '알 수 없는 오류')}</div>`;
+      }
+    }
     return;
   }
   if (adminPage === 'finance') {
