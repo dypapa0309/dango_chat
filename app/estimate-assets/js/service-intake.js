@@ -31,6 +31,86 @@
         4: "좋아요. 이제 하나씩 넣으면 돼요. 대기 시간이나 추가 요청을 정리하면 됩니다.",
         5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
       }
+    },
+    organize: {
+      label: "정리수납",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 정리수납인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 방문 주소와 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 범위와 건수를 실제에 맞게 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 추가 요청과 방문 조건을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
+      }
+    },
+    ac_clean: {
+      label: "에어컨청소",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 에어컨 청소인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 방문 주소와 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 대수와 모델 정보를 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 분해 세척과 추가 요청을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
+      }
+    },
+    appliance_clean: {
+      label: "가전청소",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 가전 청소인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 방문 주소와 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 대수와 모델 정보를 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 분해 세척과 추가 요청을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
+      }
+    },
+    interior: {
+      label: "인테리어",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 인테리어인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 현장 주소와 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 공사 범위와 건수를 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 실측이나 추가 요청을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
+      }
+    },
+    interior_help: {
+      label: "인테리어 보조",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 보조 작업인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 현장 주소와 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 필요한 건수와 범위를 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 자재 이동이나 추가 요청을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
+      }
+    },
+    pt: {
+      label: "PT",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 PT인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 수업 지역과 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 횟수와 방향을 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 방문 수업이나 추가 요청을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
+      }
+    },
+    vocal: {
+      label: "보컬",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 보컬 수업인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 수업 지역과 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 횟수와 방향을 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 방문 수업이나 추가 요청을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
+      }
+    },
+    golf: {
+      label: "골프",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 골프 레슨인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 수업 지역과 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 횟수와 방향을 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 방문 수업이나 추가 요청을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
+      }
     }
   };
 
@@ -56,6 +136,147 @@
     accompany: { label: "동행·현장 보조", base: 50000 },
     life: { label: "생활 심부름", base: 45000 }
   };
+
+  const GENERIC_SERVICE_CONFIG = {
+    organize: {
+      categories: {
+        closet: { label: "옷장·드레스룸 정리", base: 70000 },
+        kitchen: { label: "주방 정리수납", base: 80000 },
+        movein: { label: "이사 전후 정리", base: 90000 },
+        wholehome: { label: "집 전체 정리수납", base: 140000 }
+      },
+      detailLabel: "정리할 공간이나 요청 내용을 적어주세요.",
+      optionLabels: {
+        visitEstimate: "방문 견적이 먼저 필요해요",
+        homeVisit: "당일 방문 진행이 필요해요",
+        urgent: "빠른 일정이 필요해요",
+        group: "2인 이상 정리가 필요해요",
+        parking: "주차나 현장 진입 확인이 필요해요",
+        premium: "정리 후 수납 제안까지 원해요"
+      }
+    },
+    ac_clean: {
+      categories: {
+        wall: { label: "벽걸이 에어컨", base: 90000 },
+        stand: { label: "스탠드 에어컨", base: 120000 },
+        twoinone: { label: "2in1 에어컨", base: 180000 },
+        system: { label: "시스템 에어컨", base: 130000 }
+      },
+      detailLabel: "브랜드나 모델명이 있으면 적어주세요.",
+      optionLabels: {
+        visitEstimate: "현장 확인이 먼저 필요해요",
+        homeVisit: "당일 방문이 필요해요",
+        urgent: "빠른 일정이 필요해요",
+        group: "2대 이상 같이 진행해요",
+        parking: "주차나 사다리 조건이 있어요",
+        premium: "완전 분해 세척으로 요청해요"
+      }
+    },
+    appliance_clean: {
+      categories: {
+        washer: { label: "세탁기 청소", base: 90000 },
+        dryer: { label: "건조기 청소", base: 80000 },
+        fridge: { label: "냉장고 청소", base: 70000 },
+        mattress: { label: "매트리스 청소", base: 70000 }
+      },
+      detailLabel: "모델명이나 오염 상태를 적어주세요.",
+      optionLabels: {
+        visitEstimate: "현장 확인이 먼저 필요해요",
+        homeVisit: "당일 방문이 필요해요",
+        urgent: "빠른 일정이 필요해요",
+        group: "2대 이상 같이 진행해요",
+        parking: "주차나 이동 조건이 있어요",
+        premium: "분해 세척으로 요청해요"
+      }
+    },
+    interior: {
+      categories: {
+        partial: { label: "부분 인테리어", base: 180000 },
+        wallpaper: { label: "도배·필름", base: 160000 },
+        floor: { label: "바닥·장판", base: 170000 },
+        bathroom: { label: "욕실 정비", base: 220000 }
+      },
+      detailLabel: "희망 범위나 사진 설명을 적어주세요.",
+      optionLabels: {
+        visitEstimate: "실측이 먼저 필요해요",
+        homeVisit: "현장 방문 상담이 필요해요",
+        urgent: "빠른 일정이 필요해요",
+        group: "동시 진행 공간이 있어요",
+        parking: "주차나 자재 진입 확인이 필요해요",
+        premium: "브랜드 마감재 상담도 원해요"
+      }
+    },
+    interior_help: {
+      categories: {
+        cleanup: { label: "현장 정리 보조", base: 90000 },
+        materials: { label: "자재 이동 보조", base: 100000 },
+        finishing: { label: "마감 보조", base: 110000 },
+        site: { label: "현장 상주 보조", base: 120000 }
+      },
+      detailLabel: "필요한 보조 작업을 적어주세요.",
+      optionLabels: {
+        visitEstimate: "현장 확인이 먼저 필요해요",
+        homeVisit: "당일 현장 투입이 필요해요",
+        urgent: "빠른 일정이 필요해요",
+        group: "2인 이상 보조가 필요해요",
+        parking: "주차나 자재 진입 확인이 필요해요",
+        premium: "장시간 상주가 필요해요"
+      }
+    },
+    pt: {
+      categories: {
+        body: { label: "체형·체력 관리 PT", base: 70000 },
+        diet: { label: "다이어트 PT", base: 75000 },
+        rehab: { label: "재활·교정 PT", base: 85000 },
+        group: { label: "2인 이상 PT", base: 90000 }
+      },
+      detailLabel: "운동 목적이나 희망 강도를 적어주세요.",
+      optionLabels: {
+        visitEstimate: "사전 상담이 먼저 필요해요",
+        homeVisit: "방문 PT가 필요해요",
+        urgent: "빠른 일정이 필요해요",
+        group: "동반 수업이 있어요",
+        parking: "주차나 센터 입장 안내가 필요해요",
+        premium: "식단 코칭까지 함께 원해요"
+      }
+    },
+    vocal: {
+      categories: {
+        hobby: { label: "취미 보컬", base: 60000 },
+        audition: { label: "오디션·입시 보컬", base: 85000 },
+        recording: { label: "녹음·발성 코칭", base: 70000 },
+        beginner: { label: "기초 보컬", base: 55000 }
+      },
+      detailLabel: "희망 장르나 목표를 적어주세요.",
+      optionLabels: {
+        visitEstimate: "사전 상담이 먼저 필요해요",
+        homeVisit: "방문 수업이 필요해요",
+        urgent: "빠른 일정이 필요해요",
+        group: "그룹 수업이에요",
+        parking: "연습실 위치 안내가 필요해요",
+        premium: "녹음 피드백까지 원해요"
+      }
+    },
+    golf: {
+      categories: {
+        beginner: { label: "입문 레슨", base: 70000 },
+        screen: { label: "스크린 분석 레슨", base: 80000 },
+        field: { label: "필드 레슨", base: 120000 },
+        swing: { label: "스윙 교정", base: 85000 }
+      },
+      detailLabel: "현재 구력이나 목표를 적어주세요.",
+      optionLabels: {
+        visitEstimate: "사전 상담이 먼저 필요해요",
+        homeVisit: "방문 또는 외부 레슨이 필요해요",
+        urgent: "빠른 일정이 필요해요",
+        group: "동반 레슨이에요",
+        parking: "연습장 위치 안내가 필요해요",
+        premium: "영상 분석까지 원해요"
+      }
+    }
+  };
+
+  const GENERIC_SERVICES = new Set(Object.keys(GENERIC_SERVICE_CONFIG));
 
   const WASTE_ITEM_PRICES = {
     chair: 10000,
@@ -83,6 +304,7 @@
     ladder: false,
     helper: false,
     installQty: 1,
+    genericQty: 1,
     drilling: false,
     anchorFix: false,
     electric: false,
@@ -148,6 +370,10 @@
     return map[key] || key;
   }
 
+  function genericCategoryMap() {
+    return GENERIC_SERVICE_CONFIG[SERVICE]?.categories || {};
+  }
+
   function readState() {
     if (SERVICE === "errand") {
       state.address = $("#serviceAddressFrom")?.value?.trim() || "";
@@ -173,7 +399,10 @@
       $$(".waste-item-qty").forEach((input) => {
         state.wasteItems[input.dataset.item] = Number(input.value || 0);
       });
-    } else if (SERVICE === "install") {
+      return;
+    }
+
+    if (SERVICE === "install") {
       state.category = $('input[name="installCategory"]:checked')?.value || "";
       state.installQty = Number($("#installQty")?.value || 1);
       state.drilling = !!$("#installDrilling")?.checked;
@@ -183,13 +412,29 @@
       state.water = !!$("#installWater")?.checked;
       state.oldRemoval = !!$("#oldRemoval")?.checked;
       state.modelName = $("#modelName")?.value?.trim() || "";
-    } else {
+      return;
+    }
+
+    if (SERVICE === "errand") {
       state.category = $('input[name="errandCategory"]:checked')?.value || "";
       state.errandItemSize = $('input[name="errandItemSize"]:checked')?.value || "small";
       state.errandQty = Number($("#errandQty")?.value || 1);
       state.errandRoundTrip = !!$("#errandRoundTrip")?.checked;
       state.errandWaitMinutes = Number($("#errandWaitMinutes")?.value || 0);
       state.errandUrgent = !!$("#errandUrgent")?.checked;
+      return;
+    }
+
+    if (GENERIC_SERVICES.has(SERVICE)) {
+      state.category = $('input[name="serviceCategory"]:checked')?.value || "";
+      state.genericQty = Number($("#genericQty")?.value || 1);
+      state.modelName = $("#serviceDetailName")?.value?.trim() || "";
+      state.drilling = !!$("#optionVisitEstimate")?.checked;
+      state.anchorFix = !!$("#optionHomeVisit")?.checked;
+      state.electric = !!$("#optionUrgent")?.checked;
+      state.gas = !!$("#optionGroup")?.checked;
+      state.water = !!$("#optionParking")?.checked;
+      state.oldRemoval = !!$("#optionPremium")?.checked;
     }
   }
 
@@ -237,13 +482,31 @@
     return Math.round(total);
   }
 
+  function calculateGenericPrice() {
+    const base = genericCategoryMap()[state.category]?.base || 70000;
+    const qty = Math.max(1, Number(state.genericQty || 1));
+    let total = base + Math.max(0, qty - 1) * Math.round(base * 0.4);
+    if (state.drilling) total += 30000;
+    if (state.anchorFix) total += 25000;
+    if (state.electric) total += 20000;
+    if (state.gas) total += 15000;
+    if (state.water) total += 10000;
+    if (state.oldRemoval) total += 25000;
+    if (state.helper) total += 60000;
+    if (state.ladder) total += 120000;
+    return Math.round(total);
+  }
+
   function calculatePrice() {
     const total =
       SERVICE === "install"
         ? calculateInstallPrice()
         : SERVICE === "errand"
           ? calculateErrandPrice()
-          : calculateWastePrice();
+          : GENERIC_SERVICES.has(SERVICE)
+            ? calculateGenericPrice()
+            : calculateWastePrice();
+
     const driverAmount = Math.round(total * 0.8);
     return {
       total,
@@ -264,6 +527,7 @@
     if (step === 3) {
       if (SERVICE === "waste") return Object.values(state.wasteItems).some((value) => Number(value || 0) > 0);
       if (SERVICE === "install") return Number(state.installQty || 0) > 0;
+      if (GENERIC_SERVICES.has(SERVICE)) return Number(state.genericQty || 0) > 0;
       return Number(state.errandQty || 0) > 0;
     }
     return true;
@@ -310,21 +574,41 @@
       ];
     }
 
-    const errandLocations = [];
-    if (state.address) errandLocations.push(`출발지: ${state.address}`);
-    if (state.extraAddress) errandLocations.push(`도착지: ${state.extraAddress}`);
-    if (!errandLocations.length) errandLocations.push("이동 위치: 미입력");
+    if (SERVICE === "errand") {
+      const errandLocations = [];
+      if (state.address) errandLocations.push(`출발지: ${state.address}`);
+      if (state.extraAddress) errandLocations.push(`도착지: ${state.extraAddress}`);
+      if (!errandLocations.length) errandLocations.push("이동 위치: 미입력");
+
+      return [
+        `접수 유형: ${labelFromMap(ERRAND_CATEGORIES, state.category, "-")}`,
+        ...errandLocations,
+        `희망 날짜: ${state.moveDate || "-"}`,
+        `물건 규모: ${getErrandSizeLabel(state.errandItemSize)} ${Math.max(1, Number(state.errandQty || 1))}건`,
+        `추가 요청: ${[
+          state.errandRoundTrip ? "왕복" : "편도 또는 현장형",
+          state.errandWaitMinutes ? `대기 ${state.errandWaitMinutes}분` : null,
+          state.errandUrgent ? "긴급 요청" : null,
+          state.helper ? "인부 도움" : null
+        ].filter(Boolean).join(" · ")}`
+      ];
+    }
 
     return [
-      `접수 유형: ${labelFromMap(ERRAND_CATEGORIES, state.category, "-")}`,
-      ...errandLocations,
+      `접수 유형: ${labelFromMap(genericCategoryMap(), state.category, "-")}`,
+      `방문 주소: ${state.address || "-"}`,
       `희망 날짜: ${state.moveDate || "-"}`,
-      `물건 규모: ${getErrandSizeLabel(state.errandItemSize)} ${Math.max(1, Number(state.errandQty || 1))}건`,
+      `건수: ${Math.max(1, Number(state.genericQty || 1))}건`,
+      `상세 내용: ${state.modelName || "미입력"}`,
       `추가 요청: ${[
-        state.errandRoundTrip ? "왕복" : "편도 또는 현장형",
-        state.errandWaitMinutes ? `대기 ${state.errandWaitMinutes}분` : null,
-        state.errandUrgent ? "긴급 요청" : null,
-        state.helper ? "인부 도움" : null
+        state.drilling ? "사전 방문 견적" : null,
+        state.anchorFix ? "방문 진행" : null,
+        state.electric ? "빠른 일정" : null,
+        state.gas ? "그룹 진행" : null,
+        state.water ? "주차·현장 확인" : null,
+        state.oldRemoval ? "프리미엄 요청" : null,
+        state.helper ? "인부 필요" : null,
+        state.ladder ? "사다리차 필요" : null
       ].filter(Boolean).join(" · ")}`
     ];
   }
@@ -401,12 +685,18 @@
                 installQty: state.installQty,
                 modelName: state.modelName
               }
-            : {
-                category: state.category,
-                itemSize: state.errandItemSize,
-                errandQty: state.errandQty,
-                roundTrip: state.errandRoundTrip
-              },
+            : SERVICE === "errand"
+              ? {
+                  category: state.category,
+                  itemSize: state.errandItemSize,
+                  errandQty: state.errandQty,
+                  roundTrip: state.errandRoundTrip
+                }
+              : {
+                  category: state.category,
+                  quantity: state.genericQty,
+                  detailName: state.modelName
+                },
       option_summary:
         SERVICE === "waste"
           ? {
@@ -427,11 +717,22 @@
                 helper: state.helper,
                 ladder: state.ladder
               }
-            : {
-                waitMinutes: state.errandWaitMinutes,
-                urgent: state.errandUrgent,
-                helper: state.helper
-              },
+            : SERVICE === "errand"
+              ? {
+                  waitMinutes: state.errandWaitMinutes,
+                  urgent: state.errandUrgent,
+                  helper: state.helper
+                }
+              : {
+                  visitEstimate: state.drilling,
+                  homeVisit: state.anchorFix,
+                  urgent: state.electric,
+                  group: state.gas,
+                  parking: state.water,
+                  premium: state.oldRemoval,
+                  helper: state.helper,
+                  ladder: state.ladder
+                },
       acquisition_source: attribution.source,
       acquisition_medium: attribution.medium,
       acquisition_campaign: attribution.campaign,
@@ -549,8 +850,7 @@
           try {
             input.showPicker();
             return;
-          } catch (_) {
-          }
+          } catch (_) {}
         }
         input.focus();
         input.click();

@@ -14,7 +14,15 @@ const SERVICE_OPTIONS = [
   { value: 'yd', label: '용달', description: '간편 용달, 1층 이동' },
   { value: 'waste', label: '폐기물', description: '수거, 정리' },
   { value: 'install', label: '설치', description: '가전, 가구 설치' },
-  { value: 'errand', label: '심부름', description: '생활 대행, 전달' }
+  { value: 'errand', label: '심부름', description: '생활 대행, 전달' },
+  { value: 'organize', label: '정리수납', description: '정리, 수납 컨설팅' },
+  { value: 'ac_clean', label: '에어컨청소', description: '벽걸이, 스탠드 세척' },
+  { value: 'appliance_clean', label: '가전청소', description: '세탁기, 건조기, 냉장고' },
+  { value: 'interior', label: '인테리어', description: '부분 시공, 마감' },
+  { value: 'interior_help', label: '인테리어 보조', description: '현장 보조, 자재 이동' },
+  { value: 'pt', label: 'PT', description: '체형, 다이어트, 교정' },
+  { value: 'vocal', label: '보컬', description: '취미, 오디션, 발성' },
+  { value: 'golf', label: '골프', description: '입문, 스윙, 필드 레슨' }
 ];
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
@@ -443,13 +451,29 @@ function inferServiceTypeLabel(serviceType) {
     yd: '용달',
     waste: '폐기물',
     install: '설치',
-    errand: '심부름'
+    errand: '심부름',
+    organize: '정리수납',
+    ac_clean: '에어컨청소',
+    appliance_clean: '가전청소',
+    interior: '인테리어',
+    interior_help: '인테리어 보조',
+    pt: 'PT',
+    vocal: '보컬',
+    golf: '골프'
   };
   return map[serviceType] || serviceType || '-';
 }
 
 function inferServiceTypeFromText(value) {
   const text = String(value || '').trim();
+  if (text.includes('정리수납')) return 'organize';
+  if (text.includes('에어컨')) return 'ac_clean';
+  if (text.includes('가전청소')) return 'appliance_clean';
+  if (text.includes('인테리어 보조')) return 'interior_help';
+  if (text.includes('인테리어')) return 'interior';
+  if (text.includes('PT')) return 'pt';
+  if (text.includes('보컬')) return 'vocal';
+  if (text.includes('골프')) return 'golf';
   if (text.includes('폐기물')) return 'waste';
   if (text.includes('설치')) return 'install';
   if (text.includes('심부름')) return 'errand';
