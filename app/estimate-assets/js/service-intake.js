@@ -354,7 +354,9 @@
   function showStep(step) {
     state.currentStep = Math.max(1, Math.min(5, step));
     $$("[data-step]").forEach((section) => {
-      section.hidden = String(section.dataset.step) !== String(state.currentStep);
+      const isActive = String(section.dataset.step) === String(state.currentStep);
+      section.hidden = !isActive;
+      section.classList.toggle("is-active", isActive);
     });
     updateStageShell();
     renderPrice();
