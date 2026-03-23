@@ -44,7 +44,7 @@
   </header>
 
   <main>
-    <section class="hero section">
+    <section class="hero hero--single section">
       <div class="hero-copy">
         <p class="eyebrow">필요한 서비스 선택 · 전문가 매칭</p>
         <h1>당장 고고,<br />당고.</h1>
@@ -59,31 +59,6 @@
           <span>비회원 주문 조회 가능</span>
         </div>
       </div>
-
-      <aside class="hero-panel">
-        <div class="panel-intro">
-          <p class="eyebrow">📊 오늘 현황</p>
-          <h2>지금 접수와 배차 현황이에요.</h2>
-        </div>
-        <div class="stats-grid">
-          <article class="stat-card">
-            <p>오늘 예약 수</p>
-            <strong id="statReservations">-</strong>
-            <span>오늘 생성된 주문 기준</span>
-          </article>
-          <article class="stat-card">
-            <p>현재 배차 수</p>
-            <strong id="statDispatches">-</strong>
-            <span>배차 진행 중인 작업 기준</span>
-          </article>
-          <article class="stat-card">
-            <p>실시간 이용자</p>
-            <strong id="statEta">-</strong>
-            <span>GA 실시간 기준</span>
-          </article>
-        </div>
-        <a class="btn primary full-width" href="./services/">필요한 서비스 선택하기</a>
-      </aside>
     </section>
 
     <section class="section section-surface service-hop-shell">
@@ -108,6 +83,29 @@
           <strong>서비스 선택</strong>
           <span>모든 서비스 보기</span>
         </a>
+      </div>
+    </section>
+
+    <section class="section section-surface status-strip-shell">
+      <div class="section-head">
+        <h2>지금 접수와 배차 현황이에요.</h2>
+      </div>
+      <div class="stats-grid stats-grid--compact">
+        <article class="stat-card">
+          <p>오늘 예약 수</p>
+          <strong id="statReservations">-</strong>
+          <span>오늘 생성된 주문 기준</span>
+        </article>
+        <article class="stat-card">
+          <p>현재 배차 수</p>
+          <strong id="statDispatches">-</strong>
+          <span>배차 진행 중인 작업 기준</span>
+        </article>
+        <article class="stat-card">
+          <p>실시간 이용자</p>
+          <strong id="statEta">-</strong>
+          <span>GA 실시간 기준</span>
+        </article>
       </div>
     </section>
 
