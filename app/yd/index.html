@@ -163,7 +163,7 @@
         </div>
 
         <div class="distance-box">
-          <button type="button" class="primary-btn" id="calcDistanceBtn">거리 계산하기</button>
+          <button type="button" class="wizard-primary yd-cta-btn" id="calcDistanceBtn">거리 계산하기</button>
           <div class="distance-result">
             <div class="distance-line"><span class="label">계산된 거리</span><strong id="distanceText">주소를 입력해주세요</strong></div>
             <div class="distance-line muted" id="distanceMeta">부개동·화곡동·까치산역 같은 러프한 주소도 최대한 계산해드려요.</div>
@@ -196,21 +196,21 @@
         <p class="section-copy">품목별 추가요금이 아니라 짐 규모를 빠르게 파악하기 위한 선택입니다.</p>
 
         <div class="size-grid">
-          <button type="button" class="size-card" data-size="small">
+          <button type="button" class="size-card yd-choice-card" data-size="small">
             <span class="size-name">소형짐</span>
             <span class="size-desc">가방, 모니터, 전자레인지 같은 가벼운 짐</span>
           </button>
-          <button type="button" class="size-card" data-size="medium">
+          <button type="button" class="size-card yd-choice-card" data-size="medium">
             <span class="size-name">중형짐</span>
             <span class="size-desc">책상, 행거, 자전거, 소형 가전</span>
           </button>
-          <button type="button" class="size-card" data-size="large">
+          <button type="button" class="size-card yd-choice-card" data-size="large">
             <span class="size-name">대형짐</span>
             <span class="size-desc">냉장고, 침대, 소파, 안마의자 등</span>
           </button>
         </div>
 
-        <div class="summary-box">
+        <div class="mini-summary yd-summary-box">
           <div class="summary-label">선택한 짐</div>
           <div id="selectedItemsSummary" class="summary-value empty">아직 선택한 짐이 없어요.</div>
         </div>
@@ -223,21 +223,21 @@
         <p class="section-copy">기사님이 함께 들어드려야 하는 경우와 동승이 필요한 경우에만 체크해주세요.</p>
 
         <div class="help-grid">
-          <label class="check-card">
+          <label class="check-card yd-check-card">
             <input type="checkbox" id="helpFrom" />
             <span>
               <strong>출발지에서 기사 도움</strong>
               <small>+10,000원</small>
             </span>
           </label>
-          <label class="check-card">
+          <label class="check-card yd-check-card">
             <input type="checkbox" id="helpTo" />
             <span>
               <strong>도착지에서 기사 도움</strong>
               <small>+10,000원</small>
             </span>
           </label>
-          <label class="check-card">
+          <label class="check-card yd-check-card">
             <input type="checkbox" id="riderSeat" />
             <span>
               <strong>동승 1명</strong>
@@ -260,7 +260,7 @@
         </div>
 
         <div class="cta-stack">
-          <button type="button" class="primary-btn big" id="smsBtn">문자 상담 / 접수하기</button>
+          <button type="button" class="contact-btn mega big" id="smsBtn">문자 상담 / 접수하기</button>
           <p class="cta-note">문자 내용에 출발지, 도착지, 거리, 선택 짐, 기사 도움 여부가 자동으로 들어갑니다.</p>
         </div>
         </div>
@@ -278,7 +278,7 @@
       <p class="modal-copy" id="modalCopy">해당하는 짐을 선택해 주세요.</p>
       <div class="modal-list" id="modalList"></div>
       <div class="modal-actions">
-        <button type="button" class="primary-btn" id="modalConfirmBtn">선택 완료</button>
+        <button type="button" class="wizard-primary yd-cta-btn" id="modalConfirmBtn">선택 완료</button>
       </div>
     </div>
   </div>
