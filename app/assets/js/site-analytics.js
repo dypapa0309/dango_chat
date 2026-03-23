@@ -1,5 +1,5 @@
 (function () {
-  const MEASUREMENT_ID = 'G-KML8CS1NXL';
+  const MEASUREMENT_ID = 'G-V36V8W4GMC';
   const PAGE_NAME = document.body?.dataset?.analyticsPage || document.title || location.pathname;
   const TRACKABLE_SELECTOR = [
     '[data-analytics-label]',
