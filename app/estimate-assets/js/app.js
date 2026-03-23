@@ -2179,6 +2179,9 @@ function normalizeItemKey(k) {
     "전자레인지": 2500,
     "공기청정기": 5000,
     "청소기": 5000,
+    "에어프라이기": 5000,
+    "오븐": 15000,
+    "로봇청소기": 7000,
     "TV(55이하)": 15000,
     "TV(65이상)": 30000,
     "모니터": 5000,
@@ -2197,6 +2200,11 @@ function normalizeItemKey(k) {
 
     "김치냉장고": 50000,
     "스타일러": 120000,
+    "안마의자": 120000,
+    "가습기(소형)": 3000,
+    "가습기(중형)": 5000,
+    "제습기(소형)": 7000,
+    "제습기(중형)": 10000,
 
     // 가구
     "의자": 2500,
@@ -2204,6 +2212,9 @@ function normalizeItemKey(k) {
     "협탁/사이드테이블(소형)": 10000,
     "화장대(소형)": 10000,
     "책상/테이블(일반)": 10000,
+    "전신거울": 10000,
+    "식탁(소형)": 20000,
+    "식탁(대형)": 40000,
     "서랍장(3~5단)": 10000,
     "책장(일반)": 20000,
     "수납장/TV장(일반)": 20000,
@@ -2214,7 +2225,11 @@ function normalizeItemKey(k) {
     // 침대
     "침대매트리스(킹제외)": 20000,
     "침대프레임(분해/조립)": 40000,
-    "기타가전가구(분해/조립)": 20000
+    "기타가전가구(분해/조립)": 20000,
+
+    // 기타 품목
+    "자전거": 20000,
+    "전기자전거": 35000
   };
 
   // 항목별 합산
@@ -2569,6 +2584,19 @@ function normalizeItemKey(k) {
     function renderMiniSummaries() {
       const itemsMini = $("#itemsMiniSummary");
       if (itemsMini) itemsMini.textContent = summarizeItemsWithMattress(state.items);
+
+      const mattressQtyHint = $("#mattressQtyHint");
+      if (mattressQtyHint) {
+        const total = totalMattressQty();
+        const sizes = totalMattressSizeQty();
+        if (total <= 0) {
+          mattressQtyHint.textContent = "※ 매트리스 수량을 늘리면 사이즈 선택도 같이 맞춰주세요.";
+        } else if (sizes !== total) {
+          mattressQtyHint.textContent = `※ 매트리스 ${total}개 중 사이즈 선택은 ${sizes}개예요. 수량을 추가하면 사이즈도 다시 맞춰주세요.`;
+        } else {
+          mattressQtyHint.textContent = `※ 매트리스 ${total}개 사이즈 선택이 맞춰졌어요. 수량을 바꾸면 다시 확인해주세요.`;
+        }
+      }
 
       const itemsNotePrev = $("#itemsNotePreview");
       if (itemsNotePrev) itemsNotePrev.textContent = `기타사항: ${state.itemsNote.trim() ? state.itemsNote.trim() : "없음"}`;
