@@ -44,11 +44,11 @@
   </header>
 
   <main>
-    <section class="hero hero--single section">
+    <section class="hero section">
       <div class="hero-copy">
         <p class="eyebrow">필요한 서비스 선택 · 전문가 매칭</p>
         <h1>당장 고고,<br />당고.</h1>
-        <p class="hero-text">필요한 서비스만 고르면 됩니다.</p>
+        <p class="hero-text">지금 필요한 서비스만 고르면, 맞는 전문가 연결이 바로 시작됩니다.</p>
         <div class="hero-actions">
           <a class="btn primary" href="./services/">서비스 선택하고 시작하기</a>
           <a class="btn ghost" href="tel:01075416143">전화 상담</a>
@@ -59,6 +59,30 @@
           <span>비회원 주문 조회 가능</span>
         </div>
       </div>
+      <aside class="hero-panel hero-visual-panel">
+        <div class="hero-visual-grid">
+          <article class="hero-visual-card hero-visual-card--main">
+            <img src="./estimate-assets/img/hero-truck.jpg" alt="소형이사 현장 이미지" loading="lazy" />
+            <div class="hero-visual-copy">
+              <span class="hero-visual-chip">소형이사</span>
+              <strong>접수하면 바로 배차까지 이어집니다.</strong>
+            </div>
+          </article>
+          <article class="hero-visual-card hero-visual-card--sub">
+            <img src="./estimate-assets/img/hero-bin.jpg" alt="폐기물 수거 이미지" loading="lazy" />
+            <div class="hero-visual-copy">
+              <span class="hero-visual-chip hero-visual-chip--green">폐기물 · 설치</span>
+              <strong>생활서비스도 같은 방식으로 바로 접수합니다.</strong>
+            </div>
+          </article>
+          <article class="hero-icon-strip">
+            <div class="hero-icon-badge"><span>📦</span><em>이사</em></div>
+            <div class="hero-icon-badge"><span>🧼</span><em>청소</em></div>
+            <div class="hero-icon-badge"><span>🛠</span><em>설치</em></div>
+            <div class="hero-icon-badge"><span>🧑‍🏫</span><em>레슨</em></div>
+          </article>
+        </div>
+      </aside>
     </section>
 
     <section class="section section-surface service-hop-shell">
@@ -68,20 +92,49 @@
       </div>
       <div class="service-hop-grid">
         <a class="service-hop-card" href="./estimate/">
-          <strong>소형이사</strong>
-          <span>원룸, 오피스텔 이사를 바로 접수해요.</span>
+          <div class="service-hop-card__media">
+            <img src="./estimate-assets/img/hero-truck.jpg" alt="소형이사 서비스 이미지" loading="lazy" />
+          </div>
+          <div class="service-hop-card__body">
+            <em class="service-hop-card__kicker">가장 많이 찾는 서비스</em>
+            <strong>소형이사</strong>
+            <span>원룸, 오피스텔 이사를 바로 접수해요.</span>
+          </div>
         </a>
         <a class="service-hop-card" href="./ddclean/">
-          <strong>입주청소</strong>
-          <span>입주청소와 이사청소를 바로 접수해요.</span>
+          <div class="service-hop-card__media service-hop-card__media--soft">
+            <img src="./estimate-assets/img/case2.jpg" alt="입주청소 서비스 이미지" loading="lazy" />
+          </div>
+          <div class="service-hop-card__body">
+            <em class="service-hop-card__kicker">바로 접수 가능한 청소</em>
+            <strong>입주청소</strong>
+            <span>입주청소와 이사청소를 바로 접수해요.</span>
+          </div>
         </a>
         <a class="service-hop-card" href="./yd/">
-          <strong>용달</strong>
-          <span>차만 필요한 이동을 더 빠르게 접수해요.</span>
+          <div class="service-hop-card__media service-hop-card__media--small">
+            <img src="./estimate-assets/img/case1.jpg" alt="용달 서비스 이미지" loading="lazy" />
+          </div>
+          <div class="service-hop-card__body">
+            <em class="service-hop-card__kicker">빠르게 끝내는 이동</em>
+            <strong>용달</strong>
+            <span>차만 필요한 이동을 더 빠르게 접수해요.</span>
+          </div>
         </a>
         <a class="service-hop-card" href="./services/">
-          <strong>서비스 선택</strong>
-          <span>모든 서비스 보기</span>
+          <div class="service-hop-card__media service-hop-card__media--icon">
+            <div class="service-hop-card__icon-grid">
+              <span>📦</span>
+              <span>🧼</span>
+              <span>🛠</span>
+              <span>🧑‍🏫</span>
+            </div>
+          </div>
+          <div class="service-hop-card__body">
+            <em class="service-hop-card__kicker">한 번에 모아보기</em>
+            <strong>서비스 선택</strong>
+            <span>필요한 서비스만 골라서 바로 들어가요.</span>
+          </div>
         </a>
       </div>
     </section>
