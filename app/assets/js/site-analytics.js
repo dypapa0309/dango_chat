@@ -62,6 +62,40 @@
     );
   }
 
+  function classifyEvent(target, label, href) {
+    const id = target.id || '';
+    const text = cleanText(label).toLowerCase();
+    const link = String(href || '').toLowerCase();
+
+    if (id === 'btnPay' || id === 'confirmCheckoutStart' || text.includes('결제하기') || text.includes('전체 결제')) {
+      return { name: 'begin_checkout', pixel: 'InitiateCheckout' };
+    }
+
+    if (id === 'sendInquiry' || id === 'smsBtn' || text.includes('문자') || link.startsWith('sms:')) {
+      return { name: 'contact_sms_click', pixel: 'Contact' };
+    }
+
+    if (link.startsWith('tel:') || text.includes('전화')) {
+      return { name: 'contact_phone_click', pixel: 'Contact' };
+    }
+
+    if (
+      id === 'startCheckoutCta' ||
+      text.includes('접수하기') ||
+      text.includes('바로 접수') ||
+      text.includes('상세 접수') ||
+      text.includes('지금 접수')
+    ) {
+      return { name: 'start_application', pixel: 'Lead' };
+    }
+
+    if (text.includes('주문조회') || text.includes('조회')) {
+      return { name: 'lookup_order', pixel: 'ViewContent' };
+    }
+
+    return { name: 'cta_click', pixel: null };
+  }
+
   document.addEventListener('click', (event) => {
     const target = event.target.closest('a, button');
     if (!isTrackable(target)) return;
@@ -71,6 +105,7 @@
     const category = target.tagName === 'A'
       ? (href.startsWith('tel:') ? 'phone' : href.startsWith('sms:') ? 'sms' : 'link')
       : 'button';
+    const eventInfo = classifyEvent(target, label, href);
 
     window.gtag('event', 'cta_click', {
       page_name: PAGE_NAME,
@@ -78,5 +113,22 @@
       click_target: href || target.id || '',
       click_category: category
     });
+
+    window.dataLayer.push({
+      event: eventInfo.name,
+      page_name: PAGE_NAME,
+      click_label: label,
+      click_target: href || target.id || '',
+      click_category: category
+    });
+
+    if (eventInfo.pixel && typeof window.fbq === 'function') {
+      window.fbq('track', eventInfo.pixel, {
+        page_name: PAGE_NAME,
+        click_label: label,
+        click_target: href || target.id || '',
+        click_category: category
+      });
+    }
   }, { capture: true });
 })();
