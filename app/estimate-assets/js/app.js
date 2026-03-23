@@ -580,20 +580,18 @@ function normalizeItemKey(k) {
       const activeSection = visibleSteps[state.stepIndex];
       const activeToken = getStepToken(activeSection);
       const stageInfo = getCurrentStageInfo(activeToken);
-      const stageStepEl = $("#wizardStageStep");
-      const stageTitleEl = $("#wizardStageTitle");
-      const stageHintEl = $("#wizardStageHint");
       const stageBarEl = $("#wizardStageBar");
       const stageCheerEl = $("#wizardCheer");
       const nextBtns = $$('[data-wizard-next]');
       const prevBtns = $$('[data-wizard-prev]');
 
-      if (stageStepEl) stageStepEl.textContent = `${stageInfo.index + 1} / ${stageInfo.groups.length} 단계`;
       const stepCopy = getCurrentStepCopy(activeToken);
-      if (stageTitleEl) stageTitleEl.textContent = stepCopy?.title || stageInfo.group?.title || "현재 단계에 집중해서 보면 돼요.";
-      if (stageHintEl) stageHintEl.textContent = stepCopy?.hint || stageInfo.group?.hint || "현재 단계만 보면 돼요.";
       if (stageBarEl) stageBarEl.style.width = `${((stageInfo.index + 1) / stageInfo.groups.length) * 100}%`;
-      if (stageCheerEl) stageCheerEl.textContent = STAGE_CHEERS[stageInfo.index] || "좋아요. 이대로 진행하면 돼요.";
+      if (stageCheerEl) {
+        const cheer = STAGE_CHEERS[stageInfo.index] || "좋아요. 이대로 진행하면 돼요.";
+        const hint = stepCopy?.hint || stageInfo.group?.hint || "현재 단계만 차례대로 보면 됩니다.";
+        stageCheerEl.textContent = `${cheer} ${hint}`;
+      }
 
       prevBtns.forEach((prevBtn) => {
         prevBtn.disabled = state.stepIndex <= 0;
