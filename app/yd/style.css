@@ -160,6 +160,10 @@
   margin-top: 16px;
 }
 
+.help-grid--single {
+  grid-template-columns: 1fr;
+}
+
 .check-card {
   display: flex;
   gap: 12px;
