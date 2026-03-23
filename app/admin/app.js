@@ -333,7 +333,7 @@ function renderJobDetail(job) {
           <div><span>총 결제</span><strong>${money(job.total_price)}</strong></div>
           <div><span>당고 20%</span><strong>${money(split.companyAmount)}</strong></div>
           <div><span>기사 80%</span><strong>${money(split.driverAmount)}</strong></div>
-          <div><span>거리</span><strong>${Number(job.distance_km || 0).toFixed(1)}km</strong></div>
+          <div><span>거리</span><strong>${job.distance_km != null ? `${Number(job.distance_km || 0).toFixed(1)}km` : '미기록'}</strong></div>
           <div><span>작성일</span><strong>${formatDateTime(job.created_at)}</strong></div>
         </div>
       </section>

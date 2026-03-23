@@ -70,7 +70,7 @@
           <strong>기사 기준 운임</strong>
           <div>총 결제: ${Number(job.total_price || 0).toLocaleString()}원</div>
           <div>기사 정산 예정: ${Number(job.driver_amount || 0).toLocaleString()}원</div>
-          <div>당고 수수료: ${Number(job.company_amount || 0).toLocaleString()}원</div>
+          <div>거리: ${job.distance_km != null ? `${Number(job.distance_km || 0).toFixed(1)}km` : '미기록'}</div>
         </div>
       </div>
       <div class="job-grid" style="margin-top:12px;">
@@ -80,7 +80,6 @@
           <div>이사 방식: ${escapeHtml(formatMoveType(item.moveType))}</div>
           <div>짐양: ${escapeHtml(formatLoadLevel(item.loadLevel))}</div>
           <div>동승: ${Number(item.ride || 0)}명</div>
-          <div>거리: ${job.distance_km != null ? `${Number(job.distance_km || 0).toFixed(1)}km` : '미기록'}</div>
         </div>
         <div class="info-block">
           <strong>옵션</strong>
