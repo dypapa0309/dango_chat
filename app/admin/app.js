@@ -840,11 +840,11 @@ async function loadDrivers() {
               <option value="active" ${driver.status === 'active' ? 'selected' : ''}>활성</option>
               <option value="inactive" ${driver.status === 'inactive' ? 'selected' : ''}>비활성</option>
             </select>
-            <label class="check"><input type="checkbox" data-field="dispatchEnabled" ${driver.dispatch_enabled ? 'checked' : ''} /> 배차 허용</label>
+            <label class="check check-card"><span class="check-copy">배차 허용</span><input type="checkbox" data-field="dispatchEnabled" ${driver.dispatch_enabled ? 'checked' : ''} /></label>
             <input type="text" data-field="bankName" value="${escapeHtml(driver.bank_name || '')}" placeholder="은행명" />
             <input type="text" data-field="accountHolder" value="${escapeHtml(driver.account_holder || '')}" placeholder="예금주" />
             <input type="text" data-field="accountNumber" value="${escapeHtml(driver.account_number || '')}" placeholder="계좌번호" />
-            <label class="check"><input type="checkbox" data-field="payoutEnabled" ${driver.payout_enabled ? 'checked' : ''} /> 정산 가능</label>
+            <label class="check check-card"><span class="check-copy">정산 가능</span><input type="checkbox" data-field="payoutEnabled" ${driver.payout_enabled ? 'checked' : ''} /></label>
             <textarea data-field="payoutNote" placeholder="정산 메모">${escapeHtml(driver.payout_note || '')}</textarea>
             <input type="text" data-field="taxName" value="${escapeHtml(driver.tax_name || '')}" placeholder="세금 신고용 이름" />
             <label class="field-card date-field">
@@ -854,7 +854,7 @@ async function loadDrivers() {
             </label>
             <input type="text" data-field="taxIdNumber" value="${escapeHtml(driver.tax_id_number || '')}" placeholder="주민등록번호 또는 사업자등록번호" />
             <input type="email" data-field="taxEmail" value="${escapeHtml(driver.tax_email || '')}" placeholder="세금 신고용 이메일" />
-            <label class="check"><input type="checkbox" data-field="taxWithholdingAgreed" ${driver.tax_withholding_agreed ? 'checked' : ''} /> 3.3% 세금 정산 동의</label>
+            <label class="check check-card"><span class="check-copy">3.3% 세금 정산 동의</span><input type="checkbox" data-field="taxWithholdingAgreed" ${driver.tax_withholding_agreed ? 'checked' : ''} /></label>
             <textarea data-field="taxAddress" placeholder="세금 신고용 주소">${escapeHtml(driver.tax_address || '')}</textarea>
             <textarea data-field="internalMemo" placeholder="기사 내부 메모">${escapeHtml(driver.internal_memo || '')}</textarea>
           </div>

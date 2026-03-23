@@ -45,9 +45,47 @@
 .driver-summary-side{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
 .driver-detail-body{padding:0 18px 18px;border-top:1px solid var(--line);background:#fcfcfd}
 .driver-meta-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
-.driver-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.driver-grid input,.driver-grid textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit}
+.driver-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;align-items:stretch}
+.driver-grid input,.driver-grid textarea,.driver-grid select{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
 .driver-grid textarea,.driver-grid button{grid-column:1/-1}.driver-grid textarea{min-height:84px;resize:vertical}
+.driver-grid .check-card,
+.driver-grid .field-card{
+  min-height:62px;
+  padding:12px 14px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#fff;
+}
+.driver-grid .check-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:16px;
+}
+.driver-grid .check-card input{
+  width:20px;
+  height:20px;
+  margin:0;
+  flex:0 0 auto;
+}
+.driver-grid .check-copy{
+  color:var(--text);
+  font-weight:600;
+  line-height:1.35;
+}
+.driver-grid .field-card{
+  display:grid;
+  gap:6px;
+}
+.driver-grid .field-card input{
+  padding:0;
+  border:none;
+  border-radius:0;
+  background:transparent;
+  min-height:28px;
+}
+.field-title{font-size:14px;font-weight:700;color:var(--text)}
+.field-help{font-size:13px;line-height:1.45;color:var(--muted)}
 .driver-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .driver-actions.compact{margin-top:10px}
 .driver-actions.compact .btn{padding:9px 12px}
