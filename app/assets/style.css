@@ -86,6 +86,13 @@ textarea {
   font-size: 0.98rem;
 }
 
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .site-nav a {
   display: inline-flex;
   align-items: center;
@@ -118,6 +125,13 @@ textarea {
   padding: 12px 18px;
   border-radius: 999px;
   font-weight: 700;
+  white-space: nowrap;
+}
+
+.header-link {
+  min-height: 46px;
+  padding: 0 16px;
+  border-radius: 999px;
   white-space: nowrap;
 }
 
@@ -973,6 +987,11 @@ textarea {
     font-size: 0.92rem;
   }
 
+  .header-actions {
+    width: 100%;
+    justify-content: center;
+  }
+
   .site-nav a {
     padding: 10px 14px;
     border-radius: 999px;
@@ -1031,11 +1050,18 @@ textarea {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
+  .header-actions {
+    display: grid;
+    width: 100%;
+    grid-template-columns: 1fr 1fr;
+  }
+
   .site-nav a {
     justify-content: center;
     text-align: center;
   }
 
+  .header-link,
   .header-cta,
   .btn,
   .btn.large {
