@@ -447,6 +447,28 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
   outline:none;
   font-size:16px;
 }
+.address-search-row{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:end;
+}
+.address-search-btn{
+  height:50px;
+  margin-top:8px;
+  padding:0 18px;
+  border-radius:14px;
+  border:1px solid rgba(217,120,70,0.24);
+  background:#FFF0E1;
+  color:var(--primary);
+  font-size:14px;
+  font-weight:900;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.address-search-btn:hover{
+  background:#FFE6D1;
+}
 .address-input::placeholder{ color:#9CA3AF; }
 .address-input:focus{
   border-color:rgba(217,120,70,0.34);
@@ -2236,6 +2258,8 @@ button:active{ transform:scale(0.97); }
   .landing-grid{ grid-template-columns:1fr; }
   .service-switcher-grid{ grid-template-columns:1fr; }
   .service-directory-grid{ grid-template-columns:1fr; }
+  .address-search-row{ grid-template-columns:1fr; }
+  .address-search-btn{ width:100%; }
 }
 @media (max-width: 640px){
   .page-linkbar--space{ align-items:flex-start; }

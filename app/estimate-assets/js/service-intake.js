@@ -512,6 +512,29 @@
     });
   }
 
+  function openPostcodePicker(targetId) {
+    const input = document.getElementById(targetId);
+    if (!input) return;
+    if (!window.daum?.Postcode) {
+      input.focus();
+      return;
+    }
+    new window.daum.Postcode({
+      oncomplete(data) {
+        const nextAddress = data.roadAddress || data.jibunAddress || data.address || "";
+        input.value = nextAddress;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+        input.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }).open();
+  }
+
+  function bindAddressPickers() {
+    $$("[data-address-target]").forEach((button) => {
+      button.addEventListener("click", () => openPostcodePicker(button.dataset.addressTarget));
+    });
+  }
+
   function bindOptionCards() {
     document.addEventListener("click", (event) => {
       const optionRow = event.target.closest(".option");
@@ -560,6 +583,7 @@
     bindOptionCards();
     bindSteppers();
     bindWasteItems();
+    bindAddressPickers();
     bindModals();
     $$("#wizardStagePills .stage-pill").forEach((pill, index) => {
       pill.addEventListener("click", () => {

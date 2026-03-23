@@ -18,6 +18,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=c6917241d9bf5f11df6d178f8ef35f17&libraries=services&autoload=false"></script>
+  <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
   <link rel="stylesheet" href="../estimate-assets/css/style.css" />
 </head>
 <body data-default-service="errand" data-analytics-page="estimate_errand">
@@ -106,11 +108,20 @@
     <h2>기본 정보</h2>
     <div class="card">
       <div class="sub">출발지</div>
-      <input type="text" id="serviceAddressFrom" class="address-input" placeholder="예: 서울 강남구 ..." />
+      <div class="address-search-row">
+        <input type="text" id="serviceAddressFrom" class="address-input" placeholder="예: 서울 강남구 ..." />
+        <button type="button" class="address-search-btn" data-address-target="serviceAddressFrom">주소 검색</button>
+      </div>
       <div class="sub" style="margin-top:16px;">도착지</div>
-      <input type="text" id="serviceAddressTo" class="address-input" placeholder="예: 서울 마포구 ..." />
+      <div class="address-search-row">
+        <input type="text" id="serviceAddressTo" class="address-input" placeholder="예: 서울 마포구 ..." />
+        <button type="button" class="address-search-btn" data-address-target="serviceAddressTo">주소 검색</button>
+      </div>
       <div class="sub" style="margin-top:16px;">희망 날짜</div>
-      <input type="date" id="moveDate" class="address-input date-input" />
+      <div class="date-wrap">
+        <input type="date" id="moveDate" class="address-input date-input" />
+        <span class="date-icon" aria-hidden="true"></span>
+      </div>
       <div class="sub" style="margin-top:16px;">희망 시간</div>
       <div class="time-grid">
         <label class="time-chip"><input type="radio" name="timeSlot" value="am" /><span>오전</span></label>
