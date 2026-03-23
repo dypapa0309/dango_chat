@@ -26,7 +26,7 @@
       label: "심부름",
       cheer: {
         1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 심부름인지 먼저 골라주세요.",
-        2: "좋아요. 이제 하나씩 넣으면 돼요. 출발지와 도착지, 날짜를 정리하면 됩니다.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 필요한 주소와 날짜를 정리하면 됩니다.",
         3: "좋아요. 이제 하나씩 넣으면 돼요. 물건 크기와 건수를 실제에 가깝게 넣어주세요.",
         4: "좋아요. 이제 하나씩 넣으면 돼요. 대기 시간이나 추가 요청을 정리하면 됩니다.",
         5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
@@ -258,7 +258,7 @@
     readState();
     if (step === 1) return Boolean(state.category);
     if (step === 2) {
-      if (SERVICE === "errand") return !!state.address && !!state.extraAddress && !!state.moveDate;
+      if (SERVICE === "errand") return (!!state.address || !!state.extraAddress) && !!state.moveDate;
       return !!state.address && !!state.moveDate;
     }
     if (step === 3) {
@@ -310,14 +310,18 @@
       ];
     }
 
+    const errandLocations = [];
+    if (state.address) errandLocations.push(`출발지: ${state.address}`);
+    if (state.extraAddress) errandLocations.push(`도착지: ${state.extraAddress}`);
+    if (!errandLocations.length) errandLocations.push("이동 위치: 미입력");
+
     return [
       `접수 유형: ${labelFromMap(ERRAND_CATEGORIES, state.category, "-")}`,
-      `출발지: ${state.address || "-"}`,
-      `도착지: ${state.extraAddress || "-"}`,
+      ...errandLocations,
       `희망 날짜: ${state.moveDate || "-"}`,
       `물건 규모: ${getErrandSizeLabel(state.errandItemSize)} ${Math.max(1, Number(state.errandQty || 1))}건`,
       `추가 요청: ${[
-        state.errandRoundTrip ? "왕복" : "편도",
+        state.errandRoundTrip ? "왕복" : "편도 또는 현장형",
         state.errandWaitMinutes ? `대기 ${state.errandWaitMinutes}분` : null,
         state.errandUrgent ? "긴급 요청" : null,
         state.helper ? "인부 도움" : null
