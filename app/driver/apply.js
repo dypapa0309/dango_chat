@@ -59,9 +59,9 @@
     };
 
     if (!payload.supportedServices.length) {
-      resultEl.textContent = '가능 서비스는 하나 이상 선택해주세요.';
+      resultEl.textContent = '세 가지 동의와 가능 서비스를 모두 확인해야 가입할 수 있습니다.';
       joinBtn.disabled = false;
-      joinBtn.textContent = '지원 접수';
+      joinBtn.textContent = '당고 기사 가입하기';
       return;
     }
 
@@ -75,12 +75,12 @@
     if (!data.success) {
       resultEl.textContent = data.error || '기사 지원 접수에 실패했습니다.';
       joinBtn.disabled = false;
-      joinBtn.textContent = '지원 접수';
+      joinBtn.textContent = '당고 기사 가입하기';
       return;
     }
 
-    resultEl.textContent = data.message || '기사 지원이 접수됐습니다.';
-    joinBtn.textContent = '지원 접수';
+    resultEl.textContent = data.message || '기사 가입이 접수됐습니다.';
+    joinBtn.textContent = '당고 기사 가입하기';
     joinBtn.disabled = false;
   };
 })();

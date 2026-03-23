@@ -164,9 +164,9 @@ export async function handler(event) {
       driver: data,
       message: data.status === 'active'
         ? '이미 등록된 기사 정보로 다시 저장됐어요. 운영팀 확인 후 배차를 이어갑니다.'
-        : '기사 지원이 접수됐어요. 운영팀이 확인 후 배차 가능 상태를 안내드립니다.'
+        : '기사 가입이 접수됐어요. 운영팀이 확인 후 배차 가능 상태를 안내드립니다.'
     });
   } catch (error) {
-    return fail('기사 지원 접수 실패', error.message, 500);
+    return fail('기사 가입 접수 실패', error.message, 500);
   }
 }
