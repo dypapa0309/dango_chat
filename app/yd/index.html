@@ -170,6 +170,25 @@
       <section class="card section-card">
         <div class="section-head">
           <div class="step">STEP 2</div>
+          <h2>날짜 · 이동 시간 선택</h2>
+        </div>
+        <p class="section-copy">기사 배차와 이동 가능 시간을 빠르게 맞추기 위한 정보입니다.</p>
+
+        <div class="field-grid two">
+          <label class="field">
+            <span>이동 날짜</span>
+            <input type="date" id="moveDate" />
+          </label>
+          <label class="field">
+            <span>이동 시간</span>
+            <input type="time" id="moveTime" />
+          </label>
+        </div>
+      </section>
+
+      <section class="card section-card">
+        <div class="section-head">
+          <div class="step">STEP 3</div>
           <h2>짐 크기 선택</h2>
         </div>
         <p class="section-copy">품목별 추가요금이 아니라 짐 규모를 빠르게 파악하기 위한 선택입니다.</p>
@@ -197,10 +216,10 @@
 
       <section class="card section-card">
         <div class="section-head">
-          <div class="step">STEP 3</div>
+          <div class="step">STEP 4</div>
           <h2>기사 도움 여부</h2>
         </div>
-        <p class="section-copy">기사님이 함께 들어드려야 하는 경우에만 체크해주세요. 출발지 10,000원, 도착지 10,000원 추가입니다.</p>
+        <p class="section-copy">기사님이 함께 들어드려야 하는 경우와 동승이 필요한 경우에만 체크해주세요.</p>
 
         <div class="help-grid">
           <label class="check-card">
@@ -217,18 +236,26 @@
               <small>+10,000원</small>
             </span>
           </label>
+          <label class="check-card">
+            <input type="checkbox" id="riderSeat" />
+            <span>
+              <strong>동승 1명</strong>
+              <small>+20,000원</small>
+            </span>
+          </label>
         </div>
       </section>
 
       <section class="card section-card total-card">
         <div class="section-head">
-          <div class="step">STEP 4</div>
+          <div class="step">STEP 5</div>
           <h2>예상 용달비</h2>
         </div>
 
         <div class="price-breakdown">
           <div class="row"><span>거리 운임</span><b id="distanceFeeText">0원</b></div>
           <div class="row"><span>기사 도움</span><b id="helperFeeText">0원</b></div>
+          <div class="row"><span>동승 추가</span><b id="rideFeeText">0원</b></div>
           <div class="row total"><span>예상 금액</span><b id="totalFeeText">0원</b></div>
         </div>
 

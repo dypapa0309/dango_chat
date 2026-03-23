@@ -1,16 +1,20 @@
 (() => {
   const PHONE_NUMBER = '01075416143';
   const HELPER_FEE = 10000;
+  const RIDER_FEE = 20000;
   const BASE_VEHICLE_FEE = 30000;
 
   const state = {
     startAddress: '',
     endAddress: '',
+    moveDate: '',
+    moveTime: '',
     distanceKm: 0,
     distanceMeta: '카카오 주소 기준으로 계산됩니다.',
     selected: {},
     helperFrom: false,
     helperTo: false,
+    riderSeat: false,
   };
 
   const ITEM_GROUPS = {
@@ -76,14 +80,18 @@
   const els = {
     start: $('#startAddress'),
     end: $('#endAddress'),
+    moveDate: $('#moveDate'),
+    moveTime: $('#moveTime'),
     calcBtn: $('#calcDistanceBtn'),
     distanceText: $('#distanceText'),
     distanceMeta: $('#distanceMeta'),
     summary: $('#selectedItemsSummary'),
     helpFrom: $('#helpFrom'),
     helpTo: $('#helpTo'),
+    riderSeat: $('#riderSeat'),
     distanceFeeText: $('#distanceFeeText'),
     helperFeeText: $('#helperFeeText'),
+    rideFeeText: $('#rideFeeText'),
     totalFeeText: $('#totalFeeText'),
     smsBtn: $('#smsBtn'),
     modal: $('#itemsModal'),
@@ -127,8 +135,12 @@
     return (state.helperFrom ? HELPER_FEE : 0) + (state.helperTo ? HELPER_FEE : 0);
   }
 
+  function riderFee() {
+    return state.riderSeat ? RIDER_FEE : 0;
+  }
+
   function totalFee() {
-    return moveDistanceFee(state.distanceKm) + helperFee();
+    return moveDistanceFee(state.distanceKm) + helperFee() + riderFee();
   }
 
   function currentSelectedEntries() {
@@ -151,6 +163,7 @@
   function renderFees() {
     els.distanceFeeText.textContent = formatWon(moveDistanceFee(state.distanceKm));
     els.helperFeeText.textContent = formatWon(helperFee());
+    els.rideFeeText.textContent = formatWon(riderFee());
     els.totalFeeText.textContent = formatWon(totalFee());
   }
 
@@ -447,9 +460,12 @@
       '당고 간편용달 예약 문의',
       `출발지: ${state.startAddress || '-'}`,
       `도착지: ${state.endAddress || '-'}`,
+      `이동 날짜: ${state.moveDate || '-'}`,
+      `이동 시간: ${state.moveTime || '-'}`,
       `거리: ${state.distanceKm > 0 ? `${state.distanceKm.toFixed(1)}km` : '-'}`,
       `선택 품목: ${items.length ? items.join(', ') : '없음'}`,
       `기사 도움: ${helperText}`,
+      `동승: ${state.riderSeat ? '1명' : '없음'}`,
       `예상 용달비: ${formatWon(total)}`,
       `예약금(20%): ${formatWon(deposit)}`,
       `잔금(80%): ${formatWon(balance)}`,
@@ -467,6 +483,14 @@
 
   els.calcBtn.addEventListener('click', calculateDistance);
 
+  els.moveDate?.addEventListener('change', (e) => {
+    state.moveDate = e.target.value;
+  });
+
+  els.moveTime?.addEventListener('change', (e) => {
+    state.moveTime = e.target.value;
+  });
+
   els.helpFrom.addEventListener('change', (e) => {
     state.helperFrom = e.target.checked;
     renderFees();
@@ -474,6 +498,11 @@
 
   els.helpTo.addEventListener('change', (e) => {
     state.helperTo = e.target.checked;
+    renderFees();
+  });
+
+  els.riderSeat?.addEventListener('change', (e) => {
+    state.riderSeat = e.target.checked;
     renderFees();
   });
 
