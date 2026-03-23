@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>당고 | 전체 결제</title>
+  <meta name="description" content="당고 주문 전체 결제를 진행하는 페이지입니다. 금액을 확인하고 바로 결제할 수 있습니다." />
+  <meta name="robots" content="noindex, nofollow" />
   <script src="https://js.tosspayments.com/v1"></script>
   <style>
     :root {
@@ -99,7 +101,7 @@
     }
   </style>
 </head>
-<body>
+<body data-analytics-page="customer_pay">
   <nav class="topnav" aria-label="고객 이동 메뉴">
     <a href="/">홈화면</a>
     <a href="/estimate/">소형이사</a>
@@ -213,5 +215,6 @@
     load();
   </script>
   <script src="../assets/js/contact-fab.js"></script>
+  <script src="../assets/js/site-analytics.js"></script>
 </body>
 </html>

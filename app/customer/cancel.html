@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>당고 | 주문 취소</title>
+  <meta name="description" content="당고 주문 취소와 환불 요청을 진행하는 페이지입니다." />
+  <meta name="robots" content="noindex, nofollow" />
   <style>
     :root {
       --bg: #f5efe4;
@@ -106,7 +108,7 @@
     }
   </style>
 </head>
-<body>
+<body data-analytics-page="customer_cancel">
   <nav class="topnav" aria-label="고객 이동 메뉴">
     <a href="/">홈화면</a>
     <a href="/estimate/">소형이사</a>
@@ -204,5 +206,6 @@
     loadJob();
   </script>
   <script src="../assets/js/contact-fab.js"></script>
+  <script src="../assets/js/site-analytics.js"></script>
 </body>
 </html>

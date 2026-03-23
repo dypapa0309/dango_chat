@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>당고 | 비회원 주문 조회</title>
+  <meta name="description" content="당고 비회원 주문 상태를 이름과 연락처로 확인하는 페이지입니다." />
+  <meta name="robots" content="noindex, nofollow" />
   <style>
     :root { --bg:#f5efe4; --card:#fffaf3; --line:rgba(70,50,31,.12); --text:#20170f; --muted:#6e6255; --brand:#ed6b2f; }
     * { box-sizing:border-box; }
@@ -33,7 +35,7 @@
     @media (max-width:720px){ .form { grid-template-columns:1fr; } .topnav a,.btn-row .btn { min-width:0; } }
   </style>
 </head>
-<body>
+<body data-analytics-page="customer_lookup">
   <nav class="topnav" aria-label="고객 이동 메뉴">
     <a href="/">홈화면</a>
     <a href="/estimate/">소형이사</a>
@@ -123,5 +125,6 @@
     statusText.textContent = '이름과 연락처를 넣으면 최근 주문을 확인할 수 있어요.';
   </script>
   <script src="../assets/js/contact-fab.js"></script>
+  <script src="../assets/js/site-analytics.js"></script>
 </body>
 </html>
