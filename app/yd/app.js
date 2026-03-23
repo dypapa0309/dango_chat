@@ -444,7 +444,7 @@
     const balance = total - deposit;
 
     return [
-      '간편 용달 예약 문의',
+      '당고 간편용달 예약 문의',
       `출발지: ${state.startAddress || '-'}`,
       `도착지: ${state.endAddress || '-'}`,
       `거리: ${state.distanceKm > 0 ? `${state.distanceKm.toFixed(1)}km` : '-'}`,
