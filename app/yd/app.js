@@ -99,6 +99,7 @@
     modalCopy: $('#modalCopy'),
     modalList: $('#modalList'),
     modalConfirmBtn: $('#modalConfirmBtn'),
+    pickerFields: $$('[data-picker-field]'),
   };
 
   let activeSize = null;
@@ -489,6 +490,22 @@
 
   els.moveTime?.addEventListener('change', (e) => {
     state.moveTime = e.target.value;
+  });
+
+  els.pickerFields.forEach((field) => {
+    field.addEventListener('click', (e) => {
+      const input = field.querySelector('input');
+      if (!input) return;
+      if (e.target === input) return;
+      input.focus();
+      if (typeof input.showPicker === 'function') {
+        try {
+          input.showPicker();
+        } catch (_) {
+          // Some browsers block showPicker without a direct trusted event on input.
+        }
+      }
+    });
   });
 
   els.helpFrom.addEventListener('change', (e) => {

@@ -9,6 +9,7 @@
 
 .yd-step-card {
   padding: 0;
+  display: block;
 }
 
 .yd-card {
@@ -34,6 +35,10 @@
 .field {
   display: grid;
   gap: 8px;
+}
+
+.picker-field {
+  cursor: pointer;
 }
 
 .field span {
