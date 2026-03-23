@@ -516,6 +516,26 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
   border:1px solid rgba(17,24,39,0.08);
   background:#FFFFFF;
   margin-top:10px;
+  position:relative;
+  transition:border-color .18s ease, background-color .18s ease, box-shadow .18s ease;
+}
+.option > input[type="radio"],
+.option > input[type="checkbox"],
+.option-controls > input[type="radio"],
+.option-controls > input[type="checkbox"]{
+  position:absolute;
+  opacity:0;
+  pointer-events:none;
+  width:0;
+  height:0;
+}
+.option:has(input:checked){
+  background:#FFF3E7;
+  border-color:rgba(217,120,70,0.28);
+  box-shadow:0 0 0 2px rgba(217,120,70,0.10) inset;
+}
+.option:hover{
+  border-color:rgba(217,120,70,0.18);
 }
 .option-controls{ display:flex; align-items:center; gap:10px; }
 .item-qty-row{ align-items:center; }

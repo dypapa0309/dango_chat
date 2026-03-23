@@ -512,6 +512,29 @@
     });
   }
 
+  function bindOptionCards() {
+    document.addEventListener("click", (event) => {
+      const optionRow = event.target.closest(".option");
+      if (!optionRow) return;
+
+      const tappedInteractive = event.target.closest(
+        "input, button, a, label, textarea, select, .stepper, [data-open-modal], [data-close-modal], [data-close]"
+      );
+      if (tappedInteractive) return;
+
+      const control = optionRow.querySelector('input[type="checkbox"], input[type="radio"]');
+      if (!control) return;
+
+      event.preventDefault();
+      if (control.type === "checkbox") {
+        control.checked = !control.checked;
+      } else {
+        control.checked = true;
+      }
+      control.dispatchEvent(new Event("change", { bubbles: true }));
+    });
+  }
+
   function bindModals() {
     $$("[data-open-modal]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -534,6 +557,7 @@
   }
 
   function bindEvents() {
+    bindOptionCards();
     bindSteppers();
     bindWasteItems();
     bindModals();
