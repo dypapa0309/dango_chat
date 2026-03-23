@@ -681,9 +681,19 @@ function buildDriverRecruitMessage(url) {
 function buildDriverGuideMessage(url) {
   return [
     '당고 기사 사용 안내입니다.',
-    '가입과 계약 동의, 배차 수락, 출발과 도착, 완료 요청, 정산 흐름을 한 번에 볼 수 있습니다.',
+    '가입과 계약 동의, 서비스 관리, 배차 수락, 출발과 도착, 완료 요청, 정산 흐름을 한 번에 볼 수 있습니다.',
     url,
     '실제 배차가 잡히면 기사님마다 별도 배차 링크가 따로 전달됩니다.'
+  ].join('\n');
+}
+
+function buildDriverProfileMessage(driver, url) {
+  return [
+    `${driver?.name || '기사님'} 안녕하세요.`,
+    '당고 기사 정보 관리 링크를 보내드립니다.',
+    '아래 링크에서 가능한 서비스 추가·삭제와 정산 정보를 직접 수정해주세요.',
+    url,
+    '저장하면 이후 자동 배차 후보에도 바로 반영됩니다.'
   ].join('\n');
 }
 
@@ -962,10 +972,12 @@ async function loadDrivers() {
             </div>
             <div class="mini-card">
               <strong>기사 링크</strong>
-              <div class="row">가입과 계약 동의, 기사 사용 안내 문구를 여기서 복사합니다.</div>
+              <div class="row">가입과 계약 동의, 서비스 관리, 기사 사용 안내 문구를 여기서 복사합니다.</div>
               <div class="driver-actions compact">
                 <button class="btn" data-action="copy-join">개별 온보딩 링크 복사</button>
                 <button class="btn" data-action="copy-message">개별 온보딩 문구 복사</button>
+                <button class="btn" data-action="copy-profile">정보 관리 링크 복사</button>
+                <button class="btn" data-action="copy-profile-message">정보 관리 문구 복사</button>
                 <button class="btn" data-action="copy-guide">기사 사용 안내 문구 복사</button>
               </div>
             </div>
@@ -1014,6 +1026,20 @@ async function loadDrivers() {
         const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
         await navigator.clipboard.writeText(buildDriverJoinMessage(driver, url));
         alert('기사 안내 문구를 복사했어요.');
+      });
+
+      card.querySelector('[data-action="copy-profile"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+        if (!driver.join_token) return alert('기사 정보 관리 토큰이 없어요.');
+        const url = `${location.origin}/driver/profile.html?token=${encodeURIComponent(driver.join_token)}`;
+        await navigator.clipboard.writeText(url);
+        alert('기사 정보 관리 링크를 복사했어요.');
+      });
+
+      card.querySelector('[data-action="copy-profile-message"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
+        if (!driver.join_token) return alert('기사 정보 관리 토큰이 없어요.');
+        const url = `${location.origin}/driver/profile.html?token=${encodeURIComponent(driver.join_token)}`;
+        await navigator.clipboard.writeText(buildDriverProfileMessage(driver, url));
+        alert('기사 정보 관리 문구를 복사했어요.');
       });
 
       card.querySelector('[data-action="copy-guide"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
