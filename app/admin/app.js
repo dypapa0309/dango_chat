@@ -13,7 +13,8 @@ const SERVICE_OPTIONS = [
   { value: 'clean', label: '청소', description: '입주청소, 정리' },
   { value: 'yd', label: '용달', description: '간편 용달, 1층 이동' },
   { value: 'waste', label: '폐기물', description: '수거, 정리' },
-  { value: 'install', label: '설치', description: '가전, 가구 설치' }
+  { value: 'install', label: '설치', description: '가전, 가구 설치' },
+  { value: 'errand', label: '심부름', description: '생활 대행, 전달' }
 ];
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
@@ -441,7 +442,8 @@ function inferServiceTypeLabel(serviceType) {
     clean: '청소',
     yd: '용달',
     waste: '폐기물',
-    install: '설치'
+    install: '설치',
+    errand: '심부름'
   };
   return map[serviceType] || serviceType || '-';
 }
@@ -450,6 +452,7 @@ function inferServiceTypeFromText(value) {
   const text = String(value || '').trim();
   if (text.includes('폐기물')) return 'waste';
   if (text.includes('설치')) return 'install';
+  if (text.includes('심부름')) return 'errand';
   if (text.includes('청소')) return 'clean';
   if (text.includes('용달')) return 'yd';
   return 'move';
@@ -668,7 +671,7 @@ function buildDriverJoinMessage(driver, url) {
 function buildDriverRecruitMessage(url) {
   return [
     '당고 신규 기사 모집 안내입니다.',
-    '소형이사와 소형청소 배차를 받을 기사님을 모집하고 있습니다.',
+    '소형이사, 입주청소, 간편용달, 추가 서비스 배차를 받을 기사님을 모집하고 있습니다.',
     '아래 공용 지원 링크에서 정보 입력과 계약 동의를 진행해주세요.',
     url,
     '지원이 접수되면 운영팀 확인 후 배차 가능 상태를 안내드립니다.'

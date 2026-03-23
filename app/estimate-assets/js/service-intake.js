@@ -1,51 +1,60 @@
 (function () {
   const SERVICE = document.body?.dataset.defaultService || "waste";
+
   const CONFIG = {
     waste: {
       label: "폐기물",
       cheer: {
-        1: "좋아요. 이제 하나씩 넣으면 돼요. 수거 주소와 날짜부터 정리하면 됩니다.",
-        2: "좋아요. 이제 하나씩 넣으면 돼요. 버릴 품목과 양을 실제에 가깝게 골라주세요.",
-        3: "좋아요. 이제 하나씩 넣으면 돼요. 층수와 진입 조건을 같이 보면 더 정확해집니다.",
-        4: "좋아요. 이제 하나씩 넣으면 돼요. 철거나 추가 인력이 필요한지 정리하면 됩니다.",
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 먼저 어떤 폐기물 접수인지 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 수거 주소와 날짜를 먼저 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 버릴 품목과 양을 실제에 가깝게 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 층수와 철거, 추가 장비 여부를 정리하면 됩니다.",
         5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
       }
     },
     install: {
       label: "설치",
       cheer: {
-        1: "좋아요. 이제 하나씩 넣으면 돼요. 설치 주소와 날짜부터 정리하면 됩니다.",
-        2: "좋아요. 이제 하나씩 넣으면 돼요. 설치할 품목과 수량을 먼저 골라주세요.",
-        3: "좋아요. 이제 하나씩 넣으면 돼요. 타공이나 연결 작업 여부를 확인하면 됩니다.",
-        4: "좋아요. 이제 하나씩 넣으면 돼요. 사다리나 인부 같은 추가 요청을 정리하면 됩니다.",
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 설치인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 설치 주소와 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 품목 수량과 모델명을 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 타공이나 연결 작업, 추가 요청을 확인하면 됩니다.",
         5: "좋아요. 이제 거의 끝났어요. 금액과 진행 방식을 확인하면 됩니다."
+      }
+    },
+    errand: {
+      label: "심부름",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 심부름인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 출발지와 도착지, 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 물건 크기와 건수를 실제에 가깝게 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 대기 시간이나 추가 요청을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
       }
     }
   };
 
-  const state = {
-    currentStep: 1,
-    address: "",
-    moveDate: "",
-    timeSlot: "",
-    memo: "",
-    wasteScale: "small",
-    wasteItems: {},
-    noElevator: false,
-    floor: 1,
-    vehicleHard: false,
-    dismantle: false,
-    ladder: false,
-    helper: false,
-    installType: "furniture",
-    installQty: 1,
-    drilling: false,
-    anchorFix: false,
-    electric: false,
-    gas: false,
-    water: false,
-    oldRemoval: false,
-    modelName: ""
+  const WASTE_CATEGORIES = {
+    furniture: { label: "가구 폐기", base: 50000 },
+    appliance: { label: "가전 폐기", base: 70000 },
+    living: { label: "생활 폐기물", base: 45000 },
+    cleanup: { label: "철거 포함 정리", base: 100000 }
+  };
+
+  const INSTALL_CATEGORIES = {
+    furniture: { label: "가구 설치", base: 60000 },
+    appliance: { label: "가전 설치", base: 70000 },
+    tv: { label: "TV 설치", base: 90000 },
+    curtain: { label: "커튼·블라인드", base: 50000 },
+    lighting: { label: "조명 설치", base: 50000 }
+  };
+
+  const ERRAND_CATEGORIES = {
+    delivery: { label: "서류·물건 전달", base: 35000 },
+    shopping: { label: "장보기·구매 대행", base: 40000 },
+    pickup: { label: "픽업·수령 대행", base: 38000 },
+    accompany: { label: "동행·현장 보조", base: 50000 },
+    life: { label: "생활 심부름", base: 45000 }
   };
 
   const WASTE_ITEM_PRICES = {
@@ -55,6 +64,37 @@
     refrigerator: 50000,
     washer: 40000,
     wardrobe: 50000
+  };
+
+  const state = {
+    currentStep: 1,
+    address: "",
+    extraAddress: "",
+    moveDate: "",
+    timeSlot: "",
+    memo: "",
+    category: "",
+    wasteScale: "small",
+    wasteItems: {},
+    noElevator: false,
+    floor: 1,
+    vehicleHard: false,
+    dismantle: false,
+    ladder: false,
+    helper: false,
+    installQty: 1,
+    drilling: false,
+    anchorFix: false,
+    electric: false,
+    gas: false,
+    water: false,
+    oldRemoval: false,
+    modelName: "",
+    errandItemSize: "small",
+    errandQty: 1,
+    errandRoundTrip: false,
+    errandWaitMinutes: 0,
+    errandUrgent: false
   };
 
   function $(selector) {
@@ -82,52 +122,18 @@
     };
   }
 
-  function calculateWastePrice() {
-    const baseMap = { small: 70000, medium: 120000, large: 180000 };
-    let total = baseMap[state.wasteScale] || 70000;
-    Object.entries(state.wasteItems).forEach(([key, qty]) => {
-      total += (WASTE_ITEM_PRICES[key] || 0) * Number(qty || 0);
-    });
-    if (state.noElevator) total += Math.max(0, Number(state.floor || 1) - 1) * 8000;
-    if (state.vehicleHard) total += 20000;
-    if (state.dismantle) total += 30000;
-    if (state.helper) total += 60000;
-    if (state.ladder) total += 120000;
-    return Math.round(total);
+  function labelFromMap(map, key, fallback) {
+    return map[key]?.label || fallback;
   }
 
-  function calculateInstallPrice() {
-    const baseMap = {
-      furniture: 60000,
-      appliance: 70000,
-      curtain: 50000,
-      tv: 90000,
-      lighting: 50000
-    };
-    const base = baseMap[state.installType] || 60000;
-    const qty = Math.max(1, Number(state.installQty || 1));
-    let total = base + Math.max(0, qty - 1) * Math.round(base * 0.5);
-    if (state.drilling) total += 30000;
-    if (state.anchorFix) total += 20000;
-    if (state.electric) total += 30000;
-    if (state.gas) total += 50000;
-    if (state.water) total += 50000;
-    if (state.oldRemoval) total += 20000;
-    if (state.helper) total += 60000;
-    if (state.ladder) total += 120000;
-    return Math.round(total);
+  function getWasteScaleLabel(scale) {
+    const map = { small: "소형", medium: "중형", large: "대형" };
+    return map[scale] || "소형";
   }
 
-  function calculatePrice() {
-    const total = SERVICE === "install" ? calculateInstallPrice() : calculateWastePrice();
-    const driverAmount = Math.round(total * 0.8);
-    return {
-      total,
-      deposit: total,
-      balance: 0,
-      driverAmount,
-      companyAmount: total - driverAmount
-    };
+  function getErrandSizeLabel(size) {
+    const map = { small: "서류·소형", medium: "중형 박스", large: "대형 짐" };
+    return map[size] || "서류·소형";
   }
 
   function wasteItemLabel(key) {
@@ -142,24 +148,15 @@
     return map[key] || key;
   }
 
-  function wasteScaleLabel(scale) {
-    const map = { small: "소형", medium: "중형", large: "대형" };
-    return map[scale] || "소형";
-  }
-
-  function installTypeLabel(key) {
-    const map = {
-      furniture: "가구 설치",
-      appliance: "가전 설치",
-      curtain: "커튼·블라인드",
-      tv: "TV 설치",
-      lighting: "조명 설치"
-    };
-    return map[key] || "가구 설치";
-  }
-
   function readState() {
-    state.address = $("#serviceAddress")?.value?.trim() || "";
+    if (SERVICE === "errand") {
+      state.address = $("#serviceAddressFrom")?.value?.trim() || "";
+      state.extraAddress = $("#serviceAddressTo")?.value?.trim() || "";
+    } else {
+      state.address = $("#serviceAddress")?.value?.trim() || "";
+      state.extraAddress = "";
+    }
+
     state.moveDate = $("#moveDate")?.value || "";
     state.timeSlot = $('input[name="timeSlot"]:checked')?.value || "";
     state.memo = $("#serviceMemo")?.value?.trim() || "";
@@ -167,6 +164,7 @@
     state.helper = !!$("#needsHelper")?.checked;
 
     if (SERVICE === "waste") {
+      state.category = $('input[name="wasteCategory"]:checked')?.value || "";
       state.wasteScale = $('input[name="wasteScale"]:checked')?.value || "small";
       state.noElevator = !!$("#wasteNoElevator")?.checked;
       state.floor = Number($("#wasteFloor")?.value || 1);
@@ -175,8 +173,8 @@
       $$(".waste-item-qty").forEach((input) => {
         state.wasteItems[input.dataset.item] = Number(input.value || 0);
       });
-    } else {
-      state.installType = $('input[name="installType"]:checked')?.value || "furniture";
+    } else if (SERVICE === "install") {
+      state.category = $('input[name="installCategory"]:checked')?.value || "";
       state.installQty = Number($("#installQty")?.value || 1);
       state.drilling = !!$("#installDrilling")?.checked;
       state.anchorFix = !!$("#installAnchorFix")?.checked;
@@ -185,17 +183,88 @@
       state.water = !!$("#installWater")?.checked;
       state.oldRemoval = !!$("#oldRemoval")?.checked;
       state.modelName = $("#modelName")?.value?.trim() || "";
+    } else {
+      state.category = $('input[name="errandCategory"]:checked')?.value || "";
+      state.errandItemSize = $('input[name="errandItemSize"]:checked')?.value || "small";
+      state.errandQty = Number($("#errandQty")?.value || 1);
+      state.errandRoundTrip = !!$("#errandRoundTrip")?.checked;
+      state.errandWaitMinutes = Number($("#errandWaitMinutes")?.value || 0);
+      state.errandUrgent = !!$("#errandUrgent")?.checked;
     }
+  }
+
+  function calculateWastePrice() {
+    let total = WASTE_CATEGORIES[state.category]?.base || 50000;
+    const scaleMap = { small: 0, medium: 25000, large: 55000 };
+    total += scaleMap[state.wasteScale] || 0;
+    Object.entries(state.wasteItems).forEach(([key, qty]) => {
+      total += (WASTE_ITEM_PRICES[key] || 0) * Number(qty || 0);
+    });
+    if (state.noElevator) total += Math.max(0, Number(state.floor || 1) - 1) * 8000;
+    if (state.vehicleHard) total += 20000;
+    if (state.dismantle) total += 30000;
+    if (state.helper) total += 60000;
+    if (state.ladder) total += 120000;
+    return Math.round(total);
+  }
+
+  function calculateInstallPrice() {
+    const base = INSTALL_CATEGORIES[state.category]?.base || 60000;
+    const qty = Math.max(1, Number(state.installQty || 1));
+    let total = base + Math.max(0, qty - 1) * Math.round(base * 0.5);
+    if (state.drilling) total += 30000;
+    if (state.anchorFix) total += 20000;
+    if (state.electric) total += 30000;
+    if (state.gas) total += 50000;
+    if (state.water) total += 50000;
+    if (state.oldRemoval) total += 20000;
+    if (state.helper) total += 60000;
+    if (state.ladder) total += 120000;
+    return Math.round(total);
+  }
+
+  function calculateErrandPrice() {
+    const base = ERRAND_CATEGORIES[state.category]?.base || 35000;
+    const sizeMap = { small: 0, medium: 12000, large: 28000 };
+    const qty = Math.max(1, Number(state.errandQty || 1));
+    let total = base + (sizeMap[state.errandItemSize] || 0);
+    total += Math.max(0, qty - 1) * 7000;
+    if (state.errandRoundTrip) total += 15000;
+    total += Math.max(0, Math.round(Number(state.errandWaitMinutes || 0) / 10)) * 3000;
+    if (state.errandUrgent) total += 12000;
+    if (state.helper) total += 60000;
+    if (state.ladder) total += 120000;
+    return Math.round(total);
+  }
+
+  function calculatePrice() {
+    const total =
+      SERVICE === "install"
+        ? calculateInstallPrice()
+        : SERVICE === "errand"
+          ? calculateErrandPrice()
+          : calculateWastePrice();
+    const driverAmount = Math.round(total * 0.8);
+    return {
+      total,
+      deposit: total,
+      balance: 0,
+      driverAmount,
+      companyAmount: total - driverAmount
+    };
   }
 
   function validateStep(step) {
     readState();
-    if (step === 1) return !!state.address && !!state.moveDate;
+    if (step === 1) return Boolean(state.category);
     if (step === 2) {
-      if (SERVICE === "waste") {
-        return Object.values(state.wasteItems).some((value) => Number(value || 0) > 0);
-      }
-      return !!state.installType && Number(state.installQty || 0) > 0;
+      if (SERVICE === "errand") return !!state.address && !!state.extraAddress && !!state.moveDate;
+      return !!state.address && !!state.moveDate;
+    }
+    if (step === 3) {
+      if (SERVICE === "waste") return Object.values(state.wasteItems).some((value) => Number(value || 0) > 0);
+      if (SERVICE === "install") return Number(state.installQty || 0) > 0;
+      return Number(state.errandQty || 0) > 0;
     }
     return true;
   }
@@ -206,11 +275,12 @@
         .filter(([, qty]) => Number(qty || 0) > 0)
         .map(([key, qty]) => `${wasteItemLabel(key)} ${qty}개`);
       return [
+        `접수 유형: ${labelFromMap(WASTE_CATEGORIES, state.category, "-")}`,
         `수거 주소: ${state.address || "-"}`,
         `희망 날짜: ${state.moveDate || "-"}`,
-        `짐 규모: ${wasteScaleLabel(state.wasteScale)}`,
+        `규모: ${getWasteScaleLabel(state.wasteScale)}`,
         items.length ? `폐기물: ${items.join(", ")}` : "폐기물: 선택 없음",
-        `작업 조건: ${[
+        `추가 요청: ${[
           state.noElevator ? `${state.floor}층 계단` : "엘리베이터 있음",
           state.vehicleHard ? "차량 진입 어려움" : null,
           state.dismantle ? "간단 철거 필요" : null,
@@ -220,21 +290,38 @@
       ];
     }
 
+    if (SERVICE === "install") {
+      return [
+        `접수 유형: ${labelFromMap(INSTALL_CATEGORIES, state.category, "-")}`,
+        `설치 주소: ${state.address || "-"}`,
+        `희망 날짜: ${state.moveDate || "-"}`,
+        `수량: ${Math.max(1, Number(state.installQty || 1))}건`,
+        `모델명: ${state.modelName || "미입력"}`,
+        `추가 요청: ${[
+          state.drilling ? "타공 있음" : "타공 없음",
+          state.anchorFix ? "벽고정" : null,
+          state.electric ? "전기 연결" : null,
+          state.gas ? "가스 연결" : null,
+          state.water ? "수도 연결" : null,
+          state.oldRemoval ? "기존 제품 철거" : null,
+          state.helper ? "인부 필요" : null,
+          state.ladder ? "사다리차 필요" : null
+        ].filter(Boolean).join(" · ")}`
+      ];
+    }
+
     return [
-      `설치 주소: ${state.address || "-"}`,
+      `접수 유형: ${labelFromMap(ERRAND_CATEGORIES, state.category, "-")}`,
+      `출발지: ${state.address || "-"}`,
+      `도착지: ${state.extraAddress || "-"}`,
       `희망 날짜: ${state.moveDate || "-"}`,
-      `설치 품목: ${installTypeLabel(state.installType)} ${Math.max(1, Number(state.installQty || 1))}건`,
-      `작업 조건: ${[
-        state.drilling ? "타공 있음" : "타공 없음",
-        state.anchorFix ? "벽고정 있음" : null,
-        state.electric ? "전기 연결" : null,
-        state.gas ? "가스 연결" : null,
-        state.water ? "수도 연결" : null,
-        state.oldRemoval ? "기존 제품 철거" : null,
-        state.helper ? "인부 필요" : null,
-        state.ladder ? "사다리차 필요" : null
-      ].filter(Boolean).join(" · ")}`,
-      state.modelName ? `모델명: ${state.modelName}` : "모델명: 미입력"
+      `물건 규모: ${getErrandSizeLabel(state.errandItemSize)} ${Math.max(1, Number(state.errandQty || 1))}건`,
+      `추가 요청: ${[
+        state.errandRoundTrip ? "왕복" : "편도",
+        state.errandWaitMinutes ? `대기 ${state.errandWaitMinutes}분` : null,
+        state.errandUrgent ? "긴급 요청" : null,
+        state.helper ? "인부 도움" : null
+      ].filter(Boolean).join(" · ")}`
     ];
   }
 
@@ -286,6 +373,8 @@
     readState();
     const pricing = calculatePrice();
     const attribution = getAttribution();
+    const isErrand = SERVICE === "errand";
+
     return {
       service_type: SERVICE,
       customer_name: customerName,
@@ -293,31 +382,50 @@
       customer_note: state.memo || null,
       move_date: state.moveDate,
       start_address: state.address,
-      end_address: state.address,
+      end_address: isErrand ? state.extraAddress : state.address,
       distance_km: 0,
       floor: SERVICE === "waste" && state.noElevator ? state.floor : 0,
       weight_kg: 0,
-      item_summary: SERVICE === "waste"
-        ? { scale: state.wasteScale, wasteItems: state.wasteItems }
-        : { installType: state.installType, installQty: state.installQty, modelName: state.modelName },
-      option_summary: SERVICE === "waste"
-        ? {
-            noElevator: state.noElevator,
-            vehicleHard: state.vehicleHard,
-            dismantle: state.dismantle,
-            helper: state.helper,
-            ladder: state.ladder
-          }
-        : {
-            drilling: state.drilling,
-            anchorFix: state.anchorFix,
-            electric: state.electric,
-            gas: state.gas,
-            water: state.water,
-            oldRemoval: state.oldRemoval,
-            helper: state.helper,
-            ladder: state.ladder
-          },
+      item_summary:
+        SERVICE === "waste"
+          ? { category: state.category, scale: state.wasteScale, wasteItems: state.wasteItems }
+          : SERVICE === "install"
+            ? {
+                category: state.category,
+                installQty: state.installQty,
+                modelName: state.modelName
+              }
+            : {
+                category: state.category,
+                itemSize: state.errandItemSize,
+                errandQty: state.errandQty,
+                roundTrip: state.errandRoundTrip
+              },
+      option_summary:
+        SERVICE === "waste"
+          ? {
+              noElevator: state.noElevator,
+              vehicleHard: state.vehicleHard,
+              dismantle: state.dismantle,
+              helper: state.helper,
+              ladder: state.ladder
+            }
+          : SERVICE === "install"
+            ? {
+                drilling: state.drilling,
+                anchorFix: state.anchorFix,
+                electric: state.electric,
+                gas: state.gas,
+                water: state.water,
+                oldRemoval: state.oldRemoval,
+                helper: state.helper,
+                ladder: state.ladder
+              }
+            : {
+                waitMinutes: state.errandWaitMinutes,
+                urgent: state.errandUrgent,
+                helper: state.helper
+              },
       acquisition_source: attribution.source,
       acquisition_medium: attribution.medium,
       acquisition_campaign: attribution.campaign,
@@ -328,7 +436,7 @@
         balance: 0,
         driverAmount: pricing.driverAmount,
         companyAmount: pricing.companyAmount,
-        version: `dango-${SERVICE}-v1`
+        version: `dango-${SERVICE}-v2`
       }
     };
   }

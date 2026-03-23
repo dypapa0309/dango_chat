@@ -29,7 +29,7 @@
       <a class="page-link" href="../estimate/">당고 소형이사</a>
       <a class="page-link" href="../ddclean/">당고 입주청소</a>
       <a class="page-link" href="../yd/">당고 간편용달</a>
-      <a class="page-link" href="../waste/">당고 폐기물</a>
+      <a class="page-link" href="../services/">서비스 선택</a>
       <a class="page-link is-current" href="./">당고 설치</a>
     </div>
   </div>
@@ -38,7 +38,7 @@
     <div class="landing-hero">
       <div class="landing-eyebrow">당장 필요할 때, 당장 고고. 당고!</div>
       <h1 class="landing-title">당고 설치<br><span class="accent">견적 계산기로 바로 계산하세요.</span></h1>
-      <p class="landing-copy">설치 주소, 품목, 타공과 연결 작업만 순서대로 넣으면 됩니다.</p>
+      <p class="landing-copy">가구 설치부터 TV, 조명까지 필요한 유형을 먼저 고르고 순서대로 넣으면 됩니다.</p>
       <div class="dango-estimate-pills">
         <span>가구·가전 설치 접수</span>
         <span>타공·배선 여부 반영</span>
@@ -51,15 +51,26 @@
     <div class="wizard-progress"><div class="wizard-progress-bar" id="wizardStageBar"></div></div>
     <div class="wizard-cheer" id="wizardCheer">좋아요. 이제 하나씩 넣으면 돼요. 설치 주소와 날짜부터 정리하면 됩니다.</div>
     <div class="stage-pill-row" id="wizardStagePills">
-      <button type="button" class="stage-pill is-active">1. 기본 정보</button>
-      <button type="button" class="stage-pill">2. 설치 품목</button>
-      <button type="button" class="stage-pill">3. 설치 조건</button>
+      <button type="button" class="stage-pill is-active">1. 서비스 선택</button>
+      <button type="button" class="stage-pill">2. 기본 정보</button>
+      <button type="button" class="stage-pill">3. 설치 내용</button>
       <button type="button" class="stage-pill">4. 추가 요청</button>
       <button type="button" class="stage-pill">5. 결과 확인</button>
     </div>
   </section>
 
   <section class="section step-card" data-step="1">
+    <h2>필요한 서비스를 선택하세요</h2>
+    <div class="card">
+      <div class="option"><div><strong>가구 설치</strong><br />침대, 책상, 수납장 조립과 설치</div><input type="radio" name="installCategory" value="furniture" /></div>
+      <div class="option"><div><strong>가전 설치</strong><br />세탁기, 냉장고, 건조기 같은 기본 설치</div><input type="radio" name="installCategory" value="appliance" /></div>
+      <div class="option"><div><strong>TV 설치</strong><br />TV 거치, 벽걸이, 위치 변경 작업</div><input type="radio" name="installCategory" value="tv" /></div>
+      <div class="option"><div><strong>커튼·블라인드</strong><br />커튼, 블라인드 설치와 교체</div><input type="radio" name="installCategory" value="curtain" /></div>
+      <div class="option"><div><strong>조명 설치</strong><br />등 교체, 조명 위치 조정</div><input type="radio" name="installCategory" value="lighting" /></div>
+    </div>
+  </section>
+
+  <section class="section step-card" data-step="2" hidden>
     <h2>설치 기본 정보</h2>
     <div class="card">
       <div class="sub">설치 주소</div>
@@ -75,14 +86,9 @@
     </div>
   </section>
 
-  <section class="section step-card" data-step="2" hidden>
-    <h2>설치 품목</h2>
+  <section class="section step-card" data-step="3" hidden>
+    <h2>설치 내용</h2>
     <div class="card">
-      <div class="option"><div>가구 설치</div><input type="radio" name="installType" value="furniture" checked /></div>
-      <div class="option"><div>가전 설치</div><input type="radio" name="installType" value="appliance" /></div>
-      <div class="option"><div>커튼·블라인드</div><input type="radio" name="installType" value="curtain" /></div>
-      <div class="option"><div>TV 설치</div><input type="radio" name="installType" value="tv" /></div>
-      <div class="option"><div>조명 설치</div><input type="radio" name="installType" value="lighting" /></div>
       <div class="sub" style="margin-top:16px;">수량</div>
       <div class="stepper">
         <button type="button" class="stepper-btn" data-stepper="installQty" data-dir="-1">−</button>
@@ -93,20 +99,14 @@
     </div>
   </section>
 
-  <section class="section step-card" data-step="3" hidden>
-    <h2>설치 조건</h2>
+  <section class="section step-card" data-step="4" hidden>
+    <h2>추가 요청</h2>
     <div class="card">
       <div class="option"><div>타공이 필요해요</div><input type="checkbox" id="installDrilling" /></div>
       <div class="option"><div>벽고정이 필요해요</div><input type="checkbox" id="installAnchorFix" /></div>
       <div class="option"><div>전기 연결이 있어요</div><input type="checkbox" id="installElectric" /></div>
       <div class="option"><div>가스 연결이 있어요</div><input type="checkbox" id="installGas" /></div>
       <div class="option"><div>수도 연결이 있어요</div><input type="checkbox" id="installWater" /></div>
-    </div>
-  </section>
-
-  <section class="section step-card" data-step="4" hidden>
-    <h2>추가 요청</h2>
-    <div class="card">
       <div class="option"><div>기존 제품 철거가 필요해요</div><input type="checkbox" id="oldRemoval" /></div>
       <div class="option"><div>인부가 필요해요</div><input type="checkbox" id="needsHelper" /></div>
       <div class="option"><div>사다리차가 필요해요</div><input type="checkbox" id="needsLadder" /></div>
