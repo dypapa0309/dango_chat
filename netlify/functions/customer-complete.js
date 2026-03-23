@@ -54,7 +54,7 @@ export async function handler(event) {
 
     if (job.assigned_driver_id) {
       const existingSettlement = Array.isArray(job.settlements) ? job.settlements[0] : null;
-      const revenueSplit = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount);
+      const revenueSplit = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount, job.option_summary || {});
       const withholding = calculateFreelancerWithholding(revenueSplit.driverAmount || existingSettlement?.amount || 0);
       if (existingSettlement) {
         const { error: settlementError } = await supabase

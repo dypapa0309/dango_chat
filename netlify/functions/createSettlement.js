@@ -26,7 +26,7 @@ export async function handler(event) {
       .limit(1)
       .maybeSingle();
 
-    const revenueSplit = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount);
+    const revenueSplit = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount, job.option_summary || {});
     const grossAmount = revenueSplit.driverAmount || existing?.amount || 0;
     const withholding = calculateFreelancerWithholding(grossAmount);
 

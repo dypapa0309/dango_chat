@@ -107,7 +107,7 @@ export async function handler(event) {
       .single();
 
     if (job?.assigned_driver_id || job?.driver_amount) {
-      const revenueSplit = resolveRevenueSplit(job?.total_price, job?.company_amount, job?.driver_amount);
+      const revenueSplit = resolveRevenueSplit(job?.total_price, job?.company_amount, job?.driver_amount, job?.option_summary || {});
       const { data: existingSettlement } = await supabase
         .from('settlements')
         .select('*')

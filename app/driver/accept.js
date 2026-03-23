@@ -1,4 +1,8 @@
 (async () => {
+  const HELPER_CUSTOMER_FEE = 60000;
+  const HELPER_DRIVER_FEE = 40000;
+  const LADDER_CUSTOMER_FEE = 120000;
+  const LADDER_DRIVER_FEE = 100000;
   const qs = new URLSearchParams(location.search);
   const token = qs.get('token');
   const info = document.getElementById('jobInfo');
@@ -40,6 +44,16 @@
     return map[String(loadLevel ?? '')] || '-';
   }
 
+  function renderSpecialRequestTags(option = {}) {
+    const tags = [];
+    if (option.helperFrom) tags.push(`<span class="option-tag helper">출발지 인부 고객 ${HELPER_CUSTOMER_FEE.toLocaleString()}원 / 기사 ${HELPER_DRIVER_FEE.toLocaleString()}원</span>`);
+    if (option.helperTo) tags.push(`<span class="option-tag helper">도착지 인부 고객 ${HELPER_CUSTOMER_FEE.toLocaleString()}원 / 기사 ${HELPER_DRIVER_FEE.toLocaleString()}원</span>`);
+    if (option.ladderFrom) tags.push(`<span class="option-tag ladder">출발지 사다리차 고객 ${LADDER_CUSTOMER_FEE.toLocaleString()}원 / 기사 ${LADDER_DRIVER_FEE.toLocaleString()}원</span>`);
+    if (option.ladderTo) tags.push(`<span class="option-tag ladder">도착지 사다리차 고객 ${LADDER_CUSTOMER_FEE.toLocaleString()}원 / 기사 ${LADDER_DRIVER_FEE.toLocaleString()}원</span>`);
+    if (option.waypointLadder) tags.push(`<span class="option-tag ladder">경유지 사다리차 고객 ${LADDER_CUSTOMER_FEE.toLocaleString()}원 / 기사 ${LADDER_DRIVER_FEE.toLocaleString()}원</span>`);
+    return tags.length ? `<div class="option-tags">${tags.join('')}</div>` : '';
+  }
+
   function renderJobSummary(job) {
     const item = job.item_summary || {};
     const option = job.option_summary || {};
@@ -78,10 +92,12 @@
               option.via_stop ? '경유지 있음' : null,
               option.ladderFrom ? '출발지 사다리차' : null,
               option.ladderTo ? '도착지 사다리차' : null,
+              option.waypointLadder ? '경유지 사다리차' : null,
               option.cantCarryFrom ? '출발지 직접나르기 어려움' : null,
               option.cantCarryTo ? '도착지 직접나르기 어려움' : null
             ].filter(Boolean).join(', ') || '선택 없음'
           }</div>
+          ${renderSpecialRequestTags(option)}
         </div>
       </div>
       <div class="info-block" style="margin-top:12px;">

@@ -27,7 +27,8 @@ export async function handler(event) {
     const resolvedSplit = resolveRevenueSplit(
       override?.total || calculated.total,
       override?.companyAmount,
-      override?.driverAmount
+      override?.driverAmount,
+      body.option_summary || {}
     );
 
     const price = override

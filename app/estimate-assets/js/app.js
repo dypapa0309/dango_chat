@@ -23,6 +23,8 @@
     const MOVE_DEPOSIT_RATE = 0.2;
     const HELPER_FEE_PER_PERSON = 60000;
     const HELPER_DRIVER_SETTLEMENT_PER_PERSON = 40000;
+    const LADDER_FEE_PER_SPOT = 120000;
+    const LADDER_DRIVER_SETTLEMENT_PER_SPOT = 100000;
     const HELPER_DEPOSIT_ADDON_PER_PERSON = 20000;
     const SERVICE = { MOVE: "move", CLEAN: "clean" };
     const ATTR_KEY = "dango:attribution";
@@ -2131,10 +2133,7 @@ function normalizeItemKey(k) {
 
     function ladderFee(enabled, floor) {
       if (!enabled) return 0;
-      const f = Math.max(1, toInt(floor, 1));
-      if (f <= 6) return 110000;
-      if (f <= 12) return 140000;
-      return 160000;
+      return LADDER_FEE_PER_SPOT;
     }
 
     function rideFee(n) {
@@ -2381,19 +2380,39 @@ function normalizeItemKey(k) {
       return Number(!!state.helperFrom) + Number(!!state.helperTo);
     }
 
+    function moveLadderCount() {
+      return Number(!!state.ladderFromEnabled) + Number(!!state.ladderToEnabled) + Number(!!state.waypointLadderEnabled);
+    }
+
     function buildMovePricingBreakdown(totalPrice, options = {}) {
       const safeTotal = Math.max(0, Math.round(Number(totalPrice) || 0));
       const helperCount = moveHelperCount();
+      const ladderCount = moveLadderCount();
       const baseDeposit = Math.round(safeTotal * MOVE_DEPOSIT_RATE);
       const helperDepositAddon = helperCount * HELPER_DEPOSIT_ADDON_PER_PERSON;
       const deposit = Math.min(safeTotal, baseDeposit + helperDepositAddon);
       const balance = Math.max(0, safeTotal - deposit);
+      const helperCustomerAmount = helperCount * HELPER_FEE_PER_PERSON;
+      const helperDriverAmount = helperCount * HELPER_DRIVER_SETTLEMENT_PER_PERSON;
+      const ladderCustomerAmount = ladderCount * LADDER_FEE_PER_SPOT;
+      const ladderDriverAmount = ladderCount * LADDER_DRIVER_SETTLEMENT_PER_SPOT;
+      const specialCustomerAmount = helperCustomerAmount + ladderCustomerAmount;
+      const specialDriverAmount = helperDriverAmount + ladderDriverAmount;
+      const specialCompanyAmount = Math.max(0, specialCustomerAmount - specialDriverAmount);
+      const coreTotal = Math.max(0, safeTotal - specialCustomerAmount);
+      const coreCompanyAmount = Math.round(coreTotal * 0.2);
+      const coreDriverAmount = Math.max(0, coreTotal - coreCompanyAmount);
+      const companyAmount = coreCompanyAmount + specialCompanyAmount;
+      const driverAmount = coreDriverAmount + specialDriverAmount;
 
       return {
         total: safeTotal,
         deposit,
         balance,
+        companyAmount,
+        driverAmount,
         helperCount,
+        ladderCount,
         pricingPolicy: {
           depositRate: MOVE_DEPOSIT_RATE,
           helperDepositAddonPerPerson: HELPER_DEPOSIT_ADDON_PER_PERSON,
@@ -2401,6 +2420,9 @@ function normalizeItemKey(k) {
         settlement: {
           helperDepositAddon,
           helperDriverBalancePortion: helperCount * HELPER_DRIVER_SETTLEMENT_PER_PERSON,
+          ladderCustomerAmount,
+          ladderDriverAmount,
+          specialCompanyAmount,
           channel: options.channel || "direct",
         },
       };
@@ -3074,6 +3096,7 @@ const borderColors = comparison.labels.map((label) =>
           via_stop: Boolean(state.hasWaypoint),
           ladderFrom: Boolean(state.ladderFromEnabled),
           ladderTo: Boolean(state.ladderToEnabled),
+          waypointLadder: Boolean(state.waypointLadderEnabled),
           cantCarryFrom: Boolean(state.cantCarryFrom),
           cantCarryTo: Boolean(state.cantCarryTo)
         },

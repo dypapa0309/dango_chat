@@ -4,6 +4,10 @@ let runtimeAdminToken = '';
 const adminPage = document.body?.dataset?.adminPage || 'orders';
 let latestSettlementDashboard = null;
 let manualOrderDraft = null;
+const HELPER_CUSTOMER_FEE = 60000;
+const HELPER_DRIVER_FEE = 40000;
+const LADDER_CUSTOMER_FEE = 120000;
+const LADDER_DRIVER_FEE = 100000;
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
 const api = (name) => `${window.dd.apiBase}/${name}`;
@@ -17,18 +21,45 @@ function parseWon(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
-function resolveRevenueSplit(totalPrice, companyAmount, driverAmount) {
+function countTruthy(...values) {
+  return values.filter(Boolean).length;
+}
+
+function resolveRevenueSplit(totalPrice, companyAmount, driverAmount, optionSummary = {}) {
   const total = Math.max(0, Math.round(Number(totalPrice || 0)));
   const company = Math.max(0, Math.round(Number(companyAmount || 0)));
   const driver = Math.max(0, Math.round(Number(driverAmount || 0)));
+  const helperCount = countTruthy(optionSummary.helperFrom, optionSummary.helperTo);
+  const ladderCount = countTruthy(optionSummary.ladderFrom, optionSummary.ladderTo, optionSummary.waypointLadder);
+  const helperCustomerAmount = helperCount * HELPER_CUSTOMER_FEE;
+  const helperDriverAmount = helperCount * HELPER_DRIVER_FEE;
+  const ladderCustomerAmount = ladderCount * LADDER_CUSTOMER_FEE;
+  const ladderDriverAmount = ladderCount * LADDER_DRIVER_FEE;
+  const specialCustomerAmount = helperCustomerAmount + ladderCustomerAmount;
+  const specialDriverAmount = helperDriverAmount + ladderDriverAmount;
+  const specialCompanyAmount = Math.max(0, specialCustomerAmount - specialDriverAmount);
+  if (total > 0 && (helperCount > 0 || ladderCount > 0)) {
+    const coreTotal = Math.max(0, total - specialCustomerAmount);
+    const coreCompanyAmount = Math.round(coreTotal * 0.2);
+    const coreDriverAmount = Math.max(0, coreTotal - coreCompanyAmount);
+    return {
+      total,
+      companyAmount: coreCompanyAmount + specialCompanyAmount,
+      driverAmount: coreDriverAmount + specialDriverAmount,
+      helperCount,
+      ladderCount
+    };
+  }
   if (total > 0 && company + driver === total) {
-    return { total, companyAmount: company, driverAmount: driver };
+    return { total, companyAmount: company, driverAmount: driver, helperCount, ladderCount };
   }
   const normalizedCompany = Math.round(total * 0.2);
   return {
     total,
     companyAmount: normalizedCompany,
-    driverAmount: Math.max(0, total - normalizedCompany)
+    driverAmount: Math.max(0, total - normalizedCompany),
+    helperCount,
+    ladderCount
   };
 }
 
@@ -209,6 +240,16 @@ function formatLoadLevel(loadLevel) {
   return map[String(loadLevel ?? '')] || '-';
 }
 
+function renderSpecialRequestTags(option = {}) {
+  const tags = [];
+  if (option.helperFrom) tags.push(`<span class="option-tag helper">출발지 인부 고객 ${money(HELPER_CUSTOMER_FEE)} / 기사 ${money(HELPER_DRIVER_FEE)}</span>`);
+  if (option.helperTo) tags.push(`<span class="option-tag helper">도착지 인부 고객 ${money(HELPER_CUSTOMER_FEE)} / 기사 ${money(HELPER_DRIVER_FEE)}</span>`);
+  if (option.ladderFrom) tags.push(`<span class="option-tag ladder">출발지 사다리차 고객 ${money(LADDER_CUSTOMER_FEE)} / 기사 ${money(LADDER_DRIVER_FEE)}</span>`);
+  if (option.ladderTo) tags.push(`<span class="option-tag ladder">도착지 사다리차 고객 ${money(LADDER_CUSTOMER_FEE)} / 기사 ${money(LADDER_DRIVER_FEE)}</span>`);
+  if (option.waypointLadder) tags.push(`<span class="option-tag ladder">경유지 사다리차 고객 ${money(LADDER_CUSTOMER_FEE)} / 기사 ${money(LADDER_DRIVER_FEE)}</span>`);
+  return tags.length ? `<div class="option-tags">${tags.join('')}</div>` : '';
+}
+
 function renderRequestSummary(job) {
   const item = job.item_summary || {};
   const option = job.option_summary || {};
@@ -249,11 +290,13 @@ function renderRequestSummary(job) {
               option.via_stop ? '경유지 있음' : null,
               option.ladderFrom ? '출발지 사다리차' : null,
               option.ladderTo ? '도착지 사다리차' : null,
+              option.waypointLadder ? '경유지 사다리차' : null,
               option.cantCarryFrom ? '출발지 직접나르기 어려움' : null,
               option.cantCarryTo ? '도착지 직접나르기 어려움' : null
             ].filter(Boolean).join(', ') || '선택 없음'
           }
         </div>
+        ${renderSpecialRequestTags(option)}
       </div>
       ${
         job.customer_note
@@ -270,7 +313,7 @@ function renderRequestSummary(job) {
 }
 
 function renderJobDetail(job) {
-  const split = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount);
+  const split = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount, job.option_summary || {});
   return `
     <div class="detail-grid">
       <section class="detail-card">
@@ -678,7 +721,7 @@ async function loadJobs() {
   list.innerHTML = '';
 
   jobs.forEach((job) => {
-    const split = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount);
+    const split = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount, job.option_summary || {});
     const card = document.createElement('div');
     card.className = 'job-card';
     card.innerHTML = `
@@ -695,6 +738,7 @@ async function loadJobs() {
       <div class="row">${escapeHtml(job.start_address || '-')} → ${escapeHtml(job.end_address || '-')}</div>
       <div class="price">${money(job.total_price)}</div>
       <div class="row">당고 20% ${money(split.companyAmount)} / 기사 정산 예정 80% ${money(split.driverAmount)}</div>
+      ${renderSpecialRequestTags(job.option_summary || {})}
       <div class="card-actions">
         <button class="btn" data-action="detail">상세</button>
         <button class="btn primary" data-action="confirm">결제 확인</button>
