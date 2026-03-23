@@ -22,7 +22,9 @@ const SERVICE_OPTIONS = [
   { value: 'interior_help', label: '인테리어 보조', description: '현장 보조, 자재 이동' },
   { value: 'pt', label: 'PT', description: '체형, 다이어트, 교정' },
   { value: 'vocal', label: '보컬', description: '취미, 오디션, 발성' },
-  { value: 'golf', label: '골프', description: '입문, 스윙, 필드 레슨' }
+  { value: 'golf', label: '골프', description: '입문, 스윙, 필드 레슨' },
+  { value: 'tutor', label: '과외', description: '영어, 입시, 성인 학습' },
+  { value: 'counseling', label: '심리상담', description: '개인, 커플, 가족 상담' }
 ];
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
@@ -459,7 +461,9 @@ function inferServiceTypeLabel(serviceType) {
     interior_help: '인테리어 보조',
     pt: 'PT',
     vocal: '보컬',
-    golf: '골프'
+    golf: '골프',
+    tutor: '과외',
+    counseling: '심리상담'
   };
   return map[serviceType] || serviceType || '-';
 }
@@ -474,6 +478,8 @@ function inferServiceTypeFromText(value) {
   if (text.includes('PT')) return 'pt';
   if (text.includes('보컬')) return 'vocal';
   if (text.includes('골프')) return 'golf';
+  if (text.includes('과외')) return 'tutor';
+  if (text.includes('심리상담') || text.includes('심리 상담')) return 'counseling';
   if (text.includes('폐기물')) return 'waste';
   if (text.includes('설치')) return 'install';
   if (text.includes('심부름')) return 'errand';
