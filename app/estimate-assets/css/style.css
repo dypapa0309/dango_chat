@@ -2523,3 +2523,13 @@ body{
     --stickybar-h: 178px;
   }
 }
+
+.waste-item-row{
+  align-items:center;
+}
+
+.waste-item-stepper{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
