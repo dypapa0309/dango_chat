@@ -61,15 +61,24 @@
       </div>
       <aside class="hero-panel hero-visual-panel">
         <div class="hero-visual-grid">
-          <article class="hero-visual-card hero-visual-card--main">
-            <img src="./estimate-assets/img/hero-truck.jpg" alt="소형이사 현장 이미지" loading="lazy" />
+          <article class="hero-visual-card hero-visual-card--main hero-visual-card--move">
+            <div class="hero-visual-figure hero-visual-figure--move" aria-hidden="true">
+              <span class="hero-visual-orb"></span>
+              <span class="hero-visual-box hero-visual-box--large"></span>
+              <span class="hero-visual-box hero-visual-box--small"></span>
+              <span class="hero-visual-line"></span>
+            </div>
             <div class="hero-visual-copy">
               <span class="hero-visual-chip">소형이사</span>
               <strong>접수하면 바로 배차까지 이어집니다.</strong>
             </div>
           </article>
-          <article class="hero-visual-card hero-visual-card--sub">
-            <img src="./estimate-assets/img/hero-bin.jpg" alt="폐기물 수거 이미지" loading="lazy" />
+          <article class="hero-visual-card hero-visual-card--sub hero-visual-card--life">
+            <div class="hero-visual-figure hero-visual-figure--life" aria-hidden="true">
+              <span class="hero-visual-orb hero-visual-orb--green"></span>
+              <span class="hero-visual-cardlet"></span>
+              <span class="hero-visual-cardlet hero-visual-cardlet--offset"></span>
+            </div>
             <div class="hero-visual-copy">
               <span class="hero-visual-chip hero-visual-chip--green">폐기물 · 설치</span>
               <strong>생활서비스도 같은 방식으로 바로 접수합니다.</strong>
@@ -92,8 +101,12 @@
       </div>
       <div class="service-hop-grid">
         <a class="service-hop-card" href="./estimate/">
-          <div class="service-hop-card__media">
-            <img src="./estimate-assets/img/hero-truck.jpg" alt="소형이사 서비스 이미지" loading="lazy" />
+          <div class="service-hop-card__media service-hop-card__media--move">
+            <div class="service-hop-card__figure service-hop-card__figure--move" aria-hidden="true">
+              <span class="service-hop-card__shape service-hop-card__shape--pill"></span>
+              <span class="service-hop-card__shape service-hop-card__shape--box"></span>
+              <span class="service-hop-card__shape service-hop-card__shape--line"></span>
+            </div>
           </div>
           <div class="service-hop-card__body">
             <em class="service-hop-card__kicker">가장 많이 찾는 서비스</em>
@@ -102,8 +115,12 @@
           </div>
         </a>
         <a class="service-hop-card" href="./ddclean/">
-          <div class="service-hop-card__media service-hop-card__media--soft">
-            <img src="./estimate-assets/img/case2.jpg" alt="입주청소 서비스 이미지" loading="lazy" />
+          <div class="service-hop-card__media service-hop-card__media--clean">
+            <div class="service-hop-card__figure service-hop-card__figure--clean" aria-hidden="true">
+              <span class="service-hop-card__shape service-hop-card__shape--circle"></span>
+              <span class="service-hop-card__shape service-hop-card__shape--spark"></span>
+              <span class="service-hop-card__shape service-hop-card__shape--spark service-hop-card__shape--spark-small"></span>
+            </div>
           </div>
           <div class="service-hop-card__body">
             <em class="service-hop-card__kicker">바로 접수 가능한 청소</em>
@@ -112,8 +129,11 @@
           </div>
         </a>
         <a class="service-hop-card" href="./yd/">
-          <div class="service-hop-card__media service-hop-card__media--small">
-            <img src="./estimate-assets/img/case1.jpg" alt="용달 서비스 이미지" loading="lazy" />
+          <div class="service-hop-card__media service-hop-card__media--delivery">
+            <div class="service-hop-card__figure service-hop-card__figure--delivery" aria-hidden="true">
+              <span class="service-hop-card__shape service-hop-card__shape--road"></span>
+              <span class="service-hop-card__shape service-hop-card__shape--van"></span>
+            </div>
           </div>
           <div class="service-hop-card__body">
             <em class="service-hop-card__kicker">빠르게 끝내는 이동</em>
@@ -139,19 +159,43 @@
       </div>
     </section>
 
-    <section class="section trust-strip">
-      <article class="trust-chip-card">
-        <h3>결제하면 바로 확정돼요.</h3>
-        <p>기다리지 않고 바로 잡힙니다.</p>
-      </article>
-      <article class="trust-chip-card">
-        <h3>배차도 바로 이어져요.</h3>
-        <p>진행 상태도 한 번에 봐요.</p>
-      </article>
-      <article class="trust-chip-card">
-        <h3>가입 없이 다시 볼 수 있어요.</h3>
-        <p>주문 조회 링크로 바로 확인해요.</p>
-      </article>
+    <section class="section section-surface cases-shell">
+      <div class="section-head">
+        <h2>실제 작업 사례로 먼저 감을 잡아요.</h2>
+        <p>자주 들어오는 요청을 카드로 바로 보여드립니다.</p>
+      </div>
+      <div class="case-grid">
+        <article class="case-card">
+          <div class="case-card__visual case-card__visual--move" aria-hidden="true">
+            <span class="case-card__tag">원룸 이사</span>
+          </div>
+          <div class="case-card__body">
+            <strong>테헤란로 → 상동로</strong>
+            <p>1톤 카고, 짐 적음, 엘리베이터 사용, 기사 도움 포함</p>
+            <span>오전 접수 · 당일 배차</span>
+          </div>
+        </article>
+        <article class="case-card">
+          <div class="case-card__visual case-card__visual--clean" aria-hidden="true">
+            <span class="case-card__tag">입주청소</span>
+          </div>
+          <div class="case-card__body">
+            <strong>오피스텔 8평 청소</strong>
+            <p>입주 전 기본 청소, 욕실·주방 포함, 옵션 추가 없이 진행</p>
+            <span>오후 접수 · 다음 날 방문</span>
+          </div>
+        </article>
+        <article class="case-card">
+          <div class="case-card__visual case-card__visual--delivery" aria-hidden="true">
+            <span class="case-card__tag">용달</span>
+          </div>
+          <div class="case-card__body">
+            <strong>부개동 → 화곡동</strong>
+            <p>차만 필요한 이동, 동승 1명, 기사 도움 없이 간단하게 접수</p>
+            <span>거리 계산 후 바로 문자 연결</span>
+          </div>
+        </article>
+      </div>
     </section>
 
     <section id="calculator" class="section section-surface calculator-shell">
@@ -171,60 +215,73 @@
       </div>
     </section>
 
-    <section class="section driver-proof-shell">
+    <section class="section section-surface expert-shell">
       <div class="section-head">
-        <h2>배차 후, 기사님 정보를 바로 알 수 있어요.</h2>
+        <h2>대표 전문가를 먼저 소개합니다.</h2>
+        <p>어떤 일을 주로 맡는지, 최근 얼마나 많이 연결됐는지 바로 볼 수 있습니다.</p>
       </div>
-      <div class="driver-proof-grid">
-        <article class="driver-proof-card">
+      <div class="expert-grid">
+        <article class="expert-card">
           <img src="./estimate-assets/img/drivers/driver-2.png" alt="기사 프로필 사진" loading="lazy" />
-          <div class="driver-proof-copy">
-            <strong>기사님 정보 확인</strong>
-            <span>배차 뒤 바로 확인할 수 있어요.</span>
+          <div class="expert-card__copy">
+            <strong>김민수 전문가</strong>
+            <em>소형이사 · 용달</em>
+            <p>원룸 이사와 급한 용달을 자주 맡고, 짐량 설명이 애매한 고객을 많이 만납니다.</p>
+            <span>최근 작업 42건</span>
           </div>
         </article>
-        <article class="driver-proof-card">
+        <article class="expert-card">
           <img src="./estimate-assets/img/drivers/driver-4.png" alt="기사 현장 사진" loading="lazy" />
-          <div class="driver-proof-copy">
-            <strong>익숙한 기사님 연결</strong>
-            <span>소형이사와 용달 흐름에 맞춰 연결해요.</span>
+          <div class="expert-card__copy">
+            <strong>박지현 전문가</strong>
+            <em>입주청소 · 정리수납</em>
+            <p>입주 전 청소와 정리수납을 함께 보는 고객이 많아서, 동선부터 먼저 정리해드립니다.</p>
+            <span>최근 작업 31건</span>
           </div>
         </article>
-        <article class="driver-proof-card">
+        <article class="expert-card">
           <img src="./estimate-assets/img/drivers/driver-5.png" alt="기사 작업 준비 사진" loading="lazy" />
-          <div class="driver-proof-copy">
-            <strong>진행 상태 확인</strong>
-            <span>접수부터 완료까지 바로 확인해요.</span>
+          <div class="expert-card__copy">
+            <strong>이정호 전문가</strong>
+            <em>설치 · 생활서비스</em>
+            <p>설치와 심부름처럼 상황 설명이 중요한 작업을 많이 맡아, 사전 확인을 꼼꼼히 보는 편입니다.</p>
+            <span>최근 작업 28건</span>
           </div>
         </article>
       </div>
     </section>
 
-    <section id="trust" class="section section-surface trust-grid">
-      <article class="content-card">
-        <h2>필요한 서비스만 고르고 바로 이어져서 편하다는 반응이 많아요.</h2>
-        <div class="review-list">
-          <blockquote>“조건 넣고 결제까지 이어져서 흐름이 단순했어요.”</blockquote>
-          <blockquote>“비회원 조회로 다시 확인할 수 있어서 편했어요.”</blockquote>
-          <blockquote>“이사와 청소를 나눠서 볼 수 있어서 고르기 쉬웠어요.”</blockquote>
-        </div>
-      </article>
-      <article class="content-card accent">
-        <h2>맡기기 전에 운영 정보도 확인해요.</h2>
-        <div class="trust-proof-list">
-          <div class="trust-proof-item">
-            <strong>🪪 사업자정보 공개</strong>
-            <span>대표자, 사업자번호, 주소, 연락처를 확인할 수 있어요.</span>
-          </div>
-          <div class="trust-proof-item">
-            <strong>📊 실시간 운영 현황</strong>
-            <span>오늘 주문 수와 현재 배차 상태를 같이 봅니다.</span>
-          </div>
-          <div class="trust-proof-item">
-            <strong>📄 비회원 주문 조회</strong>
-            <span>가입 없이 주문 상태, 취소, 완료 확인 링크를 다시 열 수 있습니다.</span>
-          </div>
-        </div>
+    <section id="trust" class="section section-surface review-shell">
+      <div class="section-head">
+        <h2>짧은 후기만 봐도 흐름이 읽힙니다.</h2>
+      </div>
+      <div class="review-card-grid">
+        <article class="review-card">
+          <strong>소형이사</strong>
+          <p>“조건 넣고 결제까지 바로 이어져서 생각보다 빨리 끝났어요.”</p>
+          <span>원룸 이사 고객</span>
+        </article>
+        <article class="review-card">
+          <strong>입주청소</strong>
+          <p>“이사랑 청소를 따로 볼 수 있어서 비교하기 편했어요.”</p>
+          <span>오피스텔 청소 고객</span>
+        </article>
+        <article class="review-card">
+          <strong>용달</strong>
+          <p>“거리 계산하고 문자 연결까지 짧게 이어져서 급할 때 좋았어요.”</p>
+          <span>당일 용달 고객</span>
+        </article>
+      </div>
+    </section>
+
+    <section class="section section-surface story-shell">
+      <div class="section-head">
+        <h2>당고는 필요한 서비스만 빠르게 고르게 하려고 만들었습니다.</h2>
+        <p>이사, 청소, 용달, 생활서비스를 따로 헤매지 않고 같은 흐름으로 접수하게 하려고 시작했습니다.</p>
+      </div>
+      <article class="story-card">
+        <strong>서비스를 설명하는 데 시간을 쓰지 않게</strong>
+        <p>필요한 서비스만 고르고, 그 서비스에 맞는 질문만 바로 나오게 구성했습니다. 결제와 진행 흐름도 최대한 짧게 이어지도록 맞추고 있습니다.</p>
       </article>
     </section>
 
