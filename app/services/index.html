@@ -18,71 +18,92 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../assets/style.css" />
+  <link rel="stylesheet" href="../estimate-assets/css/style.css" />
 </head>
 <body data-analytics-page="service_selector">
   <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PZCBT88P" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-  <header class="site-header">
-    <div class="brand-row">
-      <a class="brand" href="../">DANG-O</a>
-      <nav class="site-nav">
-        <a href="../">홈화면</a>
-        <a href="../estimate/">당고 소형이사</a>
-        <a href="../ddclean/">당고 입주청소</a>
-        <a href="../yd/">당고 간편용달</a>
-        <a href="./">서비스 선택</a>
-      </nav>
-      <div class="header-actions">
-        <a class="btn ghost header-link" href="../customer/lookup.html">비회원 주문조회</a>
-        <a class="header-cta" href="../estimate/">지금 접수하기</a>
+  <div class="container">
+    <div class="page-linkbar page-linkbar--space">
+      <div class="page-linkbar__group">
+        <a class="page-link" href="../">홈화면</a>
+        <a class="page-link" href="../estimate/">당고 소형이사</a>
+        <a class="page-link" href="../ddclean/">당고 입주청소</a>
+        <a class="page-link" href="../yd/">당고 간편용달</a>
+        <a class="page-link is-current" href="./">서비스 선택</a>
       </div>
     </div>
-  </header>
 
-  <main>
-    <section class="section hero">
-      <div class="hero-copy">
-        <p class="eyebrow">당장 필요할 때, 당장 고고. 당고!</p>
-        <h1>필요한 서비스를<br />먼저 골라주세요.</h1>
-        <p class="hero-text">폐기물, 설치, 심부름처럼 추가 서비스는 여기서 고르면 됩니다.</p>
+    <section class="landing-shell dango-estimate-intro">
+      <div class="landing-hero">
+        <div class="landing-eyebrow">당장 필요할 때, 당장 고고. 당고!</div>
+        <h1 class="landing-title">필요한 서비스를<br><span class="accent">먼저 골라주세요.</span></h1>
+        <p class="landing-copy">소형이사, 입주청소, 간편용달부터 폐기물, 설치, 심부름까지 같은 흐름으로 이어집니다.</p>
+        <div class="dango-estimate-pills">
+          <span>서비스별 단계 접수</span>
+          <span>조건 입력 후 금액 확인</span>
+          <span>결제 후 바로 진행</span>
+        </div>
+      </div>
+      <div class="landing-grid">
+        <article class="landing-card">
+          <h3>먼저 고르면 좋아요.</h3>
+          <ul class="landing-checklist">
+            <li>이사와 청소는 상세 조건까지 바로 넣을 수 있어요.</li>
+            <li>간편용달은 더 짧게 접수할 수 있어요.</li>
+            <li>폐기물, 설치, 심부름도 같은 흐름으로 이어집니다.</li>
+          </ul>
+        </article>
+        <article class="landing-card">
+          <h3>서비스마다 흐름은 같아요.</h3>
+          <ul class="landing-proof-list">
+            <li>서비스 선택</li>
+            <li>조건 입력과 금액 확인</li>
+            <li>결제 후 접수 완료</li>
+          </ul>
+          <p class="landing-note">지금 필요한 서비스로 바로 들어가면 됩니다.</p>
+        </article>
       </div>
     </section>
 
-    <section class="section section-surface">
-      <div class="driver-proof-grid">
-        <article class="content-card">
-          <h2>당고 소형이사</h2>
-          <p>원룸과 오피스텔 이사를 단계별로 바로 접수합니다.</p>
-          <a class="btn primary" href="../estimate/">소형이사 접수 시작</a>
-        </article>
-        <article class="content-card">
-          <h2>당고 입주청소</h2>
-          <p>청소 유형과 옵션을 넣고 같은 방식으로 접수합니다.</p>
-          <a class="btn primary" href="../ddclean/">입주청소 접수 시작</a>
-        </article>
-        <article class="content-card">
-          <h2>당고 간편용달</h2>
-          <p>1층에서 1층, 차만 필요한 이동은 더 짧게 접수합니다.</p>
-          <a class="btn primary" href="../yd/">간편용달 접수 시작</a>
-        </article>
-        <article class="content-card">
-          <h2>당고 폐기물</h2>
-          <p>가구, 가전, 생활 폐기물, 철거 포함 정리까지 단계별로 넣고 접수합니다.</p>
-          <a class="btn primary" href="../waste/">폐기물 접수 시작</a>
-        </article>
-        <article class="content-card">
-          <h2>당고 설치</h2>
-          <p>가구, 가전, TV, 커튼, 조명 설치를 단계별로 넣고 접수합니다.</p>
-          <a class="btn primary" href="../install/">설치 접수 시작</a>
-        </article>
-        <article class="content-card">
-          <h2>당고 심부름</h2>
-          <p>전달, 픽업, 장보기, 동행 같은 생활 심부름을 단계별로 접수합니다.</p>
-          <a class="btn primary" href="../errand/">심부름 접수 시작</a>
-        </article>
+    <section class="landing-shell service-directory-shell">
+      <div class="service-switcher-head">
+        <h2>지금 필요한 서비스로 바로 들어가세요.</h2>
+        <p>페이지 구조와 버튼 톤을 모두 같은 방식으로 맞췄습니다.</p>
+      </div>
+      <div class="service-directory-grid">
+        <a class="service-directory-card" href="../estimate/">
+          <strong>당고 소형이사</strong>
+          <span>원룸과 오피스텔 이사를 단계별로 접수합니다.</span>
+          <em>소형이사 접수 시작</em>
+        </a>
+        <a class="service-directory-card" href="../ddclean/">
+          <strong>당고 입주청소</strong>
+          <span>청소 유형과 옵션을 같은 방식으로 접수합니다.</span>
+          <em>입주청소 접수 시작</em>
+        </a>
+        <a class="service-directory-card" href="../yd/">
+          <strong>당고 간편용달</strong>
+          <span>차만 필요한 이동은 더 짧게 접수합니다.</span>
+          <em>간편용달 접수 시작</em>
+        </a>
+        <a class="service-directory-card" href="../waste/">
+          <strong>당고 폐기물</strong>
+          <span>생활 폐기물부터 철거 포함 정리까지 단계별로 넣습니다.</span>
+          <em>폐기물 접수 시작</em>
+        </a>
+        <a class="service-directory-card" href="../install/">
+          <strong>당고 설치</strong>
+          <span>가구, 가전, TV, 커튼, 조명 설치를 접수합니다.</span>
+          <em>설치 접수 시작</em>
+        </a>
+        <a class="service-directory-card" href="../errand/">
+          <strong>당고 심부름</strong>
+          <span>전달, 픽업, 장보기, 동행 같은 생활 대행을 접수합니다.</span>
+          <em>심부름 접수 시작</em>
+        </a>
       </div>
     </section>
-  </main>
+  </div>
 
   <script src="../assets/js/contact-fab.js"></script>
   <script src="../assets/js/meta-pixel.js"></script>
