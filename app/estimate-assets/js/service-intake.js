@@ -165,6 +165,12 @@
         movein: { label: "이사 전후 정리", base: 90000 },
         wholehome: { label: "집 전체 정리수납", base: 140000 }
       },
+      addressLabel: "방문 주소",
+      quantityLabel: "공간 수",
+      quantityDesc: "정리할 공간 수를 실제에 가깝게 넣어주세요.",
+      quantityUnit: "곳",
+      detailSummaryLabel: "정리 요청",
+      priceGuide: "기본 방문비와 공간 수, 추가 요청을 합쳐 예상 금액을 잡습니다.",
       detailLabel: "정리할 공간이나 요청 내용을 적어주세요.",
       optionLabels: {
         visitEstimate: "방문 견적이 먼저 필요해요",
@@ -173,15 +179,29 @@
         group: "2인 이상 정리가 필요해요",
         parking: "주차나 현장 진입 확인이 필요해요",
         premium: "정리 후 수납 제안까지 원해요"
+      },
+      optionFees: {
+        visitEstimate: 20000,
+        homeVisit: 25000,
+        urgent: 20000,
+        group: 40000,
+        parking: 10000,
+        premium: 30000
       }
     },
     ac_clean: {
       categories: {
-        wall: { label: "벽걸이 에어컨", base: 90000 },
+        wall: { label: "벽걸이 에어컨", base: 80000 },
         stand: { label: "스탠드 에어컨", base: 120000 },
-        twoinone: { label: "2in1 에어컨", base: 180000 },
-        system: { label: "시스템 에어컨", base: 130000 }
+        twoinone: { label: "2in1 에어컨", base: 170000 },
+        system: { label: "시스템 에어컨", base: 110000 }
       },
+      addressLabel: "방문 주소",
+      quantityLabel: "청소 대수",
+      quantityDesc: "청소할 에어컨 대수를 먼저 정해주세요.",
+      quantityUnit: "대",
+      detailSummaryLabel: "모델 정보",
+      priceGuide: "기본 세척비에 대수와 분해 요청을 반영한 예상 금액입니다.",
       detailLabel: "브랜드나 모델명이 있으면 적어주세요.",
       optionLabels: {
         visitEstimate: "현장 확인이 먼저 필요해요",
@@ -190,15 +210,29 @@
         group: "2대 이상 같이 진행해요",
         parking: "주차나 사다리 조건이 있어요",
         premium: "완전 분해 세척으로 요청해요"
+      },
+      optionFees: {
+        visitEstimate: 15000,
+        homeVisit: 15000,
+        urgent: 10000,
+        group: 30000,
+        parking: 10000,
+        premium: 30000
       }
     },
     appliance_clean: {
       categories: {
-        washer: { label: "세탁기 청소", base: 90000 },
-        dryer: { label: "건조기 청소", base: 80000 },
-        fridge: { label: "냉장고 청소", base: 70000 },
-        kitchen: { label: "주방가전 청소", base: 85000 }
+        washer: { label: "세탁기 청소", base: 80000 },
+        dryer: { label: "건조기 청소", base: 70000 },
+        fridge: { label: "냉장고 청소", base: 60000 },
+        kitchen: { label: "주방가전 청소", base: 65000 }
       },
+      addressLabel: "방문 주소",
+      quantityLabel: "청소 대수",
+      quantityDesc: "청소할 가전 대수를 먼저 정해주세요.",
+      quantityUnit: "대",
+      detailSummaryLabel: "제품 정보",
+      priceGuide: "기본 세척비에 품목 수와 분해 요청을 반영한 예상 금액입니다.",
       detailLabel: "모델명이나 오염 상태를 적어주세요.",
       optionLabels: {
         visitEstimate: "현장 확인이 먼저 필요해요",
@@ -207,6 +241,14 @@
         group: "2대 이상 같이 진행해요",
         parking: "주차나 이동 조건이 있어요",
         premium: "분해 세척으로 요청해요"
+      },
+      optionFees: {
+        visitEstimate: 15000,
+        homeVisit: 15000,
+        urgent: 10000,
+        group: 20000,
+        parking: 10000,
+        premium: 25000
       }
     },
     interior: {
@@ -214,8 +256,14 @@
         partial: { label: "부분 인테리어", base: 180000 },
         wallpaper: { label: "도배·장판", base: 160000 },
         repair: { label: "집수리·보수", base: 150000 },
-        consulting: { label: "상담·실측", base: 90000 }
+        consulting: { label: "상담·실측", base: 70000 }
       },
+      addressLabel: "현장 주소",
+      quantityLabel: "공간 수",
+      quantityDesc: "작업할 공간 수를 먼저 정해주세요.",
+      quantityUnit: "곳",
+      detailSummaryLabel: "현장 요청",
+      priceGuide: "실측 여부와 공사 범위를 반영한 상담형 예상 금액입니다.",
       detailLabel: "희망 범위나 평수, 사진 설명을 적어주세요.",
       optionLabels: {
         visitEstimate: "실측이 먼저 필요해요",
@@ -224,6 +272,14 @@
         group: "동시 진행 공간이 있어요",
         parking: "주차나 자재 진입 확인이 필요해요",
         premium: "브랜드 마감재 상담도 원해요"
+      },
+      optionFees: {
+        visitEstimate: 30000,
+        homeVisit: 20000,
+        urgent: 20000,
+        group: 40000,
+        parking: 10000,
+        premium: 40000
       }
     },
     interior_help: {
@@ -233,6 +289,12 @@
         cleanup: { label: "철거 후 정리 보조", base: 110000 },
         daily: { label: "하루 현장 보조", base: 130000 }
       },
+      addressLabel: "현장 주소",
+      quantityLabel: "작업 건수",
+      quantityDesc: "필요한 보조 작업 건수를 먼저 정해주세요.",
+      quantityUnit: "건",
+      detailSummaryLabel: "현장 요청",
+      priceGuide: "기본 보조비에 작업 수와 현장 조건을 반영한 예상 금액입니다.",
       detailLabel: "필요한 보조 작업을 적어주세요.",
       optionLabels: {
         visitEstimate: "현장 확인이 먼저 필요해요",
@@ -241,23 +303,45 @@
         group: "2인 이상 보조가 필요해요",
         parking: "주차나 자재 진입 확인이 필요해요",
         premium: "장시간 상주가 필요해요"
+      },
+      optionFees: {
+        visitEstimate: 20000,
+        homeVisit: 25000,
+        urgent: 15000,
+        group: 50000,
+        parking: 10000,
+        premium: 40000
       }
     },
     pt: {
       categories: {
         personal: { label: "개인 PT", base: 70000 },
         duo: { label: "커플·2인 PT", base: 90000 },
-        diet: { label: "다이어트 PT", base: 75000 },
-        balance: { label: "근력·체형 교정", base: 80000 }
+        diet: { label: "다이어트 PT", base: 78000 },
+        balance: { label: "근력·체형 교정", base: 82000 }
       },
+      addressLabel: "수업 지역",
+      quantityLabel: "수업 횟수",
+      quantityDesc: "1회 기준 금액에 원하는 수업 횟수를 반영합니다.",
+      quantityUnit: "회",
+      detailSummaryLabel: "운동 목표",
+      priceGuide: "1회 기준 금액에 수업 횟수와 추가 요청을 반영한 예상 금액입니다.",
       detailLabel: "운동 목적이나 희망 강도를 적어주세요.",
       optionLabels: {
-        visitEstimate: "사전 상담이 먼저 필요해요",
+        visitEstimate: "체험 수업이 먼저 필요해요",
         homeVisit: "방문 PT가 필요해요",
-        urgent: "빠른 일정이 필요해요",
-        group: "동반 수업이 있어요",
-        parking: "주차나 센터 입장 안내가 필요해요",
+        urgent: "이번 주 안에 시작하고 싶어요",
+        group: "2인 이상 같이 받아요",
+        parking: "센터나 수업 장소 추천이 필요해요",
         premium: "식단 코칭까지 함께 원해요"
+      },
+      optionFees: {
+        visitEstimate: 10000,
+        homeVisit: 20000,
+        urgent: 10000,
+        group: 15000,
+        parking: 5000,
+        premium: 20000
       }
     },
     vocal: {
@@ -267,14 +351,28 @@
         event: { label: "축가·행사용", base: 70000 },
         recording: { label: "녹음·디렉팅", base: 75000 }
       },
+      addressLabel: "수업 지역",
+      quantityLabel: "레슨 횟수",
+      quantityDesc: "1회 기준 금액에 원하는 레슨 횟수를 반영합니다.",
+      quantityUnit: "회",
+      detailSummaryLabel: "수업 목표",
+      priceGuide: "1회 기준 금액에 레슨 횟수와 추가 요청을 반영한 예상 금액입니다.",
       detailLabel: "희망 장르나 목표를 적어주세요.",
       optionLabels: {
-        visitEstimate: "사전 상담이 먼저 필요해요",
-        homeVisit: "방문 수업이 필요해요",
-        urgent: "빠른 일정이 필요해요",
-        group: "그룹 수업이에요",
+        visitEstimate: "체험 레슨이 먼저 필요해요",
+        homeVisit: "방문 또는 출장 레슨이 필요해요",
+        urgent: "이번 주 안에 시작하고 싶어요",
+        group: "듀엣·그룹 레슨이에요",
         parking: "연습실 위치 안내가 필요해요",
         premium: "녹음 피드백까지 원해요"
+      },
+      optionFees: {
+        visitEstimate: 10000,
+        homeVisit: 20000,
+        urgent: 10000,
+        group: 15000,
+        parking: 5000,
+        premium: 15000
       }
     },
     golf: {
@@ -284,14 +382,28 @@
         shortgame: { label: "숏게임 교정", base: 85000 },
         swing: { label: "스윙 교정", base: 85000 }
       },
+      addressLabel: "수업 지역",
+      quantityLabel: "레슨 횟수",
+      quantityDesc: "1회 기준 금액에 원하는 레슨 횟수를 반영합니다.",
+      quantityUnit: "회",
+      detailSummaryLabel: "레슨 목표",
+      priceGuide: "1회 기준 금액에 레슨 횟수와 추가 요청을 반영한 예상 금액입니다.",
       detailLabel: "현재 구력이나 목표를 적어주세요.",
       optionLabels: {
-        visitEstimate: "사전 상담이 먼저 필요해요",
-        homeVisit: "방문 또는 외부 레슨이 필요해요",
-        urgent: "빠른 일정이 필요해요",
+        visitEstimate: "체험 레슨이 먼저 필요해요",
+        homeVisit: "외부 연습장·방문 레슨이 필요해요",
+        urgent: "이번 주 안에 시작하고 싶어요",
         group: "동반 레슨이에요",
-        parking: "연습장 위치 안내가 필요해요",
-        premium: "영상 분석까지 원해요"
+        parking: "연습장 추천이 필요해요",
+        premium: "스윙 영상 분석까지 원해요"
+      },
+      optionFees: {
+        visitEstimate: 10000,
+        homeVisit: 20000,
+        urgent: 10000,
+        group: 15000,
+        parking: 5000,
+        premium: 20000
       }
     },
     tutor: {
@@ -301,14 +413,28 @@
         exam: { label: "입시·시험 대비", base: 80000 },
         adult: { label: "성인 취미·자격 과외", base: 70000 }
       },
+      addressLabel: "수업 지역",
+      quantityLabel: "수업 횟수",
+      quantityDesc: "1회 기준 금액에 원하는 수업 횟수를 반영합니다.",
+      quantityUnit: "회",
+      detailSummaryLabel: "과외 목표",
+      priceGuide: "1회 기준 금액에 수업 횟수와 추가 요청을 반영한 예상 금액입니다.",
       detailLabel: "과목, 학년, 목표를 적어주세요.",
       optionLabels: {
         visitEstimate: "사전 상담이 먼저 필요해요",
         homeVisit: "방문 수업이 필요해요",
-        urgent: "빠른 일정이 필요해요",
-        group: "그룹 수업이에요",
-        parking: "교재나 준비물이 있어요",
+        urgent: "이번 주 안에 시작하고 싶어요",
+        group: "친구·형제와 같이 받아요",
+        parking: "교재나 준비물 상담이 필요해요",
         premium: "숙제 관리까지 원해요"
+      },
+      optionFees: {
+        visitEstimate: 10000,
+        homeVisit: 20000,
+        urgent: 10000,
+        group: 15000,
+        parking: 5000,
+        premium: 15000
       }
     },
     counseling: {
@@ -318,14 +444,28 @@
         family: { label: "가족 상담", base: 110000 },
         career: { label: "진로·직무 상담", base: 75000 }
       },
+      addressLabel: "상담 지역",
+      quantityLabel: "상담 횟수",
+      quantityDesc: "1회 기준 금액에 원하는 상담 횟수를 반영합니다.",
+      quantityUnit: "회",
+      detailSummaryLabel: "상담 주제",
+      priceGuide: "1회 기준 금액에 상담 횟수와 추가 요청을 반영한 예상 금액입니다.",
       detailLabel: "상담 주제나 현재 고민을 적어주세요.",
       optionLabels: {
         visitEstimate: "사전 상담이 먼저 필요해요",
         homeVisit: "대면 상담이 필요해요",
         urgent: "빠른 일정이 필요해요",
-        group: "동반 상담이에요",
+        group: "보호자·동반 상담이에요",
         parking: "상담 장소 안내가 필요해요",
-        premium: "장기 상담으로 보고 있어요"
+        premium: "장기 상담 계획이 있어요"
+      },
+      optionFees: {
+        visitEstimate: 10000,
+        homeVisit: 15000,
+        urgent: 10000,
+        group: 10000,
+        parking: 5000,
+        premium: 15000
       }
     }
   };
@@ -502,6 +642,10 @@
     return GENERIC_SERVICE_CONFIG[SERVICE]?.categories || {};
   }
 
+  function genericServiceConfig() {
+    return GENERIC_SERVICE_CONFIG[SERVICE] || {};
+  }
+
   function detailSelectionConfig() {
     return DETAIL_SELECTION_CONFIG[SERVICE] || null;
   }
@@ -652,6 +796,7 @@
   }
 
   function calculateGenericPrice() {
+    const serviceConfig = genericServiceConfig();
     const base = genericCategoryMap()[state.category]?.base || 70000;
     const detailConfig = detailSelectionConfig();
     const qty = Math.max(1, Number(state.genericQty || 1));
@@ -659,12 +804,21 @@
     if (detailConfig) {
       total = base + getDetailSelectionTotalPrice();
     }
-    if (state.drilling) total += 30000;
-    if (state.anchorFix) total += 25000;
-    if (state.electric) total += 20000;
-    if (state.gas) total += 15000;
-    if (state.water) total += 10000;
-    if (state.oldRemoval) total += 25000;
+    const optionFees = {
+      visitEstimate: 30000,
+      homeVisit: 25000,
+      urgent: 20000,
+      group: 15000,
+      parking: 10000,
+      premium: 25000,
+      ...(serviceConfig.optionFees || {})
+    };
+    if (state.drilling) total += optionFees.visitEstimate || 0;
+    if (state.anchorFix) total += optionFees.homeVisit || 0;
+    if (state.electric) total += optionFees.urgent || 0;
+    if (state.gas) total += optionFees.group || 0;
+    if (state.water) total += optionFees.parking || 0;
+    if (state.oldRemoval) total += optionFees.premium || 0;
     if (state.helper) total += 60000;
     if (state.ladder) total += 120000;
     return Math.round(total);
@@ -770,26 +924,30 @@
       ];
     }
 
+    const serviceConfig = genericServiceConfig();
+    const optionLabels = serviceConfig.optionLabels || {};
+    const genericOptions = [
+      state.drilling ? optionLabels.visitEstimate : null,
+      state.anchorFix ? optionLabels.homeVisit : null,
+      state.electric ? optionLabels.urgent : null,
+      state.gas ? optionLabels.group : null,
+      state.water ? optionLabels.parking : null,
+      state.oldRemoval ? optionLabels.premium : null,
+      state.helper ? "인부 필요" : null,
+      state.ladder ? "사다리차 필요" : null
+    ].filter(Boolean);
+
     return [
       `접수 유형: ${labelFromMap(genericCategoryMap(), state.category, "-")}`,
-      `방문 주소: ${state.address || "-"}`,
+      `${serviceConfig.addressLabel || "방문 주소"}: ${state.address || "-"}`,
       `희망 날짜: ${state.moveDate || "-"}`,
       detailSelectionConfig()
         ? `${
             detailSelectionConfig().summaryTitle
           }: ${getDetailSelectionEntries().length ? getDetailSelectionEntries().map(([key, item]) => `${item.label} ${state.detailSelections[key]}${detailSelectionConfig().unit}`).join(", ") : "선택 없음"}`
-        : `건수: ${Math.max(1, Number(state.genericQty || 1))}건`,
-      `상세 내용: ${state.modelName || "미입력"}`,
-      `추가 요청: ${[
-        state.drilling ? "사전 방문 견적" : null,
-        state.anchorFix ? "방문 진행" : null,
-        state.electric ? "빠른 일정" : null,
-        state.gas ? "그룹 진행" : null,
-        state.water ? "주차·현장 확인" : null,
-        state.oldRemoval ? "프리미엄 요청" : null,
-        state.helper ? "인부 필요" : null,
-        state.ladder ? "사다리차 필요" : null
-      ].filter(Boolean).join(" · ")}`
+        : `${serviceConfig.quantityLabel || "건수"}: ${Math.max(1, Number(state.genericQty || 1))}${serviceConfig.quantityUnit || "건"}`,
+      `${serviceConfig.detailSummaryLabel || "상세 내용"}: ${state.modelName || "미입력"}`,
+      `추가 요청: ${genericOptions.length ? genericOptions.join(" · ") : "없음"}`
     ];
   }
 
@@ -802,7 +960,8 @@
       $("#stickyPriceDetail").textContent = `기사 정산 예정 ${formatWon(pricing.driverAmount)} / 당고 정산 ${formatWon(pricing.companyAmount)}`;
     }
     if ($("#priceUnder")) {
-      $("#priceUnder").textContent = "전체 결제 뒤 바로 주문을 만들고 배차 준비를 시작합니다.";
+      $("#priceUnder").textContent =
+        genericServiceConfig().priceGuide || "전체 결제 뒤 바로 주문을 만들고 배차 준비를 시작합니다.";
     }
     if ($("#summary")) {
       $("#summary").innerHTML = getSummaryLines().map((line) => `<div class="mini-summary">${line}</div>`).join("");
@@ -837,6 +996,47 @@
     return [`[${CONFIG[SERVICE].label} 접수]`, ...getSummaryLines(), state.memo ? `메모: ${state.memo}` : null]
       .filter(Boolean)
       .join("\n");
+  }
+
+  function applyGenericServiceCopy() {
+    if (!GENERIC_SERVICES.has(SERVICE)) return;
+    const config = genericServiceConfig();
+
+    const quantityLabel = document.querySelector('.item-qty-row strong');
+    if (quantityLabel) {
+      quantityLabel.textContent = config.quantityLabel || "건수";
+    }
+
+    const quantityDesc = quantityLabel?.parentElement?.querySelector("br");
+    if (quantityDesc && quantityDesc.nextSibling) {
+      quantityDesc.nextSibling.textContent = ` ${config.quantityDesc || "필요한 건수를 넣어주세요."}`;
+    }
+
+    const qtyUnit = document.querySelector(".item-qty-row .stepper-unit");
+    if (qtyUnit) {
+      qtyUnit.textContent = config.quantityUnit || "건";
+    }
+
+    const detailInput = $("#serviceDetailName");
+    if (detailInput) {
+      detailInput.placeholder = config.detailLabel || detailInput.placeholder;
+    }
+
+    const optionMap = {
+      optionVisitEstimate: config.optionLabels?.visitEstimate,
+      optionHomeVisit: config.optionLabels?.homeVisit,
+      optionUrgent: config.optionLabels?.urgent,
+      optionGroup: config.optionLabels?.group,
+      optionParking: config.optionLabels?.parking,
+      optionPremium: config.optionLabels?.premium
+    };
+
+    Object.entries(optionMap).forEach(([id, text]) => {
+      if (!text) return;
+      const input = document.getElementById(id);
+      const label = input?.closest(".option")?.querySelector("div");
+      if (label) label.textContent = text;
+    });
   }
 
   function buildCheckoutPayload(customerName, customerPhone) {
@@ -1284,6 +1484,7 @@
     const dateInput = $("#moveDate");
     if (dateInput) dateInput.min = new Date().toISOString().slice(0, 10);
     mountDetailSelectionUi();
+    applyGenericServiceCopy();
     bindEvents();
     renderPrice();
     showStep(1);
