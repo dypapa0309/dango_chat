@@ -8,6 +8,13 @@ const HELPER_CUSTOMER_FEE = 60000;
 const HELPER_DRIVER_FEE = 40000;
 const LADDER_CUSTOMER_FEE = 120000;
 const LADDER_DRIVER_FEE = 100000;
+const SERVICE_OPTIONS = [
+  { value: 'move', label: '이사', description: '원룸, 소형이사' },
+  { value: 'clean', label: '청소', description: '입주청소, 정리' },
+  { value: 'yd', label: '용달', description: '간편 용달, 1층 이동' },
+  { value: 'waste', label: '폐기물', description: '수거, 정리' },
+  { value: 'install', label: '설치', description: '가전, 가구 설치' }
+];
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
 const api = (name) => `${window.dd.apiBase}/${name}`;
@@ -177,6 +184,7 @@ function renderDriverSummaryDetail(driver) {
           <div><span>전화번호</span><strong>${escapeHtml(driver.phone || '-')}</strong></div>
           <div><span>차량</span><strong>${escapeHtml(driver.vehicle_type || '-')}</strong></div>
           <div><span>차량 번호</span><strong>${escapeHtml(driver.vehicle_number || '-')}</strong></div>
+          <div><span>지원 서비스</span><strong>${escapeHtml(normalizeDriverServices(driver).map(inferServiceTypeLabel).join(', ') || '-')}</strong></div>
           <div><span>상태</span><strong>${escapeHtml(driver.status || '-')}</strong></div>
           <div><span>배차 허용</span><strong>${driver.dispatch_enabled ? '허용' : '꺼짐'}</strong></div>
         </div>
@@ -415,31 +423,74 @@ function parseMoveType(value) {
   return 'normal';
 }
 
+function normalizeDriverServices(driver = {}) {
+  const services = Array.isArray(driver.supported_services)
+    ? driver.supported_services.filter(Boolean)
+    : [];
+  if (services.length) return [...new Set(services)];
+  return [
+    driver.supports_move !== false ? 'move' : null,
+    driver.supports_clean ? 'clean' : null,
+    driver.supports_yd ? 'yd' : null
+  ].filter(Boolean);
+}
+
 function inferServiceTypeLabel(serviceType) {
   const map = {
     move: '이사',
     clean: '청소',
-    yd: '용달'
+    yd: '용달',
+    waste: '폐기물',
+    install: '설치'
   };
   return map[serviceType] || serviceType || '-';
 }
 
 function inferServiceTypeFromText(value) {
   const text = String(value || '').trim();
+  if (text.includes('폐기물')) return 'waste';
+  if (text.includes('설치')) return 'install';
   if (text.includes('청소')) return 'clean';
   if (text.includes('용달')) return 'yd';
   return 'move';
 }
 
 function renderDriverServiceBadges(driver) {
-  const labels = [
-    driver.supports_move ? '이사' : null,
-    driver.supports_clean ? '청소' : null,
-    driver.supports_yd ? '용달' : null
-  ].filter(Boolean);
+  const labels = normalizeDriverServices(driver).map((serviceType) => inferServiceTypeLabel(serviceType));
   return labels.length
     ? `<div class="service-tags">${labels.map((label) => `<span class="service-tag">${label}</span>`).join('')}</div>`
     : '<div class="service-tags"><span class="service-tag muted-tag">서비스 미선택</span></div>';
+}
+
+function renderServiceToggleInputs(selectedServices = [], prefix = 'service') {
+  return `
+    <details class="service-picker" open>
+      <summary>
+        <span>지원 서비스 선택</span>
+        <span class="service-picker-copy">눌러서 서비스 범위를 정리합니다.</span>
+      </summary>
+      <div class="service-picker-body">
+        <div class="service-toggle-grid">
+          ${SERVICE_OPTIONS.map((service) => `
+            <label class="service-toggle">
+              <input type="checkbox" data-field="${prefix}::${service.value}" ${selectedServices.includes(service.value) ? 'checked' : ''} />
+              <span><strong>${service.label}</strong><small>${service.description}</small></span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+    </details>
+  `;
+}
+
+function readSelectedServiceFields(root, prefix = 'service') {
+  return SERVICE_OPTIONS
+    .map((service) => ({
+      value: service.value,
+      input: root.querySelector(`[data-field="${prefix}::${service.value}"]`)
+    }))
+    .filter(({ input }) => input?.checked)
+    .map(({ value }) => value);
 }
 
 function parseFloorFromCarry(value) {
@@ -454,7 +505,7 @@ function estimateWeightFromLoadLevel(loadLevel) {
   return map[loadLevel] ?? 100;
 }
 
-function parseInquiryTextToPayload(rawText, customerName, customerPhone) {
+function parseInquiryTextToPayload(rawText, customerName, customerPhone, forcedServiceType = '') {
   const text = String(rawText || '').trim();
   if (!text) throw new Error('주문서 내용을 붙여넣어주세요.');
 
@@ -474,7 +525,7 @@ function parseInquiryTextToPayload(rawText, customerName, customerPhone) {
   });
 
   const service = lineMap.get('서비스') || '이사·용달';
-  const serviceType = inferServiceTypeFromText(service);
+  const serviceType = forcedServiceType || inferServiceTypeFromText(service);
   const vehicle = lineMap.get('차량') || '';
   const moveTypeText = lineMap.get('이사 방식') || '일반이사';
   const moveType = parseMoveType(moveTypeText);
@@ -879,6 +930,7 @@ async function loadDrivers() {
 
   drivers.forEach((driver) => {
     try {
+      const selectedServices = normalizeDriverServices(driver);
       const card = document.createElement('div');
       card.className = 'driver-card';
       card.innerHTML = `
@@ -921,9 +973,7 @@ async function loadDrivers() {
               <option value="active" ${driver.status === 'active' ? 'selected' : ''}>활성</option>
               <option value="inactive" ${driver.status === 'inactive' ? 'selected' : ''}>비활성</option>
             </select>
-            <label class="check check-card"><span class="check-copy">이사 가능</span><input type="checkbox" data-field="supportsMove" ${driver.supports_move ? 'checked' : ''} /></label>
-            <label class="check check-card"><span class="check-copy">청소 가능</span><input type="checkbox" data-field="supportsClean" ${driver.supports_clean ? 'checked' : ''} /></label>
-            <label class="check check-card"><span class="check-copy">용달 가능</span><input type="checkbox" data-field="supportsYd" ${driver.supports_yd ? 'checked' : ''} /></label>
+            ${renderServiceToggleInputs(selectedServices)}
             <label class="check check-card"><span class="check-copy">배차 허용</span><input type="checkbox" data-field="dispatchEnabled" ${driver.dispatch_enabled ? 'checked' : ''} /></label>
             <input type="text" data-field="bankName" value="${escapeHtml(driver.bank_name || '')}" placeholder="은행명" />
             <input type="text" data-field="accountHolder" value="${escapeHtml(driver.account_holder || '')}" placeholder="예금주" />
@@ -970,6 +1020,11 @@ async function loadDrivers() {
       });
 
       card.querySelector('[data-action="save-driver"]').onclick = async (e) => withButtonBusy(e.currentTarget, '저장 중...', async () => {
+        const supportedServices = readSelectedServiceFields(card);
+        if (!supportedServices.length) {
+          alert('지원 서비스는 하나 이상 선택해야 합니다.');
+          return;
+        }
         const payload = {
           driverId: driver.id,
           status: card.querySelector('[data-field="status"]').value,
@@ -985,9 +1040,7 @@ async function loadDrivers() {
           taxEmail: card.querySelector('[data-field="taxEmail"]').value,
           taxAddress: card.querySelector('[data-field="taxAddress"]').value,
           taxWithholdingAgreed: card.querySelector('[data-field="taxWithholdingAgreed"]').checked,
-          supportsMove: card.querySelector('[data-field="supportsMove"]').checked,
-          supportsClean: card.querySelector('[data-field="supportsClean"]').checked,
-          supportsYd: card.querySelector('[data-field="supportsYd"]').checked,
+          supportedServices,
           internalMemo: card.querySelector('[data-field="internalMemo"]').value
         };
 
@@ -1437,7 +1490,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const parsed = parseInquiryTextToPayload(
           document.getElementById('manualOrderText')?.value || '',
           document.getElementById('manualCustomerName')?.value || '',
-          document.getElementById('manualCustomerPhone')?.value || ''
+          document.getElementById('manualCustomerPhone')?.value || '',
+          document.getElementById('manualServiceType')?.value || ''
         );
         manualOrderDraft = parsed;
         renderManualState('주문서 파싱이 끝났어요. 확인 후 주문 생성으로 넘기면 됩니다.');
@@ -1497,6 +1551,10 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('manualCustomerPhone')?.addEventListener('input', () => {
     manualOrderDraft = null;
     renderManualState('고객 정보가 바뀌었어요. 다시 파싱해주세요.');
+  });
+  document.getElementById('manualServiceType')?.addEventListener('change', () => {
+    manualOrderDraft = null;
+    renderManualState('서비스가 바뀌었어요. 다시 파싱해주세요.');
   });
   renderManualState();
 

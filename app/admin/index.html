@@ -58,6 +58,13 @@
           <div class="manual-grid">
             <input id="manualCustomerName" name="customer_name" placeholder="고객명" required />
             <input id="manualCustomerPhone" name="customer_phone" placeholder="연락처" required />
+            <select id="manualServiceType" name="service_type">
+              <option value="move">이사</option>
+              <option value="clean">청소</option>
+              <option value="yd">용달</option>
+              <option value="waste">폐기물</option>
+              <option value="install">설치</option>
+            </select>
           </div>
           <textarea id="manualOrderText" name="raw_text" placeholder="문자나 카톡으로 받은 주문서를 그대로 붙여넣어주세요." required></textarea>
           <div class="driver-actions">

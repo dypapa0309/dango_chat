@@ -14,8 +14,16 @@ export async function handler(event) {
   if (denied) return denied;
 
   try {
-    const { driverId, status, dispatchEnabled, bankName, accountNumber, accountHolder, payoutEnabled, payoutNote, internalMemo, taxName, taxBirthDate, taxIdNumber, taxEmail, taxAddress, taxWithholdingAgreed, supportsMove, supportsClean, supportsYd } = parseBody(event);
+    const { driverId, status, dispatchEnabled, bankName, accountNumber, accountHolder, payoutEnabled, payoutNote, internalMemo, taxName, taxBirthDate, taxIdNumber, taxEmail, taxAddress, taxWithholdingAgreed, supportsMove, supportsClean, supportsYd, supportedServices } = parseBody(event);
     if (!driverId) return fail('driverId가 필요합니다.');
+
+    const normalizedServices = Array.isArray(supportedServices)
+      ? supportedServices.filter(Boolean)
+      : [
+          supportsMove ? 'move' : null,
+          supportsClean ? 'clean' : null,
+          supportsYd ? 'yd' : null
+        ].filter(Boolean);
 
     const supabase = adminClient();
     const payload = {
@@ -34,16 +42,17 @@ export async function handler(event) {
       tax_address: (taxAddress || '').trim() || null,
       tax_withholding_type: 'freelancer_3_3',
       tax_withholding_agreed: Boolean(taxWithholdingAgreed),
-      supports_move: Boolean(supportsMove),
-      supports_clean: Boolean(supportsClean),
-      supports_yd: Boolean(supportsYd)
+      supports_move: normalizedServices.includes('move'),
+      supports_clean: normalizedServices.includes('clean'),
+      supports_yd: normalizedServices.includes('yd'),
+      supported_services: normalizedServices.length ? normalizedServices : ['move']
     };
 
     const { data, error } = await supabase
       .from('drivers')
       .update(payload)
       .eq('id', driverId)
-      .select('id, name, phone, status, dispatch_enabled, bank_name, account_number, account_holder, payout_enabled, payout_note, internal_memo, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed, supports_move, supports_clean, supports_yd')
+      .select('id, name, phone, status, dispatch_enabled, bank_name, account_number, account_holder, payout_enabled, payout_note, internal_memo, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed, supports_move, supports_clean, supports_yd, supported_services')
       .single();
 
     if (error) throw error;

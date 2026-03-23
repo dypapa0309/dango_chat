@@ -25,15 +25,20 @@
           <input id="accountNumber" type="text" placeholder="계좌번호" />
         </div>
 
-        <div class="tax-box">
-          <strong>가능 서비스</strong>
-          <p class="tax-help">지금 가능한 일을 골라주세요. 나중에 관리자 화면에서 바꿀 수 있습니다.</p>
-          <div class="form-grid">
-            <label class="checkline"><input id="supportsMove" type="checkbox" checked /> 이사</label>
-            <label class="checkline"><input id="supportsClean" type="checkbox" /> 청소</label>
-            <label class="checkline"><input id="supportsYd" type="checkbox" /> 용달</label>
+        <details class="tax-box service-toggle" open>
+          <summary>
+            <strong>가능 서비스 선택</strong>
+            <span class="agreement-summary">눌러서 서비스를 고릅니다.</span>
+          </summary>
+          <p class="tax-help">지금 가능한 일을 골라주세요. 폐기물, 설치처럼 서비스가 늘어나도 여기서 같이 고르면 됩니다.</p>
+          <div class="service-chip-grid">
+            <label class="service-chip"><input data-service-option type="checkbox" value="move" checked /><span><strong>이사</strong><small>원룸, 소형이사</small></span></label>
+            <label class="service-chip"><input data-service-option type="checkbox" value="clean" /><span><strong>청소</strong><small>입주청소, 정리</small></span></label>
+            <label class="service-chip"><input data-service-option type="checkbox" value="yd" /><span><strong>용달</strong><small>1층 이동, 간편 용달</small></span></label>
+            <label class="service-chip"><input data-service-option type="checkbox" value="waste" /><span><strong>폐기물</strong><small>수거, 정리</small></span></label>
+            <label class="service-chip"><input data-service-option type="checkbox" value="install" /><span><strong>설치</strong><small>가전, 가구 설치</small></span></label>
           </div>
-        </div>
+        </details>
 
         <textarea id="payoutNote" rows="3" placeholder="정산 메모가 있으면 적어주세요."></textarea>
 

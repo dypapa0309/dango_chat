@@ -6,7 +6,7 @@ const CONTRACT_VERSION = '2026-03-21-v1';
 async function loadDriverByToken(supabase, token) {
   const { data, error } = await supabase
     .from('drivers')
-    .select('id, name, phone, vehicle_type, vehicle_note, vehicle_number, bank_name, account_number, account_holder, payout_enabled, payout_note, dispatch_enabled, status, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed, supports_move, supports_clean, supports_yd')
+    .select('id, name, phone, vehicle_type, vehicle_note, vehicle_number, bank_name, account_number, account_holder, payout_enabled, payout_note, dispatch_enabled, status, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed, supports_move, supports_clean, supports_yd, supported_services')
     .eq('join_token', token)
     .single();
   if (error) throw error;
@@ -47,6 +47,7 @@ export async function handler(event) {
       supportsMove,
       supportsClean,
       supportsYd,
+      supportedServices,
       commercialPlateConfirmed,
       contractAgreed,
       taxWithholdingAgreed
@@ -60,6 +61,15 @@ export async function handler(event) {
     if (!(taxBirthDate || '').trim()) return fail('생년월일을 입력해주세요.');
     if (!(taxIdNumber || '').trim()) return fail('세금 식별번호를 입력해주세요.');
     if (!(taxAddress || '').trim()) return fail('세금 신고용 주소를 입력해주세요.');
+
+    const normalizedServices = Array.isArray(supportedServices)
+      ? supportedServices.filter(Boolean)
+      : [
+          supportsMove ? 'move' : null,
+          supportsClean ? 'clean' : null,
+          supportsYd ? 'yd' : null
+        ].filter(Boolean);
+    if (!normalizedServices.length) return fail('가능 서비스는 하나 이상 선택해주세요.');
 
     const driver = await loadDriverByToken(supabase, token);
 
@@ -81,9 +91,10 @@ export async function handler(event) {
         tax_address: (taxAddress || '').trim() || null,
         tax_withholding_type: 'freelancer_3_3',
         tax_withholding_agreed: true,
-        supports_move: Boolean(supportsMove),
-        supports_clean: Boolean(supportsClean),
-        supports_yd: Boolean(supportsYd),
+        supports_move: normalizedServices.includes('move'),
+        supports_clean: normalizedServices.includes('clean'),
+        supports_yd: normalizedServices.includes('yd'),
+        supported_services: normalizedServices,
         commercial_plate_confirmed: true,
         consign_contract_agreed: true,
         consign_contract_version: CONTRACT_VERSION,
@@ -92,7 +103,7 @@ export async function handler(event) {
         updated_by: 'driver-join'
       })
       .eq('id', driver.id)
-      .select('id, name, phone, vehicle_type, vehicle_number, bank_name, account_number, account_holder, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed, supports_move, supports_clean, supports_yd')
+      .select('id, name, phone, vehicle_type, vehicle_number, bank_name, account_number, account_holder, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed, supports_move, supports_clean, supports_yd, supported_services')
       .single();
 
     if (error) throw error;

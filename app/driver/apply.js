@@ -4,9 +4,7 @@
   const contractAgreed = document.getElementById('contractAgreed');
   const commercialPlateConfirmed = document.getElementById('commercialPlateConfirmed');
   const taxWithholdingAgreed = document.getElementById('taxWithholdingAgreed');
-  const supportsMove = document.getElementById('supportsMove');
-  const supportsClean = document.getElementById('supportsClean');
-  const supportsYd = document.getElementById('supportsYd');
+  const serviceInputs = [...document.querySelectorAll('[data-service-option]')];
 
   const fields = {
     name: document.getElementById('driverName'),
@@ -24,17 +22,17 @@
     taxAddress: document.getElementById('taxAddress')
   };
 
+  const getSelectedServices = () => serviceInputs.filter((input) => input.checked).map((input) => input.value);
+
   function syncButton() {
-    const hasService = supportsMove.checked || supportsClean.checked || supportsYd.checked;
+    const hasService = getSelectedServices().length > 0;
     joinBtn.disabled = !(contractAgreed.checked && commercialPlateConfirmed.checked && taxWithholdingAgreed.checked && hasService);
   }
 
   contractAgreed.addEventListener('change', syncButton);
   commercialPlateConfirmed.addEventListener('change', syncButton);
   taxWithholdingAgreed.addEventListener('change', syncButton);
-  supportsMove.addEventListener('change', syncButton);
-  supportsClean.addEventListener('change', syncButton);
-  supportsYd.addEventListener('change', syncButton);
+  serviceInputs.forEach((input) => input.addEventListener('change', syncButton));
 
   joinBtn.onclick = async () => {
     joinBtn.disabled = true;
@@ -54,15 +52,13 @@
       taxIdNumber: fields.taxIdNumber.value.trim(),
       taxEmail: fields.taxEmail.value.trim(),
       taxAddress: fields.taxAddress.value.trim(),
-      supportsMove: supportsMove.checked,
-      supportsClean: supportsClean.checked,
-      supportsYd: supportsYd.checked,
+      supportedServices: getSelectedServices(),
       commercialPlateConfirmed: commercialPlateConfirmed.checked,
       contractAgreed: contractAgreed.checked,
       taxWithholdingAgreed: taxWithholdingAgreed.checked
     };
 
-    if (!(payload.supportsMove || payload.supportsClean || payload.supportsYd)) {
+    if (!payload.supportedServices.length) {
       resultEl.textContent = '가능 서비스는 하나 이상 선택해주세요.';
       joinBtn.disabled = false;
       joinBtn.textContent = '지원 접수';

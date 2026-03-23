@@ -34,6 +34,7 @@ export async function handler(event) {
       supportsMove,
       supportsClean,
       supportsYd,
+      supportedServices,
       commercialPlateConfirmed,
       contractAgreed,
       taxWithholdingAgreed
@@ -48,6 +49,15 @@ export async function handler(event) {
     if (!(taxBirthDate || '').trim()) return fail('생년월일을 입력해주세요.');
     if (!(taxIdNumber || '').trim()) return fail('세금 식별번호를 입력해주세요.');
     if (!(taxAddress || '').trim()) return fail('세금 신고용 주소를 입력해주세요.');
+
+    const normalizedServices = Array.isArray(supportedServices)
+      ? supportedServices.filter(Boolean)
+      : [
+          supportsMove ? 'move' : null,
+          supportsClean ? 'clean' : null,
+          supportsYd ? 'yd' : null
+        ].filter(Boolean);
+    if (!normalizedServices.length) return fail('가능 서비스는 하나 이상 선택해주세요.');
 
     const supabase = adminClient();
     const phoneValue = normalizePhone(phone);
@@ -81,9 +91,10 @@ export async function handler(event) {
       consign_contract_accepted_at: new Date().toISOString(),
       dispatch_enabled: false,
       payout_enabled: false,
-      supports_move: Boolean(supportsMove),
-      supports_clean: Boolean(supportsClean),
-      supports_yd: Boolean(supportsYd),
+      supports_move: normalizedServices.includes('move'),
+      supports_clean: normalizedServices.includes('clean'),
+      supports_yd: normalizedServices.includes('yd'),
+      supported_services: normalizedServices,
       status: existing?.status === 'active' ? 'active' : 'pending_review'
     };
 
@@ -113,11 +124,7 @@ export async function handler(event) {
         `세금 식별번호: ${(taxIdNumber || '').trim()}`,
         taxEmail ? `세금 이메일: ${taxEmail}` : null,
         `세금 주소: ${(taxAddress || '').trim()}`,
-        `가능 서비스: ${[
-          Boolean(supportsMove) ? '이사' : null,
-          Boolean(supportsClean) ? '청소' : null,
-          Boolean(supportsYd) ? '용달' : null
-        ].filter(Boolean).join(', ') || '미선택'}`,
+        `가능 서비스: ${normalizedServices.join(', ') || '미선택'}`,
         '3.3% 세금 정산 동의: 예',
         '영업용 차량 기준 확인: 예',
         `계약 동의 버전: ${CONTRACT_VERSION}`

@@ -11,6 +11,10 @@ function inferJobServiceType(job) {
 }
 
 function supportsJobService(driver, serviceType) {
+  const supportedServices = Array.isArray(driver?.supported_services)
+    ? driver.supported_services.filter(Boolean)
+    : null;
+  if (supportedServices?.length) return supportedServices.includes(serviceType);
   if (serviceType === 'clean') return Boolean(driver?.supports_clean);
   if (serviceType === 'yd') return Boolean(driver?.supports_yd);
   return Boolean(driver?.supports_move);
