@@ -31,6 +31,9 @@ export async function handler(event) {
       taxIdNumber,
       taxEmail,
       taxAddress,
+      supportsMove,
+      supportsClean,
+      supportsYd,
       commercialPlateConfirmed,
       contractAgreed,
       taxWithholdingAgreed
@@ -78,6 +81,9 @@ export async function handler(event) {
       consign_contract_accepted_at: new Date().toISOString(),
       dispatch_enabled: false,
       payout_enabled: false,
+      supports_move: Boolean(supportsMove),
+      supports_clean: Boolean(supportsClean),
+      supports_yd: Boolean(supportsYd),
       status: existing?.status === 'active' ? 'active' : 'pending_review'
     };
 
@@ -107,6 +113,11 @@ export async function handler(event) {
         `세금 식별번호: ${(taxIdNumber || '').trim()}`,
         taxEmail ? `세금 이메일: ${taxEmail}` : null,
         `세금 주소: ${(taxAddress || '').trim()}`,
+        `가능 서비스: ${[
+          Boolean(supportsMove) ? '이사' : null,
+          Boolean(supportsClean) ? '청소' : null,
+          Boolean(supportsYd) ? '용달' : null
+        ].filter(Boolean).join(', ') || '미선택'}`,
         '3.3% 세금 정산 동의: 예',
         '영업용 차량 기준 확인: 예',
         `계약 동의 버전: ${CONTRACT_VERSION}`

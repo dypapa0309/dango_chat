@@ -8,6 +8,9 @@
   const contractAgreed = document.getElementById('contractAgreed');
   const commercialPlateConfirmed = document.getElementById('commercialPlateConfirmed');
   const taxWithholdingAgreed = document.getElementById('taxWithholdingAgreed');
+  const supportsMove = document.getElementById('supportsMove');
+  const supportsClean = document.getElementById('supportsClean');
+  const supportsYd = document.getElementById('supportsYd');
 
   const fields = {
     name: document.getElementById('driverName'),
@@ -26,12 +29,16 @@
   };
 
   function syncButton() {
-    joinBtn.disabled = !(contractAgreed.checked && commercialPlateConfirmed.checked && taxWithholdingAgreed.checked);
+    const hasService = supportsMove.checked || supportsClean.checked || supportsYd.checked;
+    joinBtn.disabled = !(contractAgreed.checked && commercialPlateConfirmed.checked && taxWithholdingAgreed.checked && hasService);
   }
 
   contractAgreed.addEventListener('change', syncButton);
   commercialPlateConfirmed.addEventListener('change', syncButton);
   taxWithholdingAgreed.addEventListener('change', syncButton);
+  supportsMove.addEventListener('change', syncButton);
+  supportsClean.addEventListener('change', syncButton);
+  supportsYd.addEventListener('change', syncButton);
 
   if (!token) {
     statusEl.innerHTML = '<strong>유효하지 않은 가입 링크입니다.</strong><div>신규 기사 지원은 공용 지원 링크를 사용하고, 기존 등록 기사 온보딩은 운영툴에서 복사한 전체 개별 링크로 다시 열어주세요.</div>';
@@ -59,6 +66,9 @@
     fields.taxIdNumber.value = driver.tax_id_number || '';
     fields.taxEmail.value = driver.tax_email || '';
     fields.taxAddress.value = driver.tax_address || '';
+    supportsMove.checked = driver.supports_move !== false;
+    supportsClean.checked = Boolean(driver.supports_clean);
+    supportsYd.checked = Boolean(driver.supports_yd);
 
     if (driver.consign_contract_agreed && driver.commercial_plate_confirmed && driver.tax_withholding_agreed) {
       contractAgreed.checked = true;
@@ -92,10 +102,20 @@
       taxIdNumber: fields.taxIdNumber.value.trim(),
       taxEmail: fields.taxEmail.value.trim(),
       taxAddress: fields.taxAddress.value.trim(),
+      supportsMove: supportsMove.checked,
+      supportsClean: supportsClean.checked,
+      supportsYd: supportsYd.checked,
       commercialPlateConfirmed: commercialPlateConfirmed.checked,
       contractAgreed: contractAgreed.checked,
       taxWithholdingAgreed: taxWithholdingAgreed.checked
     };
+
+    if (!(payload.supportsMove || payload.supportsClean || payload.supportsYd)) {
+      resultEl.textContent = '가능 서비스는 하나 이상 선택해주세요.';
+      joinBtn.disabled = false;
+      joinBtn.textContent = '가입 완료';
+      return;
+    }
 
     const res = await fetch('/.netlify/functions/driver-join', {
       method: 'POST',

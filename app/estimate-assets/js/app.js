@@ -3063,6 +3063,7 @@ const borderColors = comparison.labels.map((label) =>
       });
 
       return {
+        service_type: state.activeService === SERVICE.CLEAN ? "clean" : "move",
         customer_name: customerName,
         customer_phone: customerPhone,
         customer_note: [

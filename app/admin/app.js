@@ -415,6 +415,33 @@ function parseMoveType(value) {
   return 'normal';
 }
 
+function inferServiceTypeLabel(serviceType) {
+  const map = {
+    move: '이사',
+    clean: '청소',
+    yd: '용달'
+  };
+  return map[serviceType] || serviceType || '-';
+}
+
+function inferServiceTypeFromText(value) {
+  const text = String(value || '').trim();
+  if (text.includes('청소')) return 'clean';
+  if (text.includes('용달')) return 'yd';
+  return 'move';
+}
+
+function renderDriverServiceBadges(driver) {
+  const labels = [
+    driver.supports_move ? '이사' : null,
+    driver.supports_clean ? '청소' : null,
+    driver.supports_yd ? '용달' : null
+  ].filter(Boolean);
+  return labels.length
+    ? `<div class="service-tags">${labels.map((label) => `<span class="service-tag">${label}</span>`).join('')}</div>`
+    : '<div class="service-tags"><span class="service-tag muted-tag">서비스 미선택</span></div>';
+}
+
 function parseFloorFromCarry(value) {
   const text = String(value || '');
   const matches = [...text.matchAll(/(\d+)층/g)].map((match) => Number(match[1]));
@@ -447,6 +474,7 @@ function parseInquiryTextToPayload(rawText, customerName, customerPhone) {
   });
 
   const service = lineMap.get('서비스') || '이사·용달';
+  const serviceType = inferServiceTypeFromText(service);
   const vehicle = lineMap.get('차량') || '';
   const moveTypeText = lineMap.get('이사 방식') || '일반이사';
   const moveType = parseMoveType(moveTypeText);
@@ -512,6 +540,7 @@ function parseInquiryTextToPayload(rawText, customerName, customerPhone) {
   return {
     payload: {
       customer_name: customerName.trim(),
+      service_type: serviceType,
       customer_phone: normalizePhone(customerPhone),
       customer_note: extraNotes.join('\n') || null,
       move_date: moveDate,
@@ -731,6 +760,7 @@ async function loadJobs() {
           <div class="row">${escapeHtml(job.move_date || '-')} · ${escapeHtml(job.customer_phone || '-')}</div>
         </div>
         <div class="badges">
+          <span class="badge">${escapeHtml(inferServiceTypeLabel(job.service_type || (job.option_summary?.cleaning ? 'clean' : 'move')))}</span>
           <span class="badge">${escapeHtml(job.status)}</span>
           <span class="badge">${escapeHtml(job.dispatch_status)}</span>
         </div>
@@ -831,6 +861,7 @@ async function loadDrivers() {
         <strong>${escapeHtml(driver.name || '기사')}</strong>
         <div class="row">${escapeHtml(driver.phone || '-')} / ${escapeHtml(driver.vehicle_type || '-')}</div>
         <div class="row">계약 완료 / 배차 허용 / 완료 ${Number(driver.completed_jobs || 0)}건</div>
+        ${renderDriverServiceBadges(driver)}
       `;
       item.onclick = () => showDriverSummary(driver);
       eligibleList.appendChild(item);
@@ -863,6 +894,7 @@ async function loadDrivers() {
               <strong>기본 상태</strong>
               <div class="row">차량 ${escapeHtml(driver.vehicle_type || '-')} / 번호 ${escapeHtml(driver.vehicle_number || '-')}</div>
               <div class="row">완료 ${Number(driver.completed_jobs || 0)}건</div>
+              ${renderDriverServiceBadges(driver)}
               <div class="settlement-meta">
                 <span class="pill ${driver.payout_enabled ? 'ok' : 'off'}">${driver.payout_enabled ? '정산 가능' : '정산 보류'}</span>
                 <span class="pill ${driver.tax_withholding_agreed && driver.tax_id_number && driver.tax_address ? 'ok' : 'warn'}">${driver.tax_withholding_agreed && driver.tax_id_number && driver.tax_address ? '세금정보 완료' : '세금정보 필요'}</span>
@@ -884,6 +916,9 @@ async function loadDrivers() {
               <option value="active" ${driver.status === 'active' ? 'selected' : ''}>활성</option>
               <option value="inactive" ${driver.status === 'inactive' ? 'selected' : ''}>비활성</option>
             </select>
+            <label class="check check-card"><span class="check-copy">이사 가능</span><input type="checkbox" data-field="supportsMove" ${driver.supports_move ? 'checked' : ''} /></label>
+            <label class="check check-card"><span class="check-copy">청소 가능</span><input type="checkbox" data-field="supportsClean" ${driver.supports_clean ? 'checked' : ''} /></label>
+            <label class="check check-card"><span class="check-copy">용달 가능</span><input type="checkbox" data-field="supportsYd" ${driver.supports_yd ? 'checked' : ''} /></label>
             <label class="check check-card"><span class="check-copy">배차 허용</span><input type="checkbox" data-field="dispatchEnabled" ${driver.dispatch_enabled ? 'checked' : ''} /></label>
             <input type="text" data-field="bankName" value="${escapeHtml(driver.bank_name || '')}" placeholder="은행명" />
             <input type="text" data-field="accountHolder" value="${escapeHtml(driver.account_holder || '')}" placeholder="예금주" />
@@ -945,6 +980,9 @@ async function loadDrivers() {
         taxEmail: card.querySelector('[data-field="taxEmail"]').value,
         taxAddress: card.querySelector('[data-field="taxAddress"]').value,
         taxWithholdingAgreed: card.querySelector('[data-field="taxWithholdingAgreed"]').checked,
+        supportsMove: card.querySelector('[data-field="supportsMove"]').checked,
+        supportsClean: card.querySelector('[data-field="supportsClean"]').checked,
+        supportsYd: card.querySelector('[data-field="supportsYd"]').checked,
         internalMemo: card.querySelector('[data-field="internalMemo"]').value
       };
 

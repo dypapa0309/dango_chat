@@ -6,7 +6,7 @@ const CONTRACT_VERSION = '2026-03-21-v1';
 async function loadDriverByToken(supabase, token) {
   const { data, error } = await supabase
     .from('drivers')
-    .select('id, name, phone, vehicle_type, vehicle_note, vehicle_number, bank_name, account_number, account_holder, payout_enabled, payout_note, dispatch_enabled, status, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed')
+    .select('id, name, phone, vehicle_type, vehicle_note, vehicle_number, bank_name, account_number, account_holder, payout_enabled, payout_note, dispatch_enabled, status, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed, supports_move, supports_clean, supports_yd')
     .eq('join_token', token)
     .single();
   if (error) throw error;
@@ -44,6 +44,9 @@ export async function handler(event) {
       taxIdNumber,
       taxEmail,
       taxAddress,
+      supportsMove,
+      supportsClean,
+      supportsYd,
       commercialPlateConfirmed,
       contractAgreed,
       taxWithholdingAgreed
@@ -78,6 +81,9 @@ export async function handler(event) {
         tax_address: (taxAddress || '').trim() || null,
         tax_withholding_type: 'freelancer_3_3',
         tax_withholding_agreed: true,
+        supports_move: Boolean(supportsMove),
+        supports_clean: Boolean(supportsClean),
+        supports_yd: Boolean(supportsYd),
         commercial_plate_confirmed: true,
         consign_contract_agreed: true,
         consign_contract_version: CONTRACT_VERSION,
@@ -86,7 +92,7 @@ export async function handler(event) {
         updated_by: 'driver-join'
       })
       .eq('id', driver.id)
-      .select('id, name, phone, vehicle_type, vehicle_number, bank_name, account_number, account_holder, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed')
+      .select('id, name, phone, vehicle_type, vehicle_number, bank_name, account_number, account_holder, commercial_plate_confirmed, consign_contract_agreed, consign_contract_version, consign_contract_accepted_at, join_token, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed, supports_move, supports_clean, supports_yd')
       .single();
 
     if (error) throw error;

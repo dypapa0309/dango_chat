@@ -4,6 +4,9 @@
   const contractAgreed = document.getElementById('contractAgreed');
   const commercialPlateConfirmed = document.getElementById('commercialPlateConfirmed');
   const taxWithholdingAgreed = document.getElementById('taxWithholdingAgreed');
+  const supportsMove = document.getElementById('supportsMove');
+  const supportsClean = document.getElementById('supportsClean');
+  const supportsYd = document.getElementById('supportsYd');
 
   const fields = {
     name: document.getElementById('driverName'),
@@ -22,12 +25,16 @@
   };
 
   function syncButton() {
-    joinBtn.disabled = !(contractAgreed.checked && commercialPlateConfirmed.checked && taxWithholdingAgreed.checked);
+    const hasService = supportsMove.checked || supportsClean.checked || supportsYd.checked;
+    joinBtn.disabled = !(contractAgreed.checked && commercialPlateConfirmed.checked && taxWithholdingAgreed.checked && hasService);
   }
 
   contractAgreed.addEventListener('change', syncButton);
   commercialPlateConfirmed.addEventListener('change', syncButton);
   taxWithholdingAgreed.addEventListener('change', syncButton);
+  supportsMove.addEventListener('change', syncButton);
+  supportsClean.addEventListener('change', syncButton);
+  supportsYd.addEventListener('change', syncButton);
 
   joinBtn.onclick = async () => {
     joinBtn.disabled = true;
@@ -47,10 +54,20 @@
       taxIdNumber: fields.taxIdNumber.value.trim(),
       taxEmail: fields.taxEmail.value.trim(),
       taxAddress: fields.taxAddress.value.trim(),
+      supportsMove: supportsMove.checked,
+      supportsClean: supportsClean.checked,
+      supportsYd: supportsYd.checked,
       commercialPlateConfirmed: commercialPlateConfirmed.checked,
       contractAgreed: contractAgreed.checked,
       taxWithholdingAgreed: taxWithholdingAgreed.checked
     };
+
+    if (!(payload.supportsMove || payload.supportsClean || payload.supportsYd)) {
+      resultEl.textContent = '가능 서비스는 하나 이상 선택해주세요.';
+      joinBtn.disabled = false;
+      joinBtn.textContent = '지원 접수';
+      return;
+    }
 
     const res = await fetch('/.netlify/functions/driver-apply', {
       method: 'POST',

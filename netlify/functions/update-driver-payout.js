@@ -14,7 +14,7 @@ export async function handler(event) {
   if (denied) return denied;
 
   try {
-    const { driverId, status, dispatchEnabled, bankName, accountNumber, accountHolder, payoutEnabled, payoutNote, internalMemo, taxName, taxBirthDate, taxIdNumber, taxEmail, taxAddress, taxWithholdingAgreed } = parseBody(event);
+    const { driverId, status, dispatchEnabled, bankName, accountNumber, accountHolder, payoutEnabled, payoutNote, internalMemo, taxName, taxBirthDate, taxIdNumber, taxEmail, taxAddress, taxWithholdingAgreed, supportsMove, supportsClean, supportsYd } = parseBody(event);
     if (!driverId) return fail('driverId가 필요합니다.');
 
     const supabase = adminClient();
@@ -33,14 +33,17 @@ export async function handler(event) {
       tax_email: (taxEmail || '').trim() || null,
       tax_address: (taxAddress || '').trim() || null,
       tax_withholding_type: 'freelancer_3_3',
-      tax_withholding_agreed: Boolean(taxWithholdingAgreed)
+      tax_withholding_agreed: Boolean(taxWithholdingAgreed),
+      supports_move: Boolean(supportsMove),
+      supports_clean: Boolean(supportsClean),
+      supports_yd: Boolean(supportsYd)
     };
 
     const { data, error } = await supabase
       .from('drivers')
       .update(payload)
       .eq('id', driverId)
-      .select('id, name, phone, status, dispatch_enabled, bank_name, account_number, account_holder, payout_enabled, payout_note, internal_memo, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed')
+      .select('id, name, phone, status, dispatch_enabled, bank_name, account_number, account_holder, payout_enabled, payout_note, internal_memo, tax_name, tax_birth_date, tax_id_number, tax_email, tax_address, tax_withholding_type, tax_withholding_agreed, supports_move, supports_clean, supports_yd')
       .single();
 
     if (error) throw error;

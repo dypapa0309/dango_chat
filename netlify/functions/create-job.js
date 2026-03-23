@@ -45,6 +45,7 @@ export async function handler(event) {
       : calculated;
 
     const payload = {
+      service_type: body.service_type || (body.option_summary?.cleaning ? 'clean' : 'move'),
       customer_name: body.customer_name,
       customer_phone: body.customer_phone,
       customer_note: body.customer_note || null,

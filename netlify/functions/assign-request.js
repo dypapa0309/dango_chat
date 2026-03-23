@@ -4,6 +4,18 @@ import { env } from '../../shared/env.js';
 import { rankDrivers, dispatchMessage } from '../../shared/dispatch.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 
+function inferJobServiceType(job) {
+  if (job?.service_type) return job.service_type;
+  if (job?.option_summary?.cleaning) return 'clean';
+  return 'move';
+}
+
+function supportsJobService(driver, serviceType) {
+  if (serviceType === 'clean') return Boolean(driver?.supports_clean);
+  if (serviceType === 'yd') return Boolean(driver?.supports_yd);
+  return Boolean(driver?.supports_move);
+}
+
 export async function handler(event) {
   const opt = handleOptions(event);
   if (opt) return opt;
@@ -16,6 +28,7 @@ export async function handler(event) {
     const supabase = adminClient();
     const { data: job, error: jobError } = await supabase.from('jobs').select('*').eq('id', jobId).single();
     if (jobError) throw jobError;
+    const jobServiceType = inferJobServiceType(job);
 
     const { data: existingActiveAssignment, error: existingActiveAssignmentError } = await supabase
       .from('assignments')
@@ -43,11 +56,14 @@ export async function handler(event) {
       if (!data?.consign_contract_agreed || !data?.commercial_plate_confirmed) {
         return fail('기사 가입과 위탁운송 계약 동의가 끝난 기사만 배차할 수 있습니다.');
       }
+      if (!supportsJobService(data, jobServiceType)) {
+        return fail('이 주문 서비스에 맞는 기사만 배차할 수 있습니다.');
+      }
       selectedDriver = data;
     } else {
       const { data: drivers, error } = await supabase.from('drivers').select('*');
       if (error) throw error;
-      const eligibleDrivers = (drivers || []).filter((driver) => driver?.consign_contract_agreed && driver?.commercial_plate_confirmed);
+      const eligibleDrivers = (drivers || []).filter((driver) => driver?.consign_contract_agreed && driver?.commercial_plate_confirmed && supportsJobService(driver, jobServiceType));
       const ranked = rankDrivers(job, eligibleDrivers);
       selectedDriver = ranked[0];
 
@@ -58,15 +74,17 @@ export async function handler(event) {
           activeDrivers: allDrivers.filter((driver) => driver.status === 'active').length,
           dispatchEnabledDrivers: allDrivers.filter((driver) => driver.dispatch_enabled).length,
           contractReadyDrivers: allDrivers.filter((driver) => driver?.consign_contract_agreed && driver?.commercial_plate_confirmed).length,
+          serviceMatchedDrivers: allDrivers.filter((driver) => supportsJobService(driver, jobServiceType)).length,
           fullyEligibleDrivers: allDrivers.filter((driver) =>
             driver.status === 'active' &&
             driver.dispatch_enabled &&
             driver?.consign_contract_agreed &&
-            driver?.commercial_plate_confirmed
+            driver?.commercial_plate_confirmed &&
+            supportsJobService(driver, jobServiceType)
           ).length
         };
         return fail(
-          `배차 가능한 기사가 없습니다. 활성 ${diagnostics.activeDrivers}명 / 배차허용 ${diagnostics.dispatchEnabledDrivers}명 / 계약완료 ${diagnostics.contractReadyDrivers}명 / 최종가능 ${diagnostics.fullyEligibleDrivers}명`,
+          `배차 가능한 기사가 없습니다. 서비스일치 ${diagnostics.serviceMatchedDrivers}명 / 활성 ${diagnostics.activeDrivers}명 / 배차허용 ${diagnostics.dispatchEnabledDrivers}명 / 계약완료 ${diagnostics.contractReadyDrivers}명 / 최종가능 ${diagnostics.fullyEligibleDrivers}명`,
           JSON.stringify(diagnostics),
           400
         );
