@@ -177,7 +177,7 @@
         washer: { label: "세탁기 청소", base: 90000 },
         dryer: { label: "건조기 청소", base: 80000 },
         fridge: { label: "냉장고 청소", base: 70000 },
-        mattress: { label: "매트리스 청소", base: 70000 }
+        kitchen: { label: "주방가전 청소", base: 85000 }
       },
       detailLabel: "모델명이나 오염 상태를 적어주세요.",
       optionLabels: {
@@ -192,11 +192,11 @@
     interior: {
       categories: {
         partial: { label: "부분 인테리어", base: 180000 },
-        wallpaper: { label: "도배·필름", base: 160000 },
-        floor: { label: "바닥·장판", base: 170000 },
-        bathroom: { label: "욕실 정비", base: 220000 }
+        wallpaper: { label: "도배·장판", base: 160000 },
+        repair: { label: "집수리·보수", base: 150000 },
+        consulting: { label: "상담·실측", base: 90000 }
       },
-      detailLabel: "희망 범위나 사진 설명을 적어주세요.",
+      detailLabel: "희망 범위나 평수, 사진 설명을 적어주세요.",
       optionLabels: {
         visitEstimate: "실측이 먼저 필요해요",
         homeVisit: "현장 방문 상담이 필요해요",
@@ -208,10 +208,10 @@
     },
     interior_help: {
       categories: {
-        cleanup: { label: "현장 정리 보조", base: 90000 },
-        materials: { label: "자재 이동 보조", base: 100000 },
-        finishing: { label: "마감 보조", base: 110000 },
-        site: { label: "현장 상주 보조", base: 120000 }
+        material: { label: "자재 운반 보조", base: 100000 },
+        moving: { label: "가구·집기 이동 보조", base: 90000 },
+        cleanup: { label: "철거 후 정리 보조", base: 110000 },
+        daily: { label: "하루 현장 보조", base: 130000 }
       },
       detailLabel: "필요한 보조 작업을 적어주세요.",
       optionLabels: {
@@ -225,10 +225,10 @@
     },
     pt: {
       categories: {
-        body: { label: "체형·체력 관리 PT", base: 70000 },
+        personal: { label: "개인 PT", base: 70000 },
+        duo: { label: "커플·2인 PT", base: 90000 },
         diet: { label: "다이어트 PT", base: 75000 },
-        rehab: { label: "재활·교정 PT", base: 85000 },
-        group: { label: "2인 이상 PT", base: 90000 }
+        balance: { label: "근력·체형 교정", base: 80000 }
       },
       detailLabel: "운동 목적이나 희망 강도를 적어주세요.",
       optionLabels: {
@@ -244,8 +244,8 @@
       categories: {
         hobby: { label: "취미 보컬", base: 60000 },
         audition: { label: "오디션·입시 보컬", base: 85000 },
-        recording: { label: "녹음·발성 코칭", base: 70000 },
-        beginner: { label: "기초 보컬", base: 55000 }
+        event: { label: "축가·행사용", base: 70000 },
+        recording: { label: "녹음·디렉팅", base: 75000 }
       },
       detailLabel: "희망 장르나 목표를 적어주세요.",
       optionLabels: {
@@ -259,9 +259,9 @@
     },
     golf: {
       categories: {
-        beginner: { label: "입문 레슨", base: 70000 },
-        screen: { label: "스크린 분석 레슨", base: 80000 },
+        basic: { label: "입문 레슨", base: 70000 },
         field: { label: "필드 레슨", base: 120000 },
+        shortgame: { label: "숏게임 교정", base: 85000 },
         swing: { label: "스윙 교정", base: 85000 }
       },
       detailLabel: "현재 구력이나 목표를 적어주세요.",
