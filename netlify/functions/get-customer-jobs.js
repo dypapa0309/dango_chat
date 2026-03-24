@@ -28,7 +28,7 @@ export async function handler(event) {
     const supabase = adminClient();
     const { data, error } = await supabase
       .from('jobs')
-      .select('id, customer_name, customer_phone, move_date, start_address, end_address, total_price, company_amount, driver_amount, status, dispatch_status, created_at, customer_complete_token, customer_cancel_token, payments(status, amount, paid_at), assignments(status, drivers(name, phone, vehicle_type, vehicle_number))')
+      .select('id, customer_name, customer_phone, service_type, move_date, start_address, end_address, total_price, status, dispatch_status, created_at, customer_complete_token, customer_cancel_token, payments(status, amount, paid_at), assignments(status, drivers(name, phone, vehicle_type, vehicle_number))')
       .eq('customer_name', name)
       .eq('customer_phone', phone)
       .is('archived_at', null)

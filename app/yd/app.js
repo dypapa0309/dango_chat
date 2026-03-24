@@ -1,5 +1,4 @@
 (() => {
-  const PHONE_NUMBER = '01075416143';
   const HELPER_FEE = 10000;
   const RIDER_FEE = 20000;
   const BASE_VEHICLE_FEE = 30000;
@@ -93,7 +92,12 @@
     helperFeeText: $('#helperFeeText'),
     rideFeeText: $('#rideFeeText'),
     totalFeeText: $('#totalFeeText'),
-    smsBtn: $('#smsBtn'),
+    checkoutBtn: $('#checkoutBtn'),
+    checkoutModal: $('#checkoutStartModal'),
+    checkoutCustomerName: $('#checkoutCustomerName'),
+    checkoutCustomerPhone: $('#checkoutCustomerPhone'),
+    checkoutInlineMessage: $('#checkoutInlineMessage'),
+    confirmCheckoutBtn: $('#confirmCheckoutStart'),
     modal: $('#itemsModal'),
     modalTitle: $('#modalTitle'),
     modalCopy: $('#modalCopy'),
@@ -447,35 +451,102 @@
     renderSummary();
   }
 
-  function smsBody() {
-    const items = currentSelectedEntries();
-    const helperText = [
-      state.helperFrom ? '출발지 도움' : null,
-      state.helperTo ? '도착지 도움' : null,
-    ].filter(Boolean).join(', ') || '없음';
-    const total = totalFee();
-    const deposit = Math.round(total * 0.2);
-    const balance = total - deposit;
-
-    return [
-      '용달 예약 문의',
-      `출발지: ${state.startAddress || '-'}`,
-      `도착지: ${state.endAddress || '-'}`,
-      `이동 날짜: ${state.moveDate || '-'}`,
-      `이동 시간: ${state.moveTime || '-'}`,
-      `거리: ${state.distanceKm > 0 ? `${state.distanceKm.toFixed(1)}km` : '-'}`,
-      `선택 품목: ${items.length ? items.join(', ') : '없음'}`,
-      `기사 도움: ${helperText}`,
-      `동승: ${state.riderSeat ? '1명' : '없음'}`,
-      `예상 용달비: ${formatWon(total)}`,
-      `예약금(20%): ${formatWon(deposit)}`,
-      `잔금(80%): ${formatWon(balance)}`,
-    ].join('\n');
+  function openCheckout() {
+    if (!state.startAddress || !state.endAddress) {
+      alert('출발지와 도착지 주소를 먼저 입력해주세요.');
+      return;
+    }
+    if (state.distanceKm <= 0) {
+      alert('먼저 거리 계산 버튼을 눌러주세요.');
+      return;
+    }
+    if (!state.moveDate) {
+      alert('이동 날짜를 선택해주세요.');
+      return;
+    }
+    els.checkoutModal.hidden = false;
+    els.checkoutModal.setAttribute('aria-hidden', 'false');
   }
 
-  function goSms() {
-    const body = encodeURIComponent(smsBody());
-    window.location.href = `sms:${PHONE_NUMBER}?body=${body}`;
+  function closeCheckout() {
+    els.checkoutModal.hidden = true;
+    els.checkoutModal.setAttribute('aria-hidden', 'true');
+  }
+
+  async function submitCheckout() {
+    const name = (els.checkoutCustomerName.value || '').trim();
+    const phone = (els.checkoutCustomerPhone.value || '').trim();
+    if (!name || !phone) {
+      els.checkoutInlineMessage.textContent = '이름과 연락처를 모두 입력해주세요.';
+      return;
+    }
+
+    const btn = els.confirmCheckoutBtn;
+    btn.disabled = true;
+    btn.textContent = '접수 중이에요...';
+    els.checkoutInlineMessage.textContent = '주문을 등록하고 있어요.';
+
+    const total = totalFee();
+    const driverAmount = Math.round(total * 0.8);
+    const companyAmount = total - driverAmount;
+    const items = currentSelectedEntries();
+    const itemSummary = Object.fromEntries(
+      Object.entries(state.selected).filter(([, qty]) => qty > 0)
+    );
+    const optionSummary = {
+      helper_from: state.helperFrom,
+      helper_to: state.helperTo,
+      rider_seat: state.riderSeat,
+      move_time: state.moveTime || null,
+      distance_km: state.distanceKm,
+      distance_meta: state.distanceMeta
+    };
+    const rawText = [
+      '용달 접수',
+      `출발지: ${state.startAddress}`,
+      `도착지: ${state.endAddress}`,
+      `이동 날짜: ${state.moveDate || '-'}`,
+      `이동 시간: ${state.moveTime || '-'}`,
+      `거리: ${state.distanceKm > 0 ? state.distanceKm.toFixed(1) + 'km' : '-'}`,
+      `선택 품목: ${items.length ? items.join(', ') : '없음'}`,
+      `기사 도움: ${[state.helperFrom ? '출발지' : null, state.helperTo ? '도착지' : null].filter(Boolean).join(', ') || '없음'}`,
+      `동승: ${state.riderSeat ? '1명' : '없음'}`,
+      `예상 금액: ${formatWon(total)}`,
+    ].join('\n');
+
+    try {
+      const res = await fetch('/.netlify/functions/create-job', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          service_type: 'yd',
+          customer_name: name,
+          customer_phone: phone,
+          move_date: state.moveDate || null,
+          start_address: state.startAddress,
+          end_address: state.endAddress,
+          item_summary: itemSummary,
+          option_summary: optionSummary,
+          raw_text: rawText,
+          price_override: {
+            total,
+            deposit: total,
+            balance: 0,
+            driverAmount,
+            companyAmount,
+            version: 'yd-v1'
+          },
+          created_by: 'yd-form'
+        })
+      });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || '주문 생성에 실패했어요.');
+      window.location.href = `/customer/pay.html?jobId=${encodeURIComponent(data.job.id)}`;
+    } catch (err) {
+      els.checkoutInlineMessage.textContent = err.message || '오류가 발생했어요. 다시 시도해주세요.';
+      btn.disabled = false;
+      btn.textContent = '전체 결제하고 접수하기';
+    }
   }
 
   $$('.size-card').forEach((btn) =>
@@ -523,7 +594,11 @@
     renderFees();
   });
 
-  els.smsBtn.addEventListener('click', goSms);
+  els.checkoutBtn.addEventListener('click', openCheckout);
+  els.confirmCheckoutBtn.addEventListener('click', submitCheckout);
+  els.checkoutModal.addEventListener('click', (e) => {
+    if (e.target.closest('[data-close-checkout-modal]')) closeCheckout();
+  });
   els.modalConfirmBtn.addEventListener('click', closeModal);
 
   els.modal.addEventListener('click', (e) => {

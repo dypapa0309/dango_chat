@@ -2,6 +2,7 @@ import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 
 const CONTRACT_VERSION = '2026-03-21-v1';
+const VEHICLE_SERVICES = ['move', 'yd', 'waste', 'install', 'interior', 'interior_help'];
 
 async function loadDriverByToken(supabase, token) {
   const { data, error } = await supabase
@@ -55,7 +56,6 @@ export async function handler(event) {
 
     if (!token) return fail('token이 필요합니다.');
     if (!contractAgreed) return fail('위탁운송 계약 동의가 필요합니다.');
-    if (!commercialPlateConfirmed) return fail('영업용 차량 확인이 필요합니다.');
     if (!taxWithholdingAgreed) return fail('3.3% 세금 정산 동의가 필요합니다.');
     if (!(taxName || '').trim()) return fail('세금 신고용 이름을 입력해주세요.');
     if (!(taxBirthDate || '').trim()) return fail('생년월일을 입력해주세요.');
@@ -70,6 +70,9 @@ export async function handler(event) {
           supportsYd ? 'yd' : null
         ].filter(Boolean);
     if (!normalizedServices.length) return fail('가능 서비스는 하나 이상 선택해주세요.');
+
+    const hasVehicleService = normalizedServices.some((s) => VEHICLE_SERVICES.includes(s));
+    if (hasVehicleService && !commercialPlateConfirmed) return fail('영업용 차량 기준과 자격 요건 확인이 필요합니다.');
 
     const driver = await loadDriverByToken(supabase, token);
 
@@ -95,7 +98,7 @@ export async function handler(event) {
         supports_clean: normalizedServices.includes('clean'),
         supports_yd: normalizedServices.includes('yd'),
         supported_services: normalizedServices,
-        commercial_plate_confirmed: true,
+        commercial_plate_confirmed: hasVehicleService ? true : false,
         consign_contract_agreed: true,
         consign_contract_version: CONTRACT_VERSION,
         consign_contract_accepted_at: new Date().toISOString(),

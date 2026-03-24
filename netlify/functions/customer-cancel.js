@@ -47,11 +47,12 @@ export async function handler(event) {
       return fail('이미 작업이 시작되었거나 완료되어 자동 취소할 수 없습니다.');
     }
 
-    const paidPayment = (job.payments || []).find((payment) => payment.status === 'paid');
+    const paidPayment = (job.payments || []).find((p) => p.status === 'paid' || p.status === 'refunded');
+    const alreadyRefunded = paidPayment?.status === 'refunded';
     const secretKey = env('TOSS_SECRET_KEY', 'TOSS_WIDGET_SECRET_KEY');
     let cancelPayload = null;
 
-    if (paidPayment?.transaction_key && secretKey) {
+    if (!alreadyRefunded && paidPayment?.transaction_key && secretKey) {
       const cancelRes = await fetch(`https://api.tosspayments.com/v1/payments/${encodeURIComponent(paidPayment.transaction_key)}/cancel`, {
         method: 'POST',
         headers: {
@@ -76,6 +77,8 @@ export async function handler(event) {
           meta: { ...(paidPayment.meta || {}), cancel: cancelJson }
         })
         .eq('id', paidPayment.id);
+    } else if (alreadyRefunded) {
+      cancelPayload = paidPayment.meta?.cancel || { refunded: true };
     }
 
     await supabase

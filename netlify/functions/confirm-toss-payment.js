@@ -38,7 +38,18 @@ export async function handler(event) {
     const { data: existingPayment, error: existingPaymentError } = await paymentLookup;
     if (existingPaymentError) throw existingPaymentError;
     if (existingPayment) {
-      return ok({ payment: existingPayment, toss: existingPayment.meta || null, duplicated: true });
+      const { data: existingJob } = await supabase
+        .from('jobs')
+        .select('customer_complete_token, customer_cancel_token')
+        .eq('id', jobId)
+        .single();
+      return ok({
+        payment: existingPayment,
+        toss: existingPayment.meta || null,
+        duplicated: true,
+        customerCompleteToken: existingJob?.customer_complete_token || null,
+        customerCancelToken: existingJob?.customer_cancel_token || null
+      });
     }
 
     const secretKey = env('TOSS_SECRET_KEY', 'TOSS_WIDGET_SECRET_KEY');
@@ -102,7 +113,7 @@ export async function handler(event) {
 
     const { data: job } = await supabase
       .from('jobs')
-      .select('*')
+      .select('*, customer_complete_token, customer_cancel_token')
       .eq('id', jobId)
       .single();
 
@@ -139,7 +150,12 @@ export async function handler(event) {
       }
     }
 
-    return ok({ payment, toss: paymentPayload });
+    return ok({
+      payment,
+      toss: paymentPayload,
+      customerCompleteToken: job?.customer_complete_token || null,
+      customerCancelToken: job?.customer_cancel_token || null
+    });
   } catch (error) {
     return fail(
       '토스 결제 승인 실패',

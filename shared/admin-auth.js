@@ -25,9 +25,7 @@ export function requireAdmin(event) {
   if (!provided || provided !== expected) {
     console.warn('ADMIN_AUTH_MISMATCH', {
       provided: maskToken(provided),
-      expected: maskToken(expected),
-      providedLength: String(provided || '').length,
-      expectedLength: String(expected || '').length
+      expected: maskToken(expected)
     });
     return json({ success: false, error: '관리자 인증이 필요해요.' }, 401);
   }

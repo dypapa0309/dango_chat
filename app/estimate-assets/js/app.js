@@ -62,6 +62,11 @@
         const raw = localStorage.getItem(ATTR_KEY);
         if (!raw) return { source: "direct", medium: null, campaign: null };
         const parsed = JSON.parse(raw);
+        const capturedAt = parsed?.capturedAt ? new Date(parsed.capturedAt).getTime() : null;
+        if (capturedAt && Date.now() - capturedAt > 7 * 24 * 60 * 60 * 1000) {
+          localStorage.removeItem(ATTR_KEY);
+          return { source: "direct", medium: null, campaign: null };
+        }
         return {
           source: parsed?.source || "direct",
           medium: parsed?.medium || null,

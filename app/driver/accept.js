@@ -6,6 +6,7 @@
   const qs = new URLSearchParams(location.search);
   const token = qs.get('token');
   const info = document.getElementById('jobInfo');
+  const expiryCountdown = document.getElementById('expiryCountdown');
   const agreementGate = document.getElementById('agreementGate');
   const progressPanel = document.getElementById('progressPanel');
   const progressText = document.getElementById('progressText');
@@ -129,13 +130,18 @@
     departBtn.disabled = arriveBtn.disabled = startBtn.disabled = requestCompleteBtn.disabled = disabled;
   }
 
+  const JOB_STATUS_LABEL = { draft: '임시저장', deposit_pending: '결제대기', confirmed: '결제완료', assigned: '기사배정', in_progress: '작업중', completed: '완료', canceled: '취소됨' };
+  const DISPATCH_STATUS_LABEL = { idle: '배차대기', requesting: '기사연결중', accepted: '기사수락', driver_departed: '기사출발', driver_arrived: '기사도착', in_progress: '작업중', completion_requested: '완료요청', completed: '완료', canceled: '취소됨', reassign_needed: '재배차필요' };
+
   function renderProgress(progress) {
     if (!progress) {
       progressPanel.hidden = true;
       return;
     }
     progressPanel.hidden = false;
-    progressText.textContent = `주문 ${progress.status || '-'} / 배차 ${progress.dispatchStatus || '-'}`;
+    const statusLabel = JOB_STATUS_LABEL[progress.status] || progress.status || '-';
+    const dispatchLabel = DISPATCH_STATUS_LABEL[progress.dispatchStatus] || progress.dispatchStatus || '-';
+    progressText.textContent = `주문 ${statusLabel} / 배차 ${dispatchLabel}`;
     departBtn.hidden = !progress.canDepart;
     arriveBtn.hidden = !progress.canArrive;
     startBtn.hidden = !progress.canStart;
@@ -172,9 +178,9 @@
     if (data.agreementRequired) {
       agreementGate.hidden = false;
       agreementGate.innerHTML = `
-        <div><strong>먼저 기사 가입과 위탁운송 계약 동의가 필요해요.</strong></div>
-        <div style="margin-top:8px;">영업용 차량 기준 확인과 계약 동의가 끝나야 배차 응답을 할 수 있어요.</div>
-        ${data.joinUrl ? `<a class="btn primary link-btn" href="${data.joinUrl}">기사 가입하고 계약 동의하기</a>` : ''}
+        <div><strong>먼저 전문가 가입과 위탁운송 계약 동의가 필요해요.</strong></div>
+        <div style="margin-top:8px;">계약 동의가 끝나야 배차 응답을 할 수 있어요.</div>
+        ${data.joinUrl ? `<a class="btn primary link-btn" href="${data.joinUrl}">전문가 가입하고 계약 동의하기</a>` : ''}
       `;
       disablePrimary(true);
       disableProgress(true);
@@ -185,9 +191,12 @@
     if (data.accepted) {
       disablePrimary(true);
       renderProgress(data.progress);
+      if (countdownInterval) clearInterval(countdownInterval);
+      expiryCountdown.hidden = true;
     } else {
       disablePrimary(false);
       progressPanel.hidden = true;
+      startCountdown(data.assignment?.expires_at);
     }
 
     return data;
@@ -211,6 +220,30 @@
     result.textContent = data.message || '처리되었습니다.';
     await loadAssignment();
     disableProgress(false);
+  }
+
+  let countdownInterval = null;
+
+  function startCountdown(expiresAt) {
+    if (countdownInterval) clearInterval(countdownInterval);
+    if (!expiresAt) return;
+
+    function tick() {
+      const remaining = Math.max(0, new Date(expiresAt) - Date.now());
+      if (remaining <= 0) {
+        clearInterval(countdownInterval);
+        expiryCountdown.textContent = '응답 시간이 초과됐어요. 페이지를 새로고침해주세요.';
+        expiryCountdown.hidden = false;
+        disablePrimary(true);
+        return;
+      }
+      const mins = Math.floor(remaining / 60000);
+      const secs = Math.floor((remaining % 60000) / 1000);
+      expiryCountdown.textContent = `응답 가능 시간: ${mins}분 ${String(secs).padStart(2, '0')}초`;
+      expiryCountdown.hidden = false;
+    }
+    tick();
+    countdownInterval = setInterval(tick, 1000);
   }
 
   acceptBtn.onclick = () => respond('accept');

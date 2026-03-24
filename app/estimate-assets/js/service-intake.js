@@ -848,8 +848,8 @@
     readState();
     if (step === 1) return Boolean(state.category);
     if (step === 2) {
-      if (SERVICE === "errand") return (!!state.address || !!state.extraAddress) && !!state.moveDate;
-      return !!state.address && !!state.moveDate;
+      if (SERVICE === "errand") return (!!state.address || !!state.extraAddress) && !!state.moveDate && !!state.timeSlot;
+      return !!state.address && !!state.moveDate && !!state.timeSlot;
     }
     if (step === 3) {
       if (SERVICE === "waste") return Object.values(state.wasteItems).some((value) => Number(value || 0) > 0);
@@ -1170,8 +1170,20 @@
       button.addEventListener("click", () => {
         const input = document.getElementById(button.dataset.stepper);
         if (!input) return;
-        const value = Math.max(Number(input.min || 0), Number(input.value || 0) + Number(button.dataset.dir || 0));
+        const min = Number(input.min || 0);
+        const max = input.max ? Number(input.max) : 99;
+        const value = Math.min(max, Math.max(min, Number(input.value || 0) + Number(button.dataset.dir || 0)));
         input.value = String(value);
+        renderPrice();
+      });
+    });
+    $$(".stepper-input").forEach((input) => {
+      input.addEventListener("change", () => {
+        const min = Number(input.min || 0);
+        const max = input.max ? Number(input.max) : 99;
+        const clamped = Math.min(max, Math.max(min, Number(input.value || min)));
+        if (!Number.isFinite(clamped)) { input.value = String(min); }
+        else { input.value = String(clamped); }
         renderPrice();
       });
     });

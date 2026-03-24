@@ -47,7 +47,7 @@
   <nav class="topnav" aria-label="고객 이동 메뉴">
     <a href="/">홈화면</a>
     <a href="/estimate/">소형이사</a>
-    <a href="/ddclean/">소형청소</a>
+    <a href="/ddclean/">입주청소</a>
     <a href="/yd/">용달</a>
   </nav>
   <main class="wrap">
@@ -71,8 +71,31 @@
     const resultList = document.getElementById('resultList');
     const money = (value) => `${Number(value || 0).toLocaleString()}원`;
 
+    const STATUS_LABEL = {
+      draft: '임시 저장', deposit_pending: '결제 대기', confirmed: '결제 완료',
+      assigned: '기사 배정됨', in_progress: '작업 중', completed: '완료', canceled: '취소됨', archived: '보관됨'
+    };
+    const DISPATCH_LABEL = {
+      idle: '배차 대기', requesting: '기사 연결 중', accepted: '기사 수락', driver_departed: '기사 출발',
+      driver_arrived: '기사 도착', in_progress: '작업 중', completion_requested: '완료 요청',
+      completed: '완료', canceled: '취소됨', reassign_needed: '재배차 필요'
+    };
+    const SERVICE_LABEL = {
+      move: '소형이사', clean: '입주청소', yd: '용달', waste: '폐기물',
+      install: '설치', errand: '심부름', organize: '정리수납', ac_clean: '에어컨청소',
+      appliance_clean: '가전청소', interior: '인테리어', interior_help: '인테리어 보조',
+      pt: 'PT', vocal: '보컬', golf: '골프', tutor: '과외', counseling: '심리상담'
+    };
+
     function escapeHtml(value) {
       return String(value || '').replace(/[&<>\"]/g, (m) => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;' }[m]));
+    }
+
+    function addressLine(job) {
+      const start = job.start_address || '-';
+      const end = job.end_address;
+      if (!end) return escapeHtml(start);
+      return `${escapeHtml(start)} → ${escapeHtml(end)}`;
     }
 
     function renderJobs(jobs) {
@@ -89,18 +112,22 @@
         if (job.actions?.canComplete) actions.push(`<a class="btn ghost" href="/customer/complete.html?token=${encodeURIComponent(job.customer_complete_token)}">완료 확인</a>`);
         if (job.actions?.canCancel) actions.push(`<a class="btn ghost" href="/customer/cancel.html?token=${encodeURIComponent(job.customer_cancel_token)}">취소 요청</a>`);
 
+        const statusText = STATUS_LABEL[job.status] || job.status || '-';
+        const dispatchText = DISPATCH_LABEL[job.dispatch_status] || job.dispatch_status || '-';
+        const serviceText = SERVICE_LABEL[job.service_type] || job.service_type || '서비스';
+
         const card = document.createElement('article');
         card.className = 'job-card';
         card.innerHTML = `
           <div class="job-top">
-            <strong>${escapeHtml(job.move_date || '날짜 미정')}</strong>
+            <strong>${escapeHtml(serviceText)} · ${escapeHtml(job.move_date || '날짜 미정')}</strong>
             <div class="badges">
-              <span class="badge">${escapeHtml(job.status || '-')}</span>
-              <span class="badge">${escapeHtml(job.dispatch_status || '-')}</span>
+              <span class="badge">${escapeHtml(statusText)}</span>
+              <span class="badge">${escapeHtml(dispatchText)}</span>
             </div>
           </div>
-          <div class="row">${escapeHtml(job.start_address || '-')} → ${escapeHtml(job.end_address || '-')}</div>
-          <div class="row">총 결제 ${money(job.total_price)} / 당고 20% ${money(job.company_amount)} / 기사 80% ${money(job.driver_amount)}</div>
+          <div class="row">${addressLine(job)}</div>
+          <div class="row">총 결제 ${money(job.total_price)}</div>
           <div class="row">${escapeHtml(driverText)}</div>
           ${actions.length ? `<div class="btn-row">${actions.join('')}</div>` : ''}
         `;

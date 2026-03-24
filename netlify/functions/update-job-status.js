@@ -3,6 +3,7 @@ import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 import { requireAdmin } from '../../shared/admin-auth.js';
 
 const ALLOWED = new Set(['draft','deposit_pending','confirmed','assigned','in_progress','completed','canceled']);
+const TERMINAL = new Set(['completed','canceled']);
 
 export async function handler(event) {
   const opt = handleOptions(event);
@@ -19,6 +20,10 @@ export async function handler(event) {
     const supabase = adminClient();
     const { data: before, error: beforeError } = await supabase.from('jobs').select('*').eq('id', jobId).single();
     if (beforeError) throw beforeError;
+
+    if (TERMINAL.has(before.status) && before.status !== status) {
+      return fail(`이미 종료된 주문입니다 (현재 상태: ${before.status}). 상태를 변경하려면 직접 DB를 수정하세요.`);
+    }
 
     const patch = { status, updated_by: 'admin' };
     if (dispatchStatus) patch.dispatch_status = dispatchStatus;

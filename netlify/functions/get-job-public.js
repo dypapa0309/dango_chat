@@ -15,17 +15,12 @@ export async function handler(event) {
       .select(`
         id,
         customer_name,
-        customer_phone,
         move_date,
         start_address,
         end_address,
         total_price,
-        company_amount,
-        driver_amount,
         status,
         dispatch_status,
-        customer_complete_token,
-        customer_cancel_token,
         payments(status, amount, paid_at)
       `)
       .eq('id', jobId)

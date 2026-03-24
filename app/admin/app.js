@@ -1,4 +1,7 @@
-let currentFilter = 'all';
+const FILTER_KEY = 'dang_o_admin_filter';
+let currentFilter = (function () { try { return localStorage.getItem(FILTER_KEY) || 'all'; } catch { return 'all'; } })();
+let currentPage = 0;
+const PAGE_SIZE = 30;
 const ADMIN_TOKEN_KEY = 'dang_o_admin_token';
 let runtimeAdminToken = '';
 const adminPage = document.body?.dataset?.adminPage || 'orders';
@@ -92,6 +95,31 @@ function maskAccountNumber(value) {
   return `${text.slice(0, -4).replace(/[0-9]/g, '*')}${text.slice(-4)}`;
 }
 
+(function initToast() {
+  const style = document.createElement('style');
+  style.textContent = [
+    '#toastStack{position:fixed;bottom:24px;right:24px;display:flex;flex-direction:column-reverse;gap:8px;z-index:9999;pointer-events:none;max-width:380px}',
+    '.toast{padding:12px 16px;border-radius:12px;font-size:13px;font-weight:600;color:#fff;box-shadow:0 4px 20px rgba(0,0,0,.25);pointer-events:auto;cursor:pointer;animation:toastIn .2s ease;line-height:1.5}',
+    '.toast-success{background:#166534}.toast-error{background:#991b1b}.toast-info{background:#1e3a5f}',
+    '@keyframes toastIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}'
+  ].join('');
+  document.head.appendChild(style);
+  const stack = document.createElement('div');
+  stack.id = 'toastStack';
+  document.body.appendChild(stack);
+})();
+
+function showToast(message, type = 'success') {
+  const stack = document.getElementById('toastStack');
+  if (!stack) { showToast(message); return; }
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = message;
+  el.onclick = () => el.remove();
+  stack.appendChild(el);
+  setTimeout(() => el.remove(), type === 'error' ? 5000 : 3000);
+}
+
 function formatDateTime(value) {
   if (!value) return '-';
   const date = new Date(value);
@@ -103,7 +131,7 @@ function renderAssignmentItems(assignments = []) {
   if (!assignments.length) return '<div class="mini-card muted">배차 이력이 아직 없어요.</div>';
   return `<div class="detail-list">${assignments.map((assignment) => `
     <div class="detail-item">
-      <strong>${escapeHtml(assignment.drivers?.name || '기사 미확인')} · ${escapeHtml(assignment.status || '-')}</strong>
+      <strong>${escapeHtml(assignment.drivers?.name || '기사 미확인')} · ${escapeHtml(assignmentStatusLabel(assignment.status))}</strong>
       <div class="row">요청순서 ${Number(assignment.request_order || 0)} / 만료 ${formatDateTime(assignment.expires_at)}</div>
       <div class="row">${escapeHtml(assignment.drivers?.phone || '-')} / 차량 ${escapeHtml(assignment.drivers?.vehicle_type || '-')}</div>
     </div>
@@ -114,7 +142,7 @@ function renderPaymentItems(payments = []) {
   if (!payments.length) return '<div class="mini-card muted">결제 내역이 아직 없어요.</div>';
   return `<div class="detail-list">${payments.map((payment) => `
     <div class="detail-item">
-      <strong>${money(payment.amount)} · ${escapeHtml(payment.status || '-')}</strong>
+      <strong>${money(payment.amount)} · ${escapeHtml(paymentStatusLabel(payment.status))}</strong>
       <div class="row">${escapeHtml(payment.method || payment.payment_type || '-')} / ${formatDateTime(payment.paid_at || payment.created_at)}</div>
     </div>
   `).join('')}</div>`;
@@ -124,7 +152,7 @@ function renderSettlementItems(settlements = []) {
   if (!settlements.length) return '<div class="mini-card muted">정산 내역이 아직 없어요.</div>';
   return `<div class="detail-list">${settlements.map((settlement) => `
     <div class="detail-item">
-      <strong>총 ${money(settlement.amount)} / 세금 ${money(settlement.withholding_amount)} / 실지급 ${money(settlement.net_amount)} · ${escapeHtml(settlement.status || '-')}</strong>
+      <strong>총 ${money(settlement.amount)} / 세금 ${money(settlement.withholding_amount)} / 실지급 ${money(settlement.net_amount)} · ${escapeHtml(settlementStatusLabel(settlement.status))}</strong>
       <div class="row">정산기간 ${escapeHtml(settlement.payout_period_key || settlement.period_key || '-')} / 지급 ${formatDateTime(settlement.paid_at)}</div>
       <div class="row">${escapeHtml(settlement.paid_by || '-')} / ${escapeHtml(settlement.payout_memo || '-')}</div>
     </div>
@@ -135,8 +163,8 @@ function renderLogItems(logs = []) {
   if (!logs.length) return '<div class="mini-card muted">배차 로그가 아직 없어요.</div>';
   return `<div class="detail-list">${logs.map((log) => `
     <div class="detail-item">
-      <strong>${escapeHtml(log.event_type || '-')}</strong>
-      <div class="row">${escapeHtml(log.prev_status || '-')} → ${escapeHtml(log.next_status || '-')}</div>
+      <strong>${escapeHtml(logEventLabel(log.event_type))}</strong>
+      <div class="row">${escapeHtml(jobStatusLabel(log.prev_status) || '-')} → ${escapeHtml(jobStatusLabel(log.next_status) || '-')}</div>
       <div class="row">${formatDateTime(log.created_at)} / ${escapeHtml(log.message || '-')}</div>
     </div>
   `).join('')}</div>`;
@@ -196,7 +224,7 @@ function renderDriverSummaryDetail(driver) {
           <div><span>차량</span><strong>${escapeHtml(driver.vehicle_type || '-')}</strong></div>
           <div><span>차량 번호</span><strong>${escapeHtml(driver.vehicle_number || '-')}</strong></div>
           <div><span>지원 서비스</span><strong>${escapeHtml(normalizeDriverServices(driver).map(inferServiceTypeLabel).join(', ') || '-')}</strong></div>
-          <div><span>상태</span><strong>${escapeHtml(driver.status || '-')}</strong></div>
+          <div><span>상태</span><strong>${escapeHtml(driverStatusLabel(driver.status))}</strong></div>
           <div><span>배차 허용</span><strong>${driver.dispatch_enabled ? '허용' : '꺼짐'}</strong></div>
         </div>
       </section>
@@ -341,7 +369,7 @@ function renderJobDetail(job) {
           <div><span>고객명</span><strong>${escapeHtml(job.customer_name || '-')}</strong></div>
           <div><span>연락처</span><strong>${escapeHtml(job.customer_phone || '-')}</strong></div>
           <div><span>이동일</span><strong>${escapeHtml(job.move_date || '-')}</strong></div>
-          <div><span>상태</span><strong>${escapeHtml(job.status || '-')} / ${escapeHtml(job.dispatch_status || '-')}</strong></div>
+          <div><span>상태</span><strong>${escapeHtml(jobStatusLabel(job.status))} / ${escapeHtml(dispatchStatusLabel(job.dispatch_status))}</strong></div>
           <div><span>출발지</span><strong>${escapeHtml(job.start_address || '-')}</strong></div>
           <div><span>도착지</span><strong>${escapeHtml(job.end_address || '-')}</strong></div>
         </div>
@@ -466,6 +494,39 @@ function inferServiceTypeLabel(serviceType) {
     counseling: '심리상담'
   };
   return map[serviceType] || serviceType || '-';
+}
+
+function jobStatusLabel(s) {
+  return { draft: '임시저장', deposit_pending: '결제대기', confirmed: '결제완료', assigned: '기사배정', in_progress: '작업중', completed: '완료', canceled: '취소됨', archived: '보관됨' }[s] || s || '-';
+}
+
+function dispatchStatusLabel(s) {
+  return { idle: '배차대기', requesting: '기사연결중', accepted: '기사수락', driver_departed: '기사출발', driver_arrived: '기사도착', in_progress: '작업중', completion_requested: '완료요청', completed: '완료', canceled: '취소됨', reassign_needed: '재배차필요' }[s] || s || '-';
+}
+
+function assignmentStatusLabel(s) {
+  return { requested: '요청됨', accepted: '수락', declined: '거절', expired: '만료', canceled: '취소됨', no_response: '무응답' }[s] || s || '-';
+}
+
+function paymentStatusLabel(s) {
+  return { pending: '결제대기', paid: '결제완료', failed: '실패', canceled: '취소', refunded: '환불됨' }[s] || s || '-';
+}
+
+function settlementStatusLabel(s) {
+  return { pending: '정산대기', approved: '지급예정', paid: '지급완료', held: '보류', canceled: '취소' }[s] || s || '-';
+}
+
+function logEventLabel(s) {
+  return {
+    assignment_requested: '배차요청', assignment_accepted: '배차수락', assignment_declined: '배차거절', assignment_expired: '배차만료',
+    assignment_canceled: '배차취소', job_status_updated: '주문상태변경', dispatch_status_updated: '배차상태변경',
+    deposit_paid: '예약금결제', job_completed: '작업완료', job_canceled: '주문취소',
+    driver_departed: '기사출발', driver_arrived: '기사도착', completion_requested: '완료요청'
+  }[s] || s || '-';
+}
+
+function driverStatusLabel(s) {
+  return { active: '활성', inactive: '비활성', suspended: '정지' }[s] || s || '-';
 }
 
 function inferServiceTypeFromText(value) {
@@ -837,10 +898,12 @@ async function loadJobs() {
   const jobCountEl = document.getElementById('jobCount');
   const list = document.getElementById('jobList');
   if (!jobCountEl || !list) return;
-  const res = await adminFetch(`${api('get-jobs')}?status=${encodeURIComponent(currentFilter)}`);
+  const res = await adminFetch(`${api('get-jobs')}?status=${encodeURIComponent(currentFilter)}&page=${currentPage}&limit=${PAGE_SIZE}`);
   const data = await res.json();
   const jobs = data.jobs || [];
-  jobCountEl.textContent = `${jobs.length}건`;
+  const total = data.total || 0;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  jobCountEl.textContent = `${total}건`;
   list.innerHTML = '';
 
   jobs.forEach((job) => {
@@ -855,8 +918,8 @@ async function loadJobs() {
         </div>
         <div class="badges">
           <span class="badge">${escapeHtml(inferServiceTypeLabel(job.service_type || (job.option_summary?.cleaning ? 'clean' : 'move')))}</span>
-          <span class="badge">${escapeHtml(job.status)}</span>
-          <span class="badge">${escapeHtml(job.dispatch_status)}</span>
+          <span class="badge">${escapeHtml(jobStatusLabel(job.status))}</span>
+          <span class="badge">${escapeHtml(dispatchStatusLabel(job.dispatch_status))}</span>
         </div>
       </div>
       <div class="row">${escapeHtml(job.start_address || '-')} → ${escapeHtml(job.end_address || '-')}</div>
@@ -886,6 +949,22 @@ async function loadJobs() {
     });
     list.appendChild(card);
   });
+
+  const pagEl = document.getElementById('jobPagination');
+  if (pagEl) {
+    if (totalPages <= 1) {
+      pagEl.hidden = true;
+    } else {
+      pagEl.hidden = false;
+      pagEl.innerHTML = `
+        <button class="btn" id="btnPrevPage" ${currentPage <= 0 ? 'disabled' : ''}>이전</button>
+        <span style="padding:0 12px;">${currentPage + 1} / ${totalPages}</span>
+        <button class="btn" id="btnNextPage" ${currentPage >= totalPages - 1 ? 'disabled' : ''}>다음</button>
+      `;
+      document.getElementById('btnPrevPage')?.addEventListener('click', () => { currentPage--; loadJobs(); });
+      document.getElementById('btnNextPage')?.addEventListener('click', () => { currentPage++; loadJobs(); });
+    }
+  }
 }
 
 async function loadDrivers() {
@@ -944,7 +1023,7 @@ async function loadDrivers() {
   if (eligibleDriverCountEl) eligibleDriverCountEl.textContent = `${eligibleDrivers.length}명`;
   if (eligibleDriverSummaryEl) {
     eligibleDriverSummaryEl.textContent =
-      `활성 ${drivers.filter((driver) => driver.status === 'active').length}명 / 배차허용 ${drivers.filter((driver) => driver.dispatch_enabled).length}명 / 계약완료 ${drivers.filter((driver) => driver.consign_contract_agreed && driver.commercial_plate_confirmed).length}명`;
+      `활성 ${drivers.filter((driver) => driver.status === 'active').length}명 / 배차허용 ${drivers.filter((driver) => driver.dispatch_enabled).length}명 / 계약완료 ${drivers.filter((driver) => driver.consign_contract_agreed).length}명`;
   }
   if (eligibleList) {
     eligibleList.innerHTML = '';
@@ -985,7 +1064,7 @@ async function loadDrivers() {
           </div>
           <div class="driver-summary-side">
             <span class="pill ${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? 'ok' : 'warn'}">${driver.consign_contract_agreed && driver.commercial_plate_confirmed ? '계약 완료' : '계약 필요'}</span>
-            <span class="pill">${escapeHtml(driver.status || '-')}</span>
+            <span class="pill">${escapeHtml(driverStatusLabel(driver.status))}</span>
           </div>
         </summary>
         <div class="driver-detail-body">
@@ -1045,43 +1124,43 @@ async function loadDrivers() {
     `;
 
       card.querySelector('[data-action="copy-join"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
-        if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
+        if (!driver.join_token) return showToast('기사 가입 토큰이 없어요.', 'error');
         const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
         await navigator.clipboard.writeText(url);
-        alert('기사 가입 링크를 복사했어요.');
+        showToast('기사 가입 링크를 복사했어요.');
       });
 
       card.querySelector('[data-action="copy-message"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
-        if (!driver.join_token) return alert('기사 가입 토큰이 없어요.');
+        if (!driver.join_token) return showToast('기사 가입 토큰이 없어요.', 'error');
         const url = `${location.origin}/driver/join.html?token=${encodeURIComponent(driver.join_token)}`;
         await navigator.clipboard.writeText(buildDriverJoinMessage(driver, url));
-        alert('기사 안내 문구를 복사했어요.');
+        showToast('기사 안내 문구를 복사했어요.');
       });
 
       card.querySelector('[data-action="copy-profile"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
-        if (!driver.join_token) return alert('기사 정보 관리 토큰이 없어요.');
+        if (!driver.join_token) return showToast('기사 정보 관리 토큰이 없어요.', 'error');
         const url = `${location.origin}/driver/profile.html?token=${encodeURIComponent(driver.join_token)}`;
         await navigator.clipboard.writeText(url);
-        alert('기사 정보 관리 링크를 복사했어요.');
+        showToast('기사 정보 관리 링크를 복사했어요.');
       });
 
       card.querySelector('[data-action="copy-profile-message"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
-        if (!driver.join_token) return alert('기사 정보 관리 토큰이 없어요.');
+        if (!driver.join_token) return showToast('기사 정보 관리 토큰이 없어요.', 'error');
         const url = `${location.origin}/driver/profile.html?token=${encodeURIComponent(driver.join_token)}`;
         await navigator.clipboard.writeText(buildDriverProfileMessage(driver, url));
-        alert('기사 정보 관리 문구를 복사했어요.');
+        showToast('기사 정보 관리 문구를 복사했어요.');
       });
 
       card.querySelector('[data-action="copy-guide"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
         const url = `${location.origin}/driver/guide.html`;
         await navigator.clipboard.writeText(buildDriverGuideMessage(url));
-        alert('기사 사용 안내 문구를 복사했어요.');
+        showToast('기사 사용 안내 문구를 복사했어요.');
       });
 
       card.querySelector('[data-action="save-driver"]').onclick = async (e) => withButtonBusy(e.currentTarget, '저장 중...', async () => {
         const supportedServices = readSelectedServiceFields(card);
         if (!supportedServices.length) {
-          alert('지원 서비스는 하나 이상 선택해야 합니다.');
+          showToast('지원 서비스는 하나 이상 선택해야 합니다.', 'error');
           return;
         }
         const payload = {
@@ -1109,8 +1188,8 @@ async function loadDrivers() {
           body: JSON.stringify(payload)
         });
         const saveData = await saveRes.json();
-        if (!saveData.success) return alert(saveData.error || '기사 계좌 저장 실패');
-        alert('기사 정보를 저장했어요.');
+        if (!saveData.success) return showToast(saveData.error || '기사 계좌 저장 실패', 'error');
+        showToast('기사 정보를 저장했어요.');
         loadDrivers();
         loadSettlementDashboard();
       });
@@ -1162,7 +1241,7 @@ async function loadPricingDashboard() {
   const res = await adminFetch(`${api('get-pricing-dashboard')}?hours=50`);
   const data = await res.json();
   if (!data.success) {
-    alert(data.error || '가격 대시보드 조회 실패');
+    showToast(data.error || '가격 대시보드 조회 실패', 'error');
     return;
   }
 
@@ -1225,8 +1304,8 @@ async function markSettlementsPaid(driverId, periodKey) {
     body: JSON.stringify({ driverId, periodKey, paidBy, memo })
   });
   const data = await res.json();
-  if (!data.success) return alert(data.error || '지급 완료 처리 실패');
-  alert(`지급 완료 처리 ${data.count || 0}건 / 총 ${money(data.totalAmount)} / 세금 ${money(data.totalWithholdingAmount)} / 실지급 ${money(data.totalNetAmount)}`);
+  if (!data.success) return showToast(data.error || '지급 완료 처리 실패', 'error');
+  showToast(`지급 완료 처리 ${data.count || 0}건 / 총 ${money(data.totalAmount)} / 세금 ${money(data.totalWithholdingAmount)} / 실지급 ${money(data.totalNetAmount)}`);
   await loadSettlementDashboard();
 }
 
@@ -1239,7 +1318,7 @@ async function loadSettlementDashboard() {
   const res = await adminFetch(api('get-settlement-dashboard'));
   const data = await res.json();
   if (!data.success) {
-    alert(data.error || '정산 대시보드 조회 실패');
+    showToast(data.error || '정산 대시보드 조회 실패', 'error');
     return;
   }
 
@@ -1341,7 +1420,7 @@ async function updateStatus(jobId, status, dispatchStatus, note) {
     body: JSON.stringify({ jobId, status, dispatchStatus, note })
   });
   const data = await res.json();
-  if (!data.success) alert(data.error || '실패');
+  if (!data.success) showToast(data.error || '실패', 'error');
   await loadAll();
 }
 
@@ -1354,9 +1433,9 @@ async function requestAssign(jobId) {
   const data = await res.json();
   if (!data.success) {
     const detail = data.detail ? `\n${data.detail}` : '';
-    return alert(`${data.error || '배차 요청 실패'}${detail}`);
+    return showToast(`${data.error || '배차 요청 실패'}${detail}`, 'error');
   }
-  alert(`배차 요청 완료: ${data.driver?.name || '-'}`);
+  showToast(`배차 요청 완료: ${data.driver?.name || '-'}`);
   await loadAll();
 }
 
@@ -1368,13 +1447,13 @@ async function cancelAssign(jobId) {
   });
   const data = await res.json();
   if (!data.success) {
-    alert(data.error || '취소 실패');
+    showToast(data.error || '취소 실패', 'error');
     return;
   }
   if (Number(data.canceledCount || 0) > 0) {
-    alert(`배차 요청 ${Number(data.canceledCount || 0)}건을 취소했습니다. 현재 상태는 ${data.dispatchStatus || 'idle'}입니다.`);
+    showToast(`배차 요청 ${Number(data.canceledCount || 0)}건을 취소했습니다. 현재 상태는 ${data.dispatchStatus || 'idle'}입니다.`);
   } else {
-    alert(data.message || '취소할 배차 요청이 없어요.');
+    showToast(data.message || '취소할 배차 요청이 없어요.');
   }
   await loadAll();
 }
@@ -1393,20 +1472,20 @@ async function copyCompleteLink(jobId) {
   const res = await adminFetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
   const data = await res.json();
   const token = data.job?.customer_complete_token;
-  if (!token) return alert('고객 완료 토큰이 없어요.');
+  if (!token) return showToast('고객 완료 토큰이 없어요.', 'error');
   const url = `${location.origin}/customer/complete.html?token=${encodeURIComponent(token)}`;
   await navigator.clipboard.writeText(url);
-  alert('고객 완료 링크를 복사했어요.');
+  showToast('고객 완료 링크를 복사했어요.');
 }
 
 async function copyCancelLink(jobId) {
   const res = await adminFetch(`${api('get-job-detail')}?jobId=${encodeURIComponent(jobId)}`);
   const data = await res.json();
   const token = data.job?.customer_cancel_token;
-  if (!token) return alert('고객 취소 토큰이 없어요.');
+  if (!token) return showToast('고객 취소 토큰이 없어요.', 'error');
   const url = `${location.origin}/customer/cancel.html?token=${encodeURIComponent(token)}`;
   await navigator.clipboard.writeText(url);
-  alert('고객 취소 링크를 복사했어요.');
+  showToast('고객 취소 링크를 복사했어요.');
 }
 
 async function loadAll() {
@@ -1459,10 +1538,7 @@ document.addEventListener('DOMContentLoaded', () => {
       showAdminGate('운영 비밀번호를 입력해주세요.');
       return;
     }
-    console.log('ADMIN_LOGIN_ATTEMPT', {
-      tokenPreview: `${token.slice(0, 2)}***${token.slice(-2)}`,
-      tokenLength: token.length
-    });
+    console.log('ADMIN_LOGIN_ATTEMPT', { tokenPreview: `${token.slice(0, 2)}***${token.slice(-2)}` });
     document.getElementById('adminGateMessage').textContent = '운영 비밀번호를 확인하고 있어요.';
     gateSubmitBtn.disabled = true;
     gateSubmitBtn.textContent = '확인 중이에요...';
@@ -1477,10 +1553,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   document.querySelectorAll('.filter').forEach((btn) => {
+    if (btn.dataset.status === currentFilter) btn.classList.add('active');
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter').forEach((b) => b.classList.remove('active'));
       btn.classList.add('active');
       currentFilter = btn.dataset.status;
+      currentPage = 0;
+      try { localStorage.setItem(FILTER_KEY, currentFilter); } catch {}
       loadJobs();
     });
   });
@@ -1490,22 +1569,22 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnCopyRecruitLink')?.addEventListener('click', (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
     const url = `${location.origin}/driver/apply.html`;
     await navigator.clipboard.writeText(url);
-    alert('신규 기사 모집 링크를 복사했어요.');
+    showToast('신규 기사 모집 링크를 복사했어요.');
   }));
   document.getElementById('btnCopyRecruitMessage')?.addEventListener('click', (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
     const url = `${location.origin}/driver/apply.html`;
     await navigator.clipboard.writeText(buildDriverRecruitMessage(url));
-    alert('신규 기사 모집 문구를 복사했어요.');
+    showToast('신규 기사 모집 문구를 복사했어요.');
   }));
   document.getElementById('btnCopyDriverGuideLink')?.addEventListener('click', (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
     const url = `${location.origin}/driver/guide.html`;
     await navigator.clipboard.writeText(url);
-    alert('기사 사용 안내 링크를 복사했어요.');
+    showToast('기사 사용 안내 링크를 복사했어요.');
   }));
   document.getElementById('btnCopyDriverGuideMessage')?.addEventListener('click', (e) => withButtonBusy(e.currentTarget, '복사 중...', async () => {
     const url = `${location.origin}/driver/guide.html`;
     await navigator.clipboard.writeText(buildDriverGuideMessage(url));
-    alert('기사 사용 안내 문구를 복사했어요.');
+    showToast('기사 사용 안내 문구를 복사했어요.');
   }));
   btnLogout?.addEventListener('click', () => {
     clearAdminToken();
@@ -1514,7 +1593,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnAutoDispatch')?.addEventListener('click', async (e) => withButtonBusy(e.currentTarget, '재배차 중...', async () => {
     const res = await adminFetch(api('auto-dispatch'));
     const data = await res.json();
-    alert(`자동 재배차 처리: ${data.count || 0}건`);
+    showToast(`자동 재배차 처리: ${data.count || 0}건`);
     await loadAll();
   }));
   document.getElementById('btnCloseDialog')?.addEventListener('click', () => document.getElementById('detailDialog')?.close());
@@ -1578,11 +1657,13 @@ document.addEventListener('DOMContentLoaded', () => {
         renderManualState(data.error || '주문 생성에 실패했어요.');
         return;
       }
-      manualOrderDraft = {
-        ...manualOrderDraft,
-        jobId: data.job.id,
-        paymentUrl: `${location.origin}/customer/pay.html?jobId=${encodeURIComponent(data.job.id)}`
-      };
+      const paymentUrl = `${location.origin}/customer/pay.html?jobId=${encodeURIComponent(data.job.id)}`;
+      manualOrderDraft = { jobId: data.job.id, paymentUrl, payload: null, preview: null };
+      if (manualTextEl) manualTextEl.value = '';
+      const nameEl = document.getElementById('manualCustomerName');
+      const phoneEl = document.getElementById('manualCustomerPhone');
+      if (nameEl) nameEl.value = '';
+      if (phoneEl) phoneEl.value = '';
       renderManualState(`주문이 등록됐어요. 결제 링크를 고객에게 보내면 됩니다. 총 결제는 ${money(data.job.total_price)}입니다.`);
       await loadAll();
     });
@@ -1638,8 +1719,8 @@ document.addEventListener('DOMContentLoaded', () => {
         body: JSON.stringify(payload)
       });
       const data = await res.json();
-      if (!data.success) return alert(data.error || '광고 데이터 저장 실패');
-      alert('광고 데이터를 저장했어요.');
+      if (!data.success) return showToast(data.error || '광고 데이터 저장 실패', 'error');
+      showToast('광고 데이터를 저장했어요.');
       await loadPricingDashboard();
     });
   });
@@ -1651,8 +1732,8 @@ document.addEventListener('DOMContentLoaded', () => {
       body: JSON.stringify({ hours: 50, force: true })
     });
     const data = await res.json();
-    if (!data.success) return alert(data.error || '배율 재계산 실패');
-    alert(`배율을 ${Number(data.recommendation?.nextMultiplier || 0).toFixed(3)}로 계산했어요.`);
+    if (!data.success) return showToast(data.error || '배율 재계산 실패', 'error');
+    showToast(`배율을 ${Number(data.recommendation?.nextMultiplier || 0).toFixed(3)}로 계산했어요.`);
     await loadPricingDashboard();
   }));
   const existingToken = getAdminToken();

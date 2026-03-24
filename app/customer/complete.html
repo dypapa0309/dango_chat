@@ -120,7 +120,7 @@
   <nav class="topnav" aria-label="고객 이동 메뉴">
     <a href="/">홈화면</a>
     <a href="/estimate/">소형이사</a>
-    <a href="/ddclean/">소형청소</a>
+    <a href="/ddclean/">입주청소</a>
     <a href="/yd/">용달</a>
     <a href="/customer/lookup.html">📄 주문조회</a>
   </nav>
@@ -170,14 +170,26 @@
       }
 
       const job = data.job;
-      summaryMain.textContent = `${job.customer_name || '-'} / ${job.start_address || '-'} → ${job.end_address || '-'}`;
-      summaryAmount.textContent = `총 결제 ${money(job.total_price)} / 기사 정산 예정 ${money(job.driver_amount)}`;
+      const addrText = job.end_address
+        ? `${job.start_address || '-'} → ${job.end_address}`
+        : (job.start_address || '-');
+      summaryMain.textContent = `${job.customer_name || '-'} / ${addrText}`;
+      summaryAmount.textContent = `총 결제 ${money(job.total_price)}`;
 
       if (job.status === 'completed') {
         statusText.className = 'ok';
         statusText.textContent = '이미 완료 확인이 끝난 주문이에요.';
         button.disabled = true;
         button.textContent = '이미 완료 확인됨';
+        return;
+      }
+
+      const dispatchReady = ['accepted', 'driver_departed', 'driver_arrived', 'in_progress', 'completion_requested'].includes(job.dispatch_status);
+      const statusReady = ['assigned', 'in_progress'].includes(job.status);
+      if (!dispatchReady && !statusReady) {
+        statusText.className = 'warn';
+        statusText.textContent = '아직 배차가 완료되지 않아 완료 확인을 할 수 없어요. 기사 배정 후 다시 확인해주세요.';
+        button.disabled = true;
         return;
       }
 

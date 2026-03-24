@@ -38,7 +38,13 @@ export async function handler(event) {
       return ok({ alreadyCompleted: true, job });
     }
 
-    const { data: updatedJob, error: updateError } = await supabase
+    const dispatchReady = ['accepted', 'driver_departed', 'driver_arrived', 'in_progress', 'completion_requested'].includes(job.dispatch_status);
+    const statusReady = ['assigned', 'in_progress'].includes(job.status);
+    if (!dispatchReady && !statusReady) {
+      return fail('아직 배차가 완료되지 않아 작업 완료 확인을 할 수 없어요.');
+    }
+
+    const { data: updatedRows, error: updateError } = await supabase
       .from('jobs')
       .update({
         status: 'completed',
@@ -48,9 +54,14 @@ export async function handler(event) {
         updated_by: 'customer-complete'
       })
       .eq('id', job.id)
-      .select('*')
-      .single();
+      .neq('status', 'completed')
+      .select('*');
     if (updateError) throw updateError;
+    if (!updatedRows || updatedRows.length === 0) {
+      const { data: latestJob } = await supabase.from('jobs').select('*').eq('id', job.id).single();
+      return ok({ alreadyCompleted: true, job: latestJob || job });
+    }
+    const updatedJob = updatedRows[0];
 
     if (job.assigned_driver_id) {
       const existingSettlement = Array.isArray(job.settlements) ? job.settlements[0] : null;

@@ -10,6 +10,14 @@ function inferJobServiceType(job) {
   return 'move';
 }
 
+const VEHICLE_SERVICES = ['move', 'yd', 'waste', 'install', 'interior', 'interior_help'];
+
+function isDriverEligible(driver, serviceType) {
+  if (!driver?.consign_contract_agreed) return false;
+  if (VEHICLE_SERVICES.includes(serviceType) && !driver?.commercial_plate_confirmed) return false;
+  return true;
+}
+
 function supportsJobService(driver, serviceType) {
   const supportedServices = Array.isArray(driver?.supported_services)
     ? driver.supported_services.filter(Boolean)
@@ -57,8 +65,8 @@ export async function handler(event) {
     if (driverId) {
       const { data, error } = await supabase.from('drivers').select('*').eq('id', driverId).single();
       if (error) throw error;
-      if (!data?.consign_contract_agreed || !data?.commercial_plate_confirmed) {
-        return fail('기사 가입과 위탁운송 계약 동의가 끝난 기사만 배차할 수 있습니다.');
+      if (!isDriverEligible(data, jobServiceType)) {
+        return fail('가입과 계약 동의가 끝난 전문가만 배차할 수 있습니다.');
       }
       if (!supportsJobService(data, jobServiceType)) {
         return fail('이 주문 서비스에 맞는 기사만 배차할 수 있습니다.');
@@ -67,7 +75,7 @@ export async function handler(event) {
     } else {
       const { data: drivers, error } = await supabase.from('drivers').select('*');
       if (error) throw error;
-      const eligibleDrivers = (drivers || []).filter((driver) => driver?.consign_contract_agreed && driver?.commercial_plate_confirmed && supportsJobService(driver, jobServiceType));
+      const eligibleDrivers = (drivers || []).filter((driver) => isDriverEligible(driver, jobServiceType) && supportsJobService(driver, jobServiceType));
       const ranked = rankDrivers(job, eligibleDrivers);
       selectedDriver = ranked[0];
 
@@ -77,13 +85,12 @@ export async function handler(event) {
           totalDrivers: allDrivers.length,
           activeDrivers: allDrivers.filter((driver) => driver.status === 'active').length,
           dispatchEnabledDrivers: allDrivers.filter((driver) => driver.dispatch_enabled).length,
-          contractReadyDrivers: allDrivers.filter((driver) => driver?.consign_contract_agreed && driver?.commercial_plate_confirmed).length,
+          contractReadyDrivers: allDrivers.filter((driver) => isDriverEligible(driver, jobServiceType)).length,
           serviceMatchedDrivers: allDrivers.filter((driver) => supportsJobService(driver, jobServiceType)).length,
           fullyEligibleDrivers: allDrivers.filter((driver) =>
             driver.status === 'active' &&
             driver.dispatch_enabled &&
-            driver?.consign_contract_agreed &&
-            driver?.commercial_plate_confirmed &&
+            isDriverEligible(driver, jobServiceType) &&
             supportsJobService(driver, jobServiceType)
           ).length
         };

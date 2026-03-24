@@ -16,16 +16,17 @@
         <strong>현재 진행 상태</strong>
         <div id="progressText" style="margin-top:8px;">상태를 불러오고 있어요.</div>
         <div class="actions" style="margin-top:14px;">
-          <button id="btnDepart" class="btn">출발 중</button>
-          <button id="btnArrive" class="btn">도착</button>
-          <button id="btnStart" class="btn primary">작업 시작</button>
-          <button id="btnRequestComplete" class="btn">완료 요청</button>
+          <button id="btnDepart" class="btn" disabled>출발 중</button>
+          <button id="btnArrive" class="btn" disabled>도착</button>
+          <button id="btnStart" class="btn primary" disabled>작업 시작</button>
+          <button id="btnRequestComplete" class="btn" disabled>완료 요청</button>
         </div>
       </div>
+      <div id="expiryCountdown" class="job-info" hidden></div>
       <textarea id="responseNote" rows="4" placeholder="메모(선택)"></textarea>
       <div class="actions">
-        <button id="btnAccept" class="btn primary">수락</button>
-        <button id="btnDecline" class="btn danger">거절</button>
+        <button id="btnAccept" class="btn primary" disabled>수락</button>
+        <button id="btnDecline" class="btn danger" disabled>거절</button>
       </div>
       <p id="result" class="result"></p>
     </div>

@@ -3,23 +3,25 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>당고 | 기사 가입</title>
+  <title>당고 | 전문가 가입</title>
   <link rel="stylesheet" href="./accept.css" />
 </head>
 <body>
   <main class="wrap">
     <div class="card">
-      <h1>당고 기사 가입</h1>
-      <div id="joinStatus" class="job-info">기사 정보를 불러오고 있어요.</div>
+      <h1>당고 전문가 가입</h1>
+      <div id="joinStatus" class="job-info">전문가 정보를 불러오고 있어요.</div>
       <div id="joinFormBody">
         <div class="form-grid">
           <input id="driverName" type="text" placeholder="이름" />
           <input id="driverPhone" type="tel" placeholder="연락처" />
-          <input id="vehicleType" type="text" placeholder="차량 종류 예: 1톤 카고" />
-          <input id="vehicleNumber" type="text" placeholder="차량 번호" />
           <input id="bankName" type="text" placeholder="은행명" />
           <input id="accountHolder" type="text" placeholder="예금주" />
           <input id="accountNumber" type="text" placeholder="계좌번호" />
+        </div>
+        <div id="vehicleSection" class="form-grid" hidden>
+          <input id="vehicleType" type="text" placeholder="차량 종류 예: 1톤 카고" />
+          <input id="vehicleNumber" type="text" placeholder="차량 번호" />
         </div>
 
         <details class="tax-box service-toggle" open>
@@ -73,7 +75,7 @@
             <span class="agreement-summary">눌러서 자세히 확인해요.</span>
           </summary>
           <div class="agreement-body">
-            <p>아래 내용은 기사 가입과 배차 수락 전 확인용 요약입니다. 서비스별 자격, 허가, 안전수칙 준수 책임은 기사 본인에게 있습니다.</p>
+            <p>아래 내용은 전문가 가입과 배차 수락 전 확인용 요약입니다. 서비스별 자격, 허가, 안전수칙 준수 책임은 전문가 본인에게 있습니다.</p>
             <ul>
               <li><strong>이사·용달</strong>: 「화물자동차 운수사업법」 제56조, 제56조의2 기준상 자가용 화물자동차의 유상운송은 원칙적으로 금지되고, 적법한 자격과 영업용 차량 기준을 갖춘 경우에만 수행해야 합니다.</li>
               <li><strong>이사·용달</strong>: 「화물자동차 운수사업법 시행규칙」 제38조의3 제3호 취지상 자가용 화물차를 이용한 무자격 운송이 되지 않도록 기사 본인이 자격, 보험, 영업용 번호판 여부를 직접 확인해야 합니다.</li>
@@ -88,15 +90,17 @@
               <li><strong>정리수납·에어컨청소·가전청소</strong>: 방문형 생활서비스이므로 파손 위험 물품, 약품 사용, 분해 세척 범위를 먼저 확인하고 무리한 작업은 즉시 중단·보고해야 합니다.</li>
               <li><strong>인테리어·인테리어 보조</strong>: 전기, 가스, 배관, 구조 변경, 전문 공구 작업은 관련 자격과 허가 범위 안에서만 수행해야 하며, 무자격 시공이나 위험 작업은 맡으면 안 됩니다.</li>
               <li><strong>PT·보컬·골프·과외·심리상담</strong>: 레슨·상담류 서비스는 과장 광고, 자격 허위표시, 치료·의료효과 보장, 위험한 신체 접촉이나 부적절한 상담 행위 없이 가능 범위 안에서만 진행해야 합니다.</li>
-              <li>기사 본인은 서비스별 자격, 허가, 보험, 안전장비, 현장 적합성을 스스로 확인한 뒤 배차를 수행해야 합니다.</li>
-              <li>허위 확인, 무자격 운행·수거·설치, 보험 미가입, 법령 위반 작업으로 생기는 행정처분, 민형사상 책임, 손해배상 책임은 기사 본인에게 있습니다.</li>
-              <li>당고는 기사 본인의 허위 확인, 무자격 작업, 자가용 유상운송, 무허가 폐기물 운반, 무자격 설치 작업으로 생기는 법적 책임을 부담하지 않습니다.</li>
+              <li>전문가 본인은 서비스별 자격, 허가, 보험, 안전장비, 현장 적합성을 스스로 확인한 뒤 배차를 수행해야 합니다.</li>
+              <li>허위 확인, 무자격 운행·수거·설치·레슨·상담, 보험 미가입, 법령 위반 작업으로 생기는 행정처분, 민형사상 책임, 손해배상 책임은 전문가 본인에게 있습니다.</li>
+              <li>당고는 전문가 본인의 허위 확인, 무자격 작업, 자가용 유상운송, 무허가 폐기물 운반, 무자격 설치·레슨·상담 작업으로 생기는 법적 책임을 부담하지 않습니다.</li>
             </ul>
             <p class="agreement-source">참고 법령: 화물자동차 운수사업법 제56조, 제56조의2 / 화물자동차 운수사업법 시행규칙 제38조의3 / 폐기물관리법 제25조 / 전기공사업법 관련 규정 / 가스 안전 관련 법령 / 직업안정법 제4조</p>
           </div>
         </details>
 
-        <label class="checkline"><input id="commercialPlateConfirmed" type="checkbox" /> 영업용 차량 기준과 자격 요건을 확인했고 적법한 운송 자격으로 운행해요.</label>
+        <div id="vehiclePlateSection" hidden>
+          <label class="checkline"><input id="commercialPlateConfirmed" type="checkbox" /> 영업용 차량 기준과 자격 요건을 확인했고 적법한 운송 자격으로 운행해요.</label>
+        </div>
         <label class="checkline"><input id="contractAgreed" type="checkbox" /> 위탁운송 계약 내용과 법령 준수 책임에 동의해요.</label>
         <label class="checkline"><input id="taxWithholdingAgreed" type="checkbox" /> 프리랜서 3.3% 원천징수 정산용 정보 제공과 정산 처리에 동의해요.</label>
 

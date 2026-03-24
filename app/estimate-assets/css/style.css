@@ -607,6 +607,7 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
   cursor:pointer;
 }
 .stepper-btn:hover{ background:#EEF2F7; }
+.stepper-btn:focus-visible{ outline:2px solid rgba(217,120,70,0.6); outline-offset:2px; }
 
 .stepper input{
   width:64px;

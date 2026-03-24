@@ -45,7 +45,7 @@ export async function handler(event) {
 
     const { data, error } = await supabase
       .from('ad_channel_daily')
-      .insert(payload)
+      .upsert(payload, { onConflict: 'metric_date,channel', ignoreDuplicates: false })
       .select('*')
       .single();
 

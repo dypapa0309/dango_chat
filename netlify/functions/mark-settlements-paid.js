@@ -31,7 +31,7 @@ export async function handler(event) {
     if (!targetRows.length) return fail('지급 완료 처리할 정산이 없습니다.');
 
     const representativePeriod = getSettlementPeriod(targetRows[0]);
-    const batchKey = `manual-${periodKey}-${driverId}-${Date.now()}`;
+    const batchKey = `manual-${periodKey}-${driverId}`;
     const ids = targetRows.map((row) => row.id);
 
     const { data: updated, error: updateError } = await supabase
@@ -47,13 +47,17 @@ export async function handler(event) {
         payout_period_end: representativePeriod?.endDate || null
       })
       .in('id', ids)
+      .eq('status', 'approved')
       .select('id, amount, status, paid_at, paid_by, payout_batch_key');
 
     if (updateError) throw updateError;
+    if (!updated || updated.length === 0) {
+      return ok({ settlements: [], count: 0, alreadyPaid: true });
+    }
 
     return ok({
       settlements: updated || [],
-      count: ids.length,
+      count: updated.length,
       totalAmount: targetRows.reduce((acc, row) => acc + Number(row.amount || 0), 0),
       totalWithholdingAmount: targetRows.reduce((acc, row) => acc + Number(row.withholding_amount || 0), 0),
       totalNetAmount: targetRows.reduce((acc, row) => acc + Number(row.net_amount || 0), 0)

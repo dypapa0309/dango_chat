@@ -136,7 +136,7 @@ export async function handler(event) {
       summary,
       approvedGroups,
       held,
-      paid: paid.slice(0, 40)
+      paid: paid.slice(0, 100)
     });
   } catch (error) {
     return fail('정산 대시보드 조회 실패', error.message, 500);

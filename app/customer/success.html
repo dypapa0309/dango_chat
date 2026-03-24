@@ -146,7 +146,7 @@
   <nav class="topnav" aria-label="고객 이동 메뉴">
     <a href="/">홈화면</a>
     <a href="/estimate/">소형이사</a>
-    <a href="/ddclean/">소형청소</a>
+    <a href="/ddclean/">입주청소</a>
     <a href="/yd/">용달</a>
     <a href="/customer/lookup.html">📄 주문조회</a>
   </nav>
@@ -192,7 +192,6 @@
   </div>
 <script>
 (async () => {
-  const SESSION_KEY_PREFIX = 'dango:payment-success:';
   const qs = new URLSearchParams(location.search);
   const jobId = qs.get('jobId');
   const draftId = qs.get('draftId');
@@ -205,10 +204,6 @@
   const completeLinkText = document.getElementById('completeLinkText');
   const completeLinkAction = document.getElementById('completeLinkAction');
   const cancelLinkAction = document.getElementById('cancelLinkAction');
-
-  function successSessionKey() {
-    return `${SESSION_KEY_PREFIX}${jobId || draftId || orderId || 'unknown'}:${paymentKey || amount || 'nopay'}`;
-  }
 
   function loadDraft() {
     if (!draftId) return null;
@@ -223,33 +218,9 @@
 
   try {
     if (jobId) {
-      const existingResult = sessionStorage.getItem(successSessionKey());
-      if (existingResult) {
-        const cached = JSON.parse(existingResult);
-        paymentStatusEl.className = cached.paymentClass || 'ok';
-        paymentStatusEl.textContent = cached.paymentText || '전체 결제가 승인됐어요.';
-        dispatchStatusEl.className = cached.dispatchClass || 'ok';
-        dispatchStatusEl.textContent = cached.dispatchText || '배차 요청이 이미 처리됐어요.';
-        if (cached.completeUrl || cached.cancelUrl) {
-          completeLinkBox.hidden = false;
-        }
-        if (cached.completeText) completeLinkText.textContent = cached.completeText;
-        if (cached.completeUrl) {
-          completeLinkAction.hidden = false;
-          completeLinkAction.href = cached.completeUrl;
-        }
-        if (cached.cancelUrl) {
-          cancelLinkAction.hidden = false;
-          cancelLinkAction.href = cached.cancelUrl;
-        }
-        return;
-      }
-
       let finalAmount = amount;
-      let detailJob = null;
       if (!finalAmount) {
         const detail = await fetch(`/.netlify/functions/get-job-public?jobId=${encodeURIComponent(jobId)}`).then((r) => r.json());
-        detailJob = detail.job || null;
         finalAmount = detail.job?.total_price || 0;
       }
 
@@ -278,37 +249,25 @@
           : `자동 배차 요청이 들어갔어요. 현재 요청 기사: ${assignData.driver?.name || '확인 중'}`;
       } else {
         dispatchStatusEl.className = 'warn';
-        dispatchStatusEl.textContent = assignData.error || '결제는 끝났지만 배차 요청은 다시 확인이 필요해요.';
+        dispatchStatusEl.textContent = (assignData.error || '결제는 끝났지만 배차 요청은 다시 확인이 필요해요.') + ' 문제가 계속되면 고객센터(010-7541-6143)로 연락해주세요.';
       }
 
-      if (!detailJob) {
-        const detail = await fetch(`/.netlify/functions/get-job-public?jobId=${encodeURIComponent(jobId)}`).then((r) => r.json());
-        detailJob = detail.job || null;
-      }
+      const completeToken = confirmData.customerCompleteToken;
+      const cancelToken = confirmData.customerCancelToken;
 
-      if (detailJob?.customer_complete_token) {
-        const completeUrl = `${location.origin}/customer/complete.html?token=${encodeURIComponent(detailJob.customer_complete_token)}`;
+      if (completeToken) {
+        const completeUrl = `${location.origin}/customer/complete.html?token=${encodeURIComponent(completeToken)}`;
         completeLinkBox.hidden = false;
-        completeLinkText.textContent = '작업이 끝나면 완료 확인 링크를 쓰면 돼요. 작업 시작 전 취소가 필요하면 취소 링크를 쓰면 돼요. 완료 확인이 끝나면 기사 정산 예정 80%가 승인돼요.';
+        completeLinkText.textContent = '배차가 완료되면 작업 완료 확인 링크를 사용해주세요. 작업 시작 전 취소가 필요하면 취소 링크를 사용하세요.';
         completeLinkAction.hidden = false;
         completeLinkAction.href = completeUrl;
       }
-      if (detailJob?.customer_cancel_token) {
-        const cancelUrl = `${location.origin}/customer/cancel.html?token=${encodeURIComponent(detailJob.customer_cancel_token)}`;
+      if (cancelToken) {
+        const cancelUrl = `${location.origin}/customer/cancel.html?token=${encodeURIComponent(cancelToken)}`;
         completeLinkBox.hidden = false;
         cancelLinkAction.hidden = false;
         cancelLinkAction.href = cancelUrl;
       }
-
-      sessionStorage.setItem(successSessionKey(), JSON.stringify({
-        paymentClass: paymentStatusEl.className,
-        paymentText: paymentStatusEl.textContent,
-        dispatchClass: dispatchStatusEl.className,
-        dispatchText: dispatchStatusEl.textContent,
-        completeText: completeLinkText.textContent,
-        completeUrl: completeLinkAction.hidden ? null : completeLinkAction.href,
-        cancelUrl: cancelLinkAction.hidden ? null : cancelLinkAction.href
-      }));
 
       return;
     }

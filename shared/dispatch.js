@@ -2,11 +2,18 @@ function toRad(v) {
   return (v * Math.PI) / 180;
 }
 
+function isValidCoord(lat, lng) {
+  const la = Number(lat);
+  const lo = Number(lng);
+  return Number.isFinite(la) && Number.isFinite(lo) && la !== 0 && lo !== 0 && la >= -90 && la <= 90 && lo >= -180 && lo <= 180;
+}
+
 export function haversineDistanceKm(lat1, lng1, lat2, lng2) {
-  const a1 = Number(lat1 || 0);
-  const o1 = Number(lng1 || 0);
-  const a2 = Number(lat2 || 0);
-  const o2 = Number(lng2 || 0);
+  if (!isValidCoord(lat1, lng1) || !isValidCoord(lat2, lng2)) return Infinity;
+  const a1 = Number(lat1);
+  const o1 = Number(lng1);
+  const a2 = Number(lat2);
+  const o2 = Number(lng2);
   const R = 6371;
   const dLat = toRad(a2 - a1);
   const dLon = toRad(o2 - o1);

@@ -26,6 +26,7 @@ export async function handler(event) {
     const sender = env('SENDER_PHONE');
 
     if (!apiKey || !apiSecret || !sender) {
+      console.error('sendDispatch: SOLAPI_API_KEY, SOLAPI_API_SECRET, SENDER_PHONE 환경변수가 설정되지 않아 문자 발송이 스킵됐습니다. 운영 환경에서는 반드시 설정해야 합니다.');
       return ok({ mocked: true, provider: 'mock', to: driverPhone, message, kakao });
     }
 

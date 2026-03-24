@@ -1,6 +1,14 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 
+const VEHICLE_SERVICES = ['move', 'yd', 'waste', 'install', 'interior', 'interior_help'];
+
+function isDriverEligible(driver, serviceType) {
+  if (!driver?.consign_contract_agreed) return false;
+  if (VEHICLE_SERVICES.includes(serviceType) && !driver?.commercial_plate_confirmed) return false;
+  return true;
+}
+
 function buildProgress(job) {
   return {
     status: job?.status || 'assigned',
@@ -46,7 +54,7 @@ export async function handler(event) {
         return ok({ expired: true, message: '만료된 요청입니다.', job: assignment.jobs });
       }
       await supabase.from('assignments').update({ viewed_at: new Date().toISOString(), updated_by: 'driver' }).eq('id', assignment.id);
-      if (!assignment.drivers?.consign_contract_agreed || !assignment.drivers?.commercial_plate_confirmed) {
+      if (!isDriverEligible(assignment.drivers, assignment.jobs?.service_type || 'move')) {
         const siteUrl = process.env.SITE_URL || 'http://localhost:8888';
         const joinUrl = assignment.drivers?.join_token
           ? `${siteUrl.replace(/\/$/, '')}/driver/join.html?token=${encodeURIComponent(assignment.drivers.join_token)}`
@@ -67,8 +75,8 @@ export async function handler(event) {
       .single();
     if (error) throw error;
     if (!assignment) return fail('없는 요청입니다.');
-    if (!assignment.drivers?.consign_contract_agreed || !assignment.drivers?.commercial_plate_confirmed) {
-      return fail('기사 가입과 위탁운송 계약 동의가 먼저 필요합니다.');
+    if (!isDriverEligible(assignment.drivers, assignment.jobs?.service_type || 'move')) {
+      return fail('전문가 가입과 위탁운송 계약 동의가 먼저 필요합니다.');
     }
 
     if (action === 'accept') {
@@ -115,6 +123,7 @@ export async function handler(event) {
     }
 
     if (action === 'depart') {
+      if (!['accepted'].includes(assignment.jobs?.dispatch_status)) return fail('출발 상태로 변경하려면 기사 수락 상태여야 해요.');
       await supabase.from('jobs').update({
         dispatch_status: 'driver_departed',
         driver_departed_at: new Date().toISOString(),
@@ -136,6 +145,7 @@ export async function handler(event) {
     }
 
     if (action === 'arrive') {
+      if (!['driver_departed'].includes(assignment.jobs?.dispatch_status)) return fail('도착 상태로 변경하려면 출발 상태여야 해요.');
       await supabase.from('jobs').update({
         dispatch_status: 'driver_arrived',
         driver_arrived_at: new Date().toISOString(),
@@ -157,6 +167,7 @@ export async function handler(event) {
     }
 
     if (action === 'start') {
+      if (!['accepted', 'driver_departed', 'driver_arrived'].includes(assignment.jobs?.dispatch_status)) return fail('작업 시작은 기사 수락 이후에만 가능해요.');
       await supabase.from('jobs').update({
         status: 'in_progress',
         dispatch_status: 'in_progress',
@@ -179,6 +190,7 @@ export async function handler(event) {
     }
 
     if (action === 'request_complete') {
+      if (!['in_progress', 'completion_requested'].includes(assignment.jobs?.dispatch_status) && assignment.jobs?.status !== 'in_progress') return fail('작업 완료 요청은 작업 중 상태에서만 가능해요.');
       await supabase.from('jobs').update({
         dispatch_status: 'completion_requested',
         driver_completion_requested_at: new Date().toISOString(),

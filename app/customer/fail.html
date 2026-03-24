@@ -77,9 +77,9 @@
   <nav class="topnav" aria-label="고객 이동 메뉴">
     <a href="/">홈화면</a>
     <a href="/estimate/">소형이사</a>
-    <a href="/ddclean/">소형청소</a>
+    <a href="/ddclean/">입주청소</a>
     <a href="/yd/">용달</a>
-    <a href="/customer/lookup.html">📄 주문조회</a>
+    <a href="/customer/lookup.html">주문조회</a>
   </nav>
 <div class="card">
   <h1>결제가 끝나지 않았어요.</h1>
@@ -87,11 +87,37 @@
   <a href="/">당고로 돌아가기</a>
 </div>
 <script>
+const TOSS_ERROR_MSG = {
+  PAY_PROCESS_CANCELED: '결제를 취소했어요.',
+  CARD_DECLINED: '카드사에서 결제를 거절했어요. 카드 잔액이나 한도를 확인해주세요.',
+  INSUFFICIENT_BALANCE: '카드 잔액이 부족해요.',
+  EXCEED_MAX_DAILY_PAYMENT_COUNT: '일일 결제 한도를 초과했어요.',
+  EXCEED_MAX_AMOUNT: '결제 한도 금액을 초과했어요.',
+  CARD_EXPIRED: '카드 유효기간이 만료됐어요. 다른 카드로 시도해주세요.',
+  CARD_PASSWORD_WRONG: '카드 비밀번호가 틀렸어요.',
+  CARD_NUMBER_WRONG: '카드 번호를 확인해주세요.',
+  INVALID_CVC: 'CVC 번호가 맞지 않아요.',
+  NOT_SUPPORTED_CARD_TYPE: '지원하지 않는 카드예요.',
+  REJECT_ACCOUNT_PAYMENT: '계좌 결제가 거절됐어요.',
+  REJECT_CARD_COMPANY: '카드사에서 거절했어요. 카드사로 문의해주세요.',
+  FORBIDDEN_CONSECUTIVE_FAIL: '연속 결제 실패로 잠시 잠겼어요. 잠시 후 다시 시도해주세요.',
+  INVALID_PASSWORD: '비밀번호가 틀렸어요.',
+  UNAPPROVED_ORDER_ID: '처리할 수 없는 주문이에요.',
+  ALREADY_PROCESSED_PAYMENT: '이미 처리된 결제예요.',
+  NO_SUCH_BILLING_KEY: '결제 정보를 찾을 수 없어요.',
+  UNAUTHORIZED_KEY: '결제 처리에 문제가 발생했어요. 고객센터(010-7541-6143)로 연락해주세요.',
+};
 const qs = new URLSearchParams(location.search);
 const code = qs.get('code');
 const message = qs.get('message');
 if (code || message) {
-  document.getElementById('msg').innerHTML = `오류 코드: <code>${code || '-'}</code><br>메시지: <code>${message || '-'}</code>`;
+  const friendly = TOSS_ERROR_MSG[code];
+  const msgEl = document.getElementById('msg');
+  if (friendly) {
+    msgEl.textContent = friendly;
+  } else {
+    msgEl.textContent = message || '결제 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.';
+  }
 }
 </script>
 <script src="../assets/js/contact-fab.js"></script>

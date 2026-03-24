@@ -12,6 +12,12 @@ export async function handler(event) {
     if (!jobId || !amount) return fail('jobId, amount가 필요합니다.');
 
     const supabase = adminClient();
+
+    if (transactionKey) {
+      const { data: existing } = await supabase.from('payments').select('*').eq('transaction_key', transactionKey).maybeSingle();
+      if (existing) return ok({ payment: existing, deduplicated: true });
+    }
+
     const { data: payment, error } = await supabase.from('payments').insert({
       job_id: jobId,
       payment_type: paymentType,
