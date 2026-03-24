@@ -1,5 +1,6 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { sendSms } from '../../shared/sms.js';
 
 const VEHICLE_SERVICES = ['move', 'yd', 'waste', 'install', 'interior', 'interior_help'];
 
@@ -108,6 +109,23 @@ export async function handler(event) {
         meta: { responseNote: responseNote || null }
       });
       await updateAcceptanceRate(supabase, assignment.driver_id);
+
+      // 고객에게 기사 정보 SMS 발송
+      const job = assignment.jobs;
+      const driver = assignment.drivers;
+      if (job?.customer_phone && driver?.name) {
+        const SERVICE_LABEL = {
+          move: '소형이사', clean: '입주청소', yd: '용달', waste: '폐기물',
+          install: '설치', errand: '심부름', organize: '정리수납', ac_clean: '에어컨청소',
+          appliance_clean: '가전청소', interior: '인테리어', interior_help: '인테리어 보조',
+          pt: 'PT', vocal: '보컬', golf: '골프', tutor: '과외', counseling: '심리상담'
+        };
+        const serviceText = SERVICE_LABEL[job.service_type] || '서비스';
+        const driverContact = driver.phone ? ` / 연락처: ${driver.phone}` : '';
+        const smsText = `[당고] ${serviceText} 기사 배정 완료\n담당: ${driver.name}${driverContact}\n작업 관련 문의는 기사님께 직접 연락해주세요.`;
+        await sendSms(job.customer_phone, smsText);
+      }
+
       return ok({ message: '배차 수락 완료', progress: buildProgress({ ...assignment.jobs, status: 'assigned', dispatch_status: 'accepted' }) });
     }
 

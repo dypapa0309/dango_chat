@@ -2,6 +2,7 @@ import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 import { buildApprovedSettlementFields, calculateFreelancerWithholding } from '../../shared/settlements.js';
 import { resolveRevenueSplit } from '../../shared/revenue.js';
+import { sendSms } from '../../shared/sms.js';
 
 async function loadJobByToken(supabase, token) {
   const { data, error } = await supabase
@@ -102,6 +103,14 @@ export async function handler(event) {
         .from('drivers')
         .update({ completed_jobs: nextCompletedJobs })
         .eq('id', job.assigned_driver_id);
+
+      // 기사에게 정산 시작 SMS 발송
+      if (driver?.phone) {
+        const money = (v) => `${Number(v || 0).toLocaleString()}원`;
+        const revenueSplit = resolveRevenueSplit(job.total_price, job.company_amount, job.driver_amount, job.option_summary || {});
+        const withholding = calculateFreelancerWithholding(revenueSplit.driverAmount || 0);
+        await sendSms(driver.phone, `[당고] 고객 완료 확인이 됐습니다. 정산 시작: 실지급 예정 ${money(withholding.netAmount)} (세전 ${money(withholding.grossAmount)}). 정산은 순서에 따라 진행돼요.`);
+      }
     }
 
     await supabase.from('dispatch_logs').insert({
