@@ -1,4 +1,25 @@
 (() => {
+  function showToast(message, type) {
+    let el = document.getElementById('__ydToast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = '__ydToast';
+      Object.assign(el.style, {
+        position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+        background: type === 'error' ? '#b91c1c' : '#20170f',
+        color: '#fff', padding: '12px 20px', borderRadius: '12px',
+        fontWeight: '700', fontSize: '14px', zIndex: '9999',
+        boxShadow: '0 8px 24px rgba(0,0,0,.18)', pointerEvents: 'none',
+        transition: 'opacity .25s', opacity: '0', maxWidth: '320px', textAlign: 'center'
+      });
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.style.opacity = '1';
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+
   const HELPER_FEE = 10000;
   const RIDER_FEE = 20000;
   const BASE_VEHICLE_FEE = 30000;
@@ -355,7 +376,7 @@
     state.endAddress = (els.end.value || '').trim();
 
     if (!state.startAddress || !state.endAddress) {
-      alert('출발지와 도착지 주소를 모두 입력해줘.');
+      showToast('출발지와 도착지 주소를 모두 입력해줘.', 'error');
       return;
     }
 
@@ -401,7 +422,7 @@
       state.distanceKm = 0;
       state.distanceMeta = '입력하신 주소를 다시 확인해주세요. 동 이름이나 역 이름, 건물명만 넣어도 다시 시도할 수 있어요.';
       renderAll();
-      alert('거리 계산에 실패했습니다. 동 이름이나 역 이름, 건물명으로 다시 시도해주세요.');
+      showToast('거리 계산에 실패했습니다. 동 이름이나 역 이름, 건물명으로 다시 시도해주세요.', 'error');
     } finally {
       els.calcBtn.disabled = false;
       els.calcBtn.textContent = '거리 계산하기';
@@ -453,15 +474,15 @@
 
   function openCheckout() {
     if (!state.startAddress || !state.endAddress) {
-      alert('출발지와 도착지 주소를 먼저 입력해주세요.');
+      showToast('출발지와 도착지 주소를 먼저 입력해주세요.', 'error');
       return;
     }
     if (state.distanceKm <= 0) {
-      alert('먼저 거리 계산 버튼을 눌러주세요.');
+      showToast('먼저 거리 계산 버튼을 눌러주세요.', 'error');
       return;
     }
     if (!state.moveDate) {
-      alert('이동 날짜를 선택해주세요.');
+      showToast('이동 날짜를 선택해주세요.', 'error');
       return;
     }
     els.checkoutModal.hidden = false;

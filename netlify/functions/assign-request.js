@@ -137,7 +137,21 @@ export async function handler(event) {
       })
       .select('*')
       .single();
-    if (assignmentError) throw assignmentError;
+    if (assignmentError) {
+      // 동시 호출로 인한 UNIQUE 제약 위반 시 이미 생성된 assignment를 반환
+      if (assignmentError.code === '23505') {
+        const { data: raced } = await supabase
+          .from('assignments')
+          .select('*, drivers(*)')
+          .eq('job_id', jobId)
+          .in('status', ['requested', 'accepted'])
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (raced) return ok({ assignmentId: raced.id, driver: raced.drivers || null, reused: true, smsResult: null });
+      }
+      throw assignmentError;
+    }
 
     await supabase.from('jobs').update({ dispatch_status: 'requesting', updated_by: 'system' }).eq('id', jobId);
     await supabase.from('dispatch_logs').insert({

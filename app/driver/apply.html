@@ -3,26 +3,28 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>당고 | 기사 가입</title>
+  <title>당고 | 전문가 지원</title>
   <link rel="stylesheet" href="./accept.css" />
 </head>
 <body>
   <main class="wrap">
     <div class="card">
-      <h1>당고 기사 가입</h1>
+      <h1>당고 전문가 지원</h1>
       <div id="joinStatus" class="job-info">
-        <strong>공용 기사 가입 링크입니다.</strong>
-        <div>정보 입력과 세 가지 동의를 모두 완료해야 가입이 접수됩니다.</div>
+        <strong>공개 전문가 지원 링크입니다.</strong>
+        <div>정보 입력과 동의를 완료하면 운영팀이 검토 후 배차 가능 상태를 안내드립니다.</div>
       </div>
       <div id="joinFormBody">
         <div class="form-grid">
           <input id="driverName" type="text" placeholder="이름" />
           <input id="driverPhone" type="tel" placeholder="연락처" />
-          <input id="vehicleType" type="text" placeholder="차량 종류 예: 1톤 카고" />
-          <input id="vehicleNumber" type="text" placeholder="차량 번호" />
           <input id="bankName" type="text" placeholder="은행명" />
           <input id="accountHolder" type="text" placeholder="예금주" />
           <input id="accountNumber" type="text" placeholder="계좌번호" />
+        </div>
+        <div id="vehicleSection" class="form-grid" hidden>
+          <input id="vehicleType" type="text" placeholder="차량 종류 예: 1톤 카고" />
+          <input id="vehicleNumber" type="text" placeholder="차량 번호" />
         </div>
 
         <details class="tax-box service-toggle" open>
@@ -99,12 +101,14 @@
           </div>
         </details>
 
-        <label class="checkline"><input id="commercialPlateConfirmed" type="checkbox" /> 영업용 차량 기준과 자격 요건을 확인했고 적법한 운송 자격으로 운행합니다.</label>
+        <div id="vehiclePlateSection" hidden>
+          <label class="checkline"><input id="commercialPlateConfirmed" type="checkbox" /> 영업용 차량 기준과 자격 요건을 확인했고 적법한 운송 자격으로 운행합니다.</label>
+        </div>
         <label class="checkline"><input id="contractAgreed" type="checkbox" /> 위탁운송 계약 내용과 법령 준수 책임에 동의합니다.</label>
         <label class="checkline"><input id="taxWithholdingAgreed" type="checkbox" /> 프리랜서 3.3% 원천징수 정산용 정보 제공과 정산 처리에 동의합니다.</label>
 
         <div class="actions">
-          <button id="btnJoin" class="btn primary" disabled>당고 기사 가입하기</button>
+          <button id="btnJoin" class="btn primary" disabled>전문가 지원하기</button>
         </div>
       </div>
       <p id="joinResult" class="result"></p>

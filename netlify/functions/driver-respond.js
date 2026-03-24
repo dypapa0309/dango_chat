@@ -3,6 +3,17 @@ import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 
 const VEHICLE_SERVICES = ['move', 'yd', 'waste', 'install', 'interior', 'interior_help'];
 
+async function updateAcceptanceRate(supabase, driverId) {
+  try {
+    const [{ count: acceptedCount }, { count: decidedCount }] = await Promise.all([
+      supabase.from('assignments').select('*', { count: 'exact', head: true }).eq('driver_id', driverId).eq('status', 'accepted'),
+      supabase.from('assignments').select('*', { count: 'exact', head: true }).eq('driver_id', driverId).in('status', ['accepted', 'declined'])
+    ]);
+    const rate = decidedCount > 0 ? Math.round((acceptedCount / decidedCount) * 100) / 100 : null;
+    await supabase.from('drivers').update({ acceptance_rate: rate }).eq('id', driverId);
+  } catch {}
+}
+
 function isDriverEligible(driver, serviceType) {
   if (!driver?.consign_contract_agreed) return false;
   if (VEHICLE_SERVICES.includes(serviceType) && !driver?.commercial_plate_confirmed) return false;
@@ -96,6 +107,7 @@ export async function handler(event) {
         message: '기사가 배차를 수락했습니다.',
         meta: { responseNote: responseNote || null }
       });
+      await updateAcceptanceRate(supabase, assignment.driver_id);
       return ok({ message: '배차 수락 완료', progress: buildProgress({ ...assignment.jobs, status: 'assigned', dispatch_status: 'accepted' }) });
     }
 
@@ -115,6 +127,7 @@ export async function handler(event) {
         message: '기사가 배차를 거절했습니다.',
         meta: { responseNote: responseNote || null }
       });
+      await updateAcceptanceRate(supabase, assignment.driver_id);
       return ok({ message: '배차 거절 완료' });
     }
 

@@ -14,6 +14,7 @@ export async function handler(event) {
       .from('jobs')
       .select(`
         id,
+        service_type,
         customer_name,
         move_date,
         start_address,

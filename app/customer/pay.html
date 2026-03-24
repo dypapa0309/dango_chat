@@ -113,20 +113,18 @@
   <nav class="topnav" aria-label="고객 이동 메뉴">
     <a href="/">홈화면</a>
     <a href="/estimate/">소형이사</a>
-    <a href="/ddclean/">소형청소</a>
+    <a href="/ddclean/">입주청소</a>
     <a href="/yd/">용달</a>
-    <a href="/customer/lookup.html">📄 주문조회</a>
+    <a href="/customer/lookup.html">주문조회</a>
   </nav>
   <div class="card">
     <p class="eyebrow">DANG-O PAYMENT</p>
     <h1>전체 금액을 먼저 결제하면<br />배차와 정산 준비가 바로 시작돼요.</h1>
-    <p class="muted">총액을 한 번에 결제하면 20%는 당고 정산분으로 남고, 80%는 작업 완료 확인 뒤 기사 정산으로 넘어가요.</p>
+    <p class="muted">결제 후 배차가 시작되고, 작업 완료 확인 시 기사에게 정산돼요.</p>
 
     <div id="summaryCard" class="summary">
       <strong id="summary">불러오는 중...</strong>
-      <div class="line"><span>고객 전체 결제 금액</span><span id="totalPrice">-</span></div>
-      <div class="line"><span>당고 보관/수수료 20%</span><span id="price">-</span></div>
-      <div class="line"><span>기사 정산 예정 80%</span><span id="balance">-</span></div>
+      <div class="line"><span>결제 금액</span><span id="totalPrice">-</span></div>
     </div>
 
     <button id="btnPay" disabled>결제 준비 중...</button>
@@ -148,7 +146,13 @@
       const raw = localStorage.getItem(`dango:${draftId}`);
       if (!raw) return null;
       try {
-        return JSON.parse(raw);
+        const parsed = JSON.parse(raw);
+        const savedAt = parsed?.savedAt ? new Date(parsed.savedAt).getTime() : null;
+        if (savedAt && Date.now() - savedAt > 7 * 24 * 60 * 60 * 1000) {
+          localStorage.removeItem(`dango:${draftId}`);
+          return null;
+        }
+        return parsed;
       } catch {
         return null;
       }
@@ -170,10 +174,20 @@
     async function load() {
       try {
         job = await loadJob();
-        document.getElementById('summary').textContent = `${job.customer_name || '-'} / ${job.start_address || '-'} → ${job.end_address || '-'}`;
+        const SERVICE_LABEL = {
+          move: '소형이사', clean: '입주청소', yd: '용달', waste: '폐기물',
+          install: '설치', errand: '심부름', organize: '정리수납', ac_clean: '에어컨청소',
+          appliance_clean: '가전청소', interior: '인테리어', interior_help: '인테리어 보조',
+          pt: 'PT', vocal: '보컬', golf: '골프', tutor: '과외', counseling: '심리상담'
+        };
+        const serviceText = SERVICE_LABEL[job.service_type] || '';
+        const addrText = job.end_address
+          ? `${job.start_address || '-'} → ${job.end_address}`
+          : (job.start_address || '-');
+        const dateText = job.move_date ? ` / ${job.move_date}` : '';
+        const servicePrefix = serviceText ? `[${serviceText}] ` : '';
+        document.getElementById('summary').textContent = `${servicePrefix}${job.customer_name || '-'} / ${addrText}${dateText}`;
         document.getElementById('totalPrice').textContent = money(job.total_price || 0);
-        document.getElementById('price').textContent = money(job.company_amount || 0);
-        document.getElementById('balance').textContent = money(job.driver_amount || 0);
 
         try {
           const cfg = await fetch('/.netlify/functions/config').then((res) => res.json());
@@ -190,34 +204,44 @@
 
     document.getElementById('btnPay').onclick = async () => {
       if (!job) return;
-      const successUrl = new URL(`${location.origin}/customer/success.html`);
-      const failUrl = new URL(`${location.origin}/customer/fail.html`);
+      const btn = document.getElementById('btnPay');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '결제창을 여는 중...';
 
-      if (jobId) {
-        successUrl.searchParams.set('jobId', job.id);
-        failUrl.searchParams.set('jobId', job.id);
+      try {
+        const successUrl = new URL(`${location.origin}/customer/success.html`);
+        const failUrl = new URL(`${location.origin}/customer/fail.html`);
+
+        if (jobId) {
+          successUrl.searchParams.set('jobId', job.id);
+          failUrl.searchParams.set('jobId', job.id);
+        }
+        if (draftId) {
+          successUrl.searchParams.set('draftId', draftId);
+          failUrl.searchParams.set('draftId', draftId);
+        }
+
+        successUrl.searchParams.set('amount', String(Number(job.total_price || 0)));
+
+        if (!clientKey) {
+          location.href = successUrl.toString();
+          return;
+        }
+
+        const toss = TossPayments(clientKey);
+        await toss.requestPayment('카드', {
+          amount: Number(job.total_price || 0),
+          orderId: job.id,
+          orderName: '당고 전체 결제',
+          customerName: job.customer_name || '고객',
+          successUrl: successUrl.toString(),
+          failUrl: failUrl.toString()
+        });
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
       }
-      if (draftId) {
-        successUrl.searchParams.set('draftId', draftId);
-        failUrl.searchParams.set('draftId', draftId);
-      }
-
-      successUrl.searchParams.set('amount', String(Number(job.total_price || 0)));
-
-      if (!clientKey) {
-        location.href = successUrl.toString();
-        return;
-      }
-
-      const toss = TossPayments(clientKey);
-      await toss.requestPayment('카드', {
-        amount: Number(job.total_price || 0),
-        orderId: job.id,
-        orderName: '당고 전체 결제',
-        customerName: job.customer_name || '고객',
-        successUrl: successUrl.toString(),
-        failUrl: failUrl.toString()
-      });
     };
 
     load();

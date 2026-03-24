@@ -934,6 +934,7 @@ async function loadJobs() {
         <button class="btn" data-action="complete">관리자 강제 완료</button>
         <button class="btn" data-action="complete-link">완료 링크</button>
         <button class="btn" data-action="cancel-link">취소 링크</button>
+        <button class="btn" data-action="regen-tokens">토큰 재발급</button>
         <button class="btn" data-action="paylink">결제 링크</button>
       </div>
     `;
@@ -944,6 +945,7 @@ async function loadJobs() {
     card.querySelector('[data-action="complete"]').onclick = (e) => withButtonBusy(e.currentTarget, '완료 처리 중...', () => completeJob(job.id));
     card.querySelector('[data-action="complete-link"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', () => copyCompleteLink(job.id));
     card.querySelector('[data-action="cancel-link"]').onclick = async (e) => withButtonBusy(e.currentTarget, '복사 중...', () => copyCancelLink(job.id));
+    card.querySelector('[data-action="regen-tokens"]').onclick = (e) => withButtonBusy(e.currentTarget, '재발급 중...', () => regenCustomerTokens(job.id));
     card.querySelector('[data-action="paylink"]').onclick = (e) => withButtonBusy(e.currentTarget, '이동 중...', async () => {
       location.href = `/customer/pay.html?jobId=${encodeURIComponent(job.id)}`;
     });
@@ -1293,6 +1295,7 @@ async function loadPricingDashboard() {
 }
 
 async function markSettlementsPaid(driverId, periodKey) {
+  if (!confirm(`${periodKey} 기간 정산을 지급 완료로 처리할까요?\n이 작업은 되돌리기 어렵습니다.`)) return;
   const paidBy = prompt('누가 이체했는지 적어주세요.', '운영자');
   if (paidBy === null) return;
   const memo = prompt('메모가 있으면 적어주세요.', '수동 이체 완료');
@@ -1488,6 +1491,21 @@ async function copyCancelLink(jobId) {
   showToast('고객 취소 링크를 복사했어요.');
 }
 
+async function regenCustomerTokens(jobId) {
+  if (!confirm('고객 완료/취소 링크를 새로 발급할까요?\n기존 링크는 더 이상 작동하지 않아요.')) return;
+  const res = await adminFetch(api('regenerate-customer-tokens'), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ jobId })
+  });
+  const data = await res.json();
+  if (!data.success) return showToast(data.error || '토큰 재발급 실패', 'error');
+  const completeUrl = `${location.origin}/customer/complete.html?token=${encodeURIComponent(data.customerCompleteToken)}`;
+  const cancelUrl = `${location.origin}/customer/cancel.html?token=${encodeURIComponent(data.customerCancelToken)}`;
+  await navigator.clipboard.writeText(`완료: ${completeUrl}\n취소: ${cancelUrl}`);
+  showToast('토큰을 재발급하고 새 링크를 클립보드에 복사했어요.');
+}
+
 async function loadAll() {
   let tasks = [];
   if (adminPage === 'orders') tasks = [loadJobs(), loadDrivers()];
@@ -1662,8 +1680,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (manualTextEl) manualTextEl.value = '';
       const nameEl = document.getElementById('manualCustomerName');
       const phoneEl = document.getElementById('manualCustomerPhone');
+      const serviceTypeEl = document.getElementById('manualServiceType');
       if (nameEl) nameEl.value = '';
       if (phoneEl) phoneEl.value = '';
+      if (serviceTypeEl) serviceTypeEl.value = '';
       renderManualState(`주문이 등록됐어요. 결제 링크를 고객에게 보내면 됩니다. 총 결제는 ${money(data.job.total_price)}입니다.`);
       await loadAll();
     });

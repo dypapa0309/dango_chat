@@ -160,7 +160,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
             <label>평수</label>
             <div class="stepper" data-stepper="cleanPyeong">
               <button type="button" class="stepper-btn" data-stepper="cleanPyeong" data-dir="-1">−</button>
-              <input type="number" id="cleanPyeong" value="9" min="1" inputmode="numeric" class="stepper-input" />
+              <input type="number" id="cleanPyeong" value="9" min="1" max="200" inputmode="numeric" class="stepper-input" />
               <button type="button" class="stepper-btn" data-stepper="cleanPyeong" data-dir="1">+</button>
               <span class="stepper-unit">평</span>
             </div>
@@ -169,7 +169,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
             <label>방 개수</label>
             <div class="stepper" data-stepper="cleanRooms">
               <button type="button" class="stepper-btn" data-stepper="cleanRooms" data-dir="-1">−</button>
-              <input type="number" id="cleanRooms" value="1" min="1" inputmode="numeric" class="stepper-input" />
+              <input type="number" id="cleanRooms" value="1" min="1" max="20" inputmode="numeric" class="stepper-input" />
               <button type="button" class="stepper-btn" data-stepper="cleanRooms" data-dir="1">+</button>
               <span class="stepper-unit">개</span>
             </div>
@@ -178,7 +178,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
             <label>화장실 개수</label>
             <div class="stepper" data-stepper="cleanBaths">
               <button type="button" class="stepper-btn" data-stepper="cleanBaths" data-dir="-1">−</button>
-              <input type="number" id="cleanBaths" value="1" min="1" inputmode="numeric" class="stepper-input" />
+              <input type="number" id="cleanBaths" value="1" min="1" max="10" inputmode="numeric" class="stepper-input" />
               <button type="button" class="stepper-btn" data-stepper="cleanBaths" data-dir="1">+</button>
               <span class="stepper-unit">개</span>
             </div>
@@ -187,7 +187,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
             <label>베란다 개수</label>
             <div class="stepper" data-stepper="cleanBalconies">
               <button type="button" class="stepper-btn" data-stepper="cleanBalconies" data-dir="-1">−</button>
-              <input type="number" id="cleanBalconies" value="1" min="0" inputmode="numeric" class="stepper-input" />
+              <input type="number" id="cleanBalconies" value="1" min="0" max="10" inputmode="numeric" class="stepper-input" />
               <button type="button" class="stepper-btn" data-stepper="cleanBalconies" data-dir="1">+</button>
               <span class="stepper-unit">개</span>
             </div>
@@ -196,7 +196,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
             <label>붙박이장 세트 수</label>
             <div class="stepper" data-stepper="cleanWardrobes">
               <button type="button" class="stepper-btn" data-stepper="cleanWardrobes" data-dir="-1">−</button>
-              <input type="number" id="cleanWardrobes" value="0" min="0" inputmode="numeric" class="stepper-input" />
+              <input type="number" id="cleanWardrobes" value="0" min="0" max="10" inputmode="numeric" class="stepper-input" />
               <button type="button" class="stepper-btn" data-stepper="cleanWardrobes" data-dir="1">+</button>
               <span class="stepper-unit">세트</span>
             </div>
@@ -355,7 +355,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
               <label>보관 일수</label>
               <div class="stepper" data-stepper="storageDays">
                 <button type="button" class="stepper-btn" data-dir="-1" data-stepper="storageDays">−</button>
-                <input type="number" class="stepper-input" id="storageDays" value="1" min="1" inputmode="numeric" />
+                <input type="number" class="stepper-input" id="storageDays" value="1" min="1" max="90" inputmode="numeric" />
                 <button type="button" class="stepper-btn" data-dir="1" data-stepper="storageDays">+</button>
                 <span class="stepper-unit">일</span>
               </div>
@@ -382,7 +382,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
               <input type="checkbox" id="cleanNoElevator" />
               <div class="stepper" data-stepper="cleanFloor">
                 <button type="button" class="stepper-btn" data-stepper="cleanFloor" data-dir="-1">−</button>
-                <input type="number" id="cleanFloor" min="1" value="1" inputmode="numeric" class="stepper-input" />
+                <input type="number" id="cleanFloor" min="1" max="50" value="1" inputmode="numeric" class="stepper-input" />
                 <button type="button" class="stepper-btn" data-stepper="cleanFloor" data-dir="1">+</button>
                 <span class="stepper-unit">층</span>
               </div>
@@ -402,7 +402,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
             <div class="sub">외창 면적(평)</div>
             <div class="stepper" data-stepper="cleanOuterWindowPyeong">
               <button type="button" class="stepper-btn" data-stepper="cleanOuterWindowPyeong" data-dir="-1">−</button>
-              <input type="number" id="cleanOuterWindowPyeong" value="0" min="0" inputmode="numeric" class="stepper-input" />
+              <input type="number" id="cleanOuterWindowPyeong" value="0" min="0" max="200" inputmode="numeric" class="stepper-input" />
               <button type="button" class="stepper-btn" data-stepper="cleanOuterWindowPyeong" data-dir="1">+</button>
               <span class="stepper-unit">평</span>
             </div>
@@ -422,7 +422,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
             </div>
             <div class="stepper" data-stepper="cleanTrashBags">
               <button type="button" class="stepper-btn" data-stepper="cleanTrashBags" data-dir="-1">−</button>
-              <input type="number" id="cleanTrashBags" value="0" min="0" inputmode="numeric" class="stepper-input" />
+              <input type="number" id="cleanTrashBags" value="0" min="0" max="100" inputmode="numeric" class="stepper-input" />
               <button type="button" class="stepper-btn" data-stepper="cleanTrashBags" data-dir="1">+</button>
               <span class="stepper-unit">개</span>
             </div>
@@ -460,7 +460,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
             <input type="checkbox" id="noFrom" />
             <div class="stepper" data-stepper="fromFloor">
               <button type="button" class="stepper-btn" data-stepper="fromFloor" data-dir="-1">−</button>
-              <input type="number" id="fromFloor" min="1" value="1" inputmode="numeric" />
+              <input type="number" id="fromFloor" min="1" max="50" value="1" inputmode="numeric" />
               <button type="button" class="stepper-btn" data-stepper="fromFloor" data-dir="1">+</button>
               <span class="stepper-unit">층</span>
             </div>
@@ -473,7 +473,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
             <input type="checkbox" id="noTo" />
             <div class="stepper" data-stepper="toFloor">
               <button type="button" class="stepper-btn" data-stepper="toFloor" data-dir="-1">−</button>
-              <input type="number" id="toFloor" min="1" value="1" inputmode="numeric" />
+              <input type="number" id="toFloor" min="1" max="50" value="1" inputmode="numeric" />
               <button type="button" class="stepper-btn" data-stepper="toFloor" data-dir="1">+</button>
               <span class="stepper-unit">층</span>
             </div>
@@ -559,7 +559,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
               <div class="muted">출발지 층수</div>
               <div class="stepper" data-stepper="ladderFromFloor">
                 <button type="button" class="stepper-btn" data-stepper="ladderFromFloor" data-dir="-1">−</button>
-                <input type="number" class="stepper-input" id="ladderFromFloor" value="6" min="1" inputmode="numeric" />
+                <input type="number" class="stepper-input" id="ladderFromFloor" value="6" min="1" max="50" inputmode="numeric" />
                 <button type="button" class="stepper-btn" data-stepper="ladderFromFloor" data-dir="1">+</button>
                 <span class="stepper-unit">층</span>
               </div>
@@ -571,7 +571,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
               <div class="muted">도착지 층수</div>
               <div class="stepper" data-stepper="ladderToFloor">
                 <button type="button" class="stepper-btn" data-stepper="ladderToFloor" data-dir="-1">−</button>
-                <input type="number" class="stepper-input" id="ladderToFloor" value="6" min="1" inputmode="numeric" />
+                <input type="number" class="stepper-input" id="ladderToFloor" value="6" min="1" max="50" inputmode="numeric" />
                 <button type="button" class="stepper-btn" data-stepper="ladderToFloor" data-dir="1">+</button>
                 <span class="stepper-unit">층</span>
               </div>
@@ -602,7 +602,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
           </div>
           <div class="stepper" data-stepper="ride">
             <button type="button" class="stepper-btn" data-stepper="ride" data-dir="-1">−</button>
-            <input type="number" id="ride" min="0" value="0" inputmode="numeric" />
+            <input type="number" id="ride" min="0" max="6" value="0" inputmode="numeric" />
             <button type="button" class="stepper-btn" data-stepper="ride" data-dir="1">+</button>
             <span class="stepper-unit">명</span>
           </div>
@@ -671,6 +671,8 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
         </div>
       </div>
 
+      <div id="priceBreakdown" class="result-price-breakdown" hidden></div>
+
       <div class="result-trust-chips" aria-label="예약 신뢰 요소">
         <span class="result-chip">추가금 없음</span>
         <span class="result-chip">직접 배차</span>
@@ -702,11 +704,10 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
       </div>
 
       <div class="card result-info-card">
-        <div class="sub result-info-title">결제와 정산 방식이에요.</div>
-        <div class="mini-summary">전체 금액을 먼저 결제해요.</div>
-        <div class="mini-summary" style="margin-top:8px;">결제 금액 중 20%는 당고 정산분으로 남아요.</div>
-        <div class="mini-summary" style="margin-top:8px;">나머지 80%는 작업 완료 확인 뒤 기사 정산으로 넘어가요.</div>
-        <div class="mini-summary" style="margin-top:8px;">완료 확인이 끝나면 기사 정산은 1시간 안에 진행하는 흐름이에요.</div>
+        <div class="sub result-info-title">결제와 작업 완료 안내</div>
+        <div class="mini-summary">전체 금액을 먼저 결제하면 배차 준비가 시작돼요.</div>
+        <div class="mini-summary" style="margin-top:8px;">작업이 끝나면 고객이 직접 완료 확인을 해줘요.</div>
+        <div class="mini-summary" style="margin-top:8px;">완료 확인 후 기사 정산이 진행돼요.</div>
       </div>
     </div>
   </div>
@@ -1640,6 +1641,7 @@ content="당고 상세 견적 페이지예요. 출발지, 도착지, 짐, 옵션
     </div>
 
     <div class="modal-body">
+      <div id="checkoutOrderSummary" style="background:rgba(237,107,47,.06);border-radius:12px;padding:12px 14px;margin-bottom:14px;font-size:13px;line-height:1.6;display:none;"></div>
       <p class="checkout-modal-copy">결제 페이지로 넘어가기 전에 이름과 연락처를 넣어주세요.</p>
       <div class="checkout-form">
         <label class="checkout-field">

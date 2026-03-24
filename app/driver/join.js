@@ -113,6 +113,7 @@
   }
 
   joinBtn.onclick = async () => {
+    if (!confirm('가입 정보를 최종 저장할까요?\n저장 후에는 운영팀 확인이 필요한 항목도 있어요.')) return;
     joinBtn.disabled = true;
     joinBtn.textContent = '저장하고 있어요...';
 

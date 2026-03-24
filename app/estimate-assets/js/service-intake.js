@@ -1,4 +1,25 @@
 (function () {
+  function showToast(message, type) {
+    let el = document.getElementById('__intakeToast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = '__intakeToast';
+      Object.assign(el.style, {
+        position: 'fixed', bottom: '24px', left: '50%', transform: 'translateX(-50%)',
+        background: type === 'error' ? '#b91c1c' : '#20170f',
+        color: '#fff', padding: '12px 20px', borderRadius: '12px',
+        fontWeight: '700', fontSize: '14px', zIndex: '9999',
+        boxShadow: '0 8px 24px rgba(0,0,0,.18)', pointerEvents: 'none',
+        transition: 'opacity .25s', opacity: '0'
+      });
+      document.body.appendChild(el);
+    }
+    el.textContent = message;
+    el.style.opacity = '1';
+    clearTimeout(el._timer);
+    el._timer = setTimeout(() => { el.style.opacity = '0'; }, 3000);
+  }
+
   const SERVICE = document.body?.dataset.defaultService || "waste";
 
   const CONFIG = {
@@ -1023,19 +1044,22 @@
     }
 
     const optionMap = {
-      optionVisitEstimate: config.optionLabels?.visitEstimate,
-      optionHomeVisit: config.optionLabels?.homeVisit,
-      optionUrgent: config.optionLabels?.urgent,
-      optionGroup: config.optionLabels?.group,
-      optionParking: config.optionLabels?.parking,
-      optionPremium: config.optionLabels?.premium
+      optionVisitEstimate: { text: config.optionLabels?.visitEstimate, feeKey: 'visitEstimate' },
+      optionHomeVisit: { text: config.optionLabels?.homeVisit, feeKey: 'homeVisit' },
+      optionUrgent: { text: config.optionLabels?.urgent, feeKey: 'urgent' },
+      optionGroup: { text: config.optionLabels?.group, feeKey: 'group' },
+      optionParking: { text: config.optionLabels?.parking, feeKey: 'parking' },
+      optionPremium: { text: config.optionLabels?.premium, feeKey: 'premium' }
     };
 
-    Object.entries(optionMap).forEach(([id, text]) => {
+    Object.entries(optionMap).forEach(([id, { text, feeKey }]) => {
       if (!text) return;
       const input = document.getElementById(id);
       const label = input?.closest(".option")?.querySelector("div");
-      if (label) label.textContent = text;
+      if (label) {
+        const fee = feeKey ? config.optionFees?.[feeKey] : null;
+        label.textContent = fee ? `${text} (+${Number(fee).toLocaleString()}원)` : text;
+      }
     });
   }
 
@@ -1465,7 +1489,7 @@
     $("#wizardPrev")?.addEventListener("click", () => showStep(state.currentStep - 1));
     $("#wizardNext")?.addEventListener("click", () => {
       if (!validateStep(state.currentStep)) {
-        alert("현재 단계 입력을 먼저 확인해주세요.");
+        showToast("현재 단계 입력을 먼저 확인해주세요.", "error");
         return;
       }
       if (state.currentStep === 5) {

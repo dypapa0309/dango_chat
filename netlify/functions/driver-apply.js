@@ -43,20 +43,20 @@ export async function handler(event) {
     if (!(name || '').trim()) return fail('이름을 입력해주세요.');
     if (!normalizePhone(phone)) return fail('연락처를 입력해주세요.');
     if (!contractAgreed) return fail('위탁운송 계약 동의가 필요합니다.');
-    if (!commercialPlateConfirmed) return fail('영업용 차량 기준 확인이 필요합니다.');
     if (!taxWithholdingAgreed) return fail('3.3% 세금 정산 동의가 필요합니다.');
+
+    const VEHICLE_SERVICES = ['move', 'yd', 'waste', 'install', 'interior', 'interior_help'];
+    const normalizedServicesEarly = Array.isArray(supportedServices)
+      ? supportedServices.filter(Boolean)
+      : [supportsMove ? 'move' : null, supportsClean ? 'clean' : null, supportsYd ? 'yd' : null].filter(Boolean);
+    const needsVehicle = normalizedServicesEarly.some((s) => VEHICLE_SERVICES.includes(s));
+    if (needsVehicle && !commercialPlateConfirmed) return fail('영업용 차량 기준 확인이 필요합니다.');
     if (!(taxName || '').trim()) return fail('세금 신고용 이름을 입력해주세요.');
     if (!(taxBirthDate || '').trim()) return fail('생년월일을 입력해주세요.');
     if (!(taxIdNumber || '').trim()) return fail('세금 식별번호를 입력해주세요.');
     if (!(taxAddress || '').trim()) return fail('세금 신고용 주소를 입력해주세요.');
 
-    const normalizedServices = Array.isArray(supportedServices)
-      ? supportedServices.filter(Boolean)
-      : [
-          supportsMove ? 'move' : null,
-          supportsClean ? 'clean' : null,
-          supportsYd ? 'yd' : null
-        ].filter(Boolean);
+    const normalizedServices = normalizedServicesEarly;
     if (!normalizedServices.length) return fail('가능 서비스는 하나 이상 선택해주세요.');
 
     const supabase = adminClient();
@@ -85,7 +85,7 @@ export async function handler(event) {
       tax_address: (taxAddress || '').trim() || null,
       tax_withholding_type: 'freelancer_3_3',
       tax_withholding_agreed: true,
-      commercial_plate_confirmed: true,
+      commercial_plate_confirmed: needsVehicle ? true : false,
       consign_contract_agreed: true,
       consign_contract_version: CONTRACT_VERSION,
       consign_contract_accepted_at: new Date().toISOString(),

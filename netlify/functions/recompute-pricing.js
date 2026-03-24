@@ -16,8 +16,11 @@ function isoDateTime(value) {
 export async function handler(event) {
   const opt = handleOptions(event);
   if (opt) return opt;
-  const denied = requireAdmin(event);
-  if (denied) return denied;
+  const isScheduled = !event.httpMethod;
+  if (!isScheduled) {
+    const denied = requireAdmin(event);
+    if (denied) return denied;
+  }
 
   try {
     const body = parseBody(event);

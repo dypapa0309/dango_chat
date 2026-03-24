@@ -21,3 +21,17 @@
   from = "/customer"
   to = "/customer/pay.html"
   status = 301
+
+[[redirects]]
+  from = "/yd"
+  to = "/yd/"
+  status = 301
+
+[functions."expire-assignment"]
+  schedule = "*/5 * * * *"
+
+[functions."auto-dispatch"]
+  schedule = "*/10 * * * *"
+
+[functions."recompute-pricing"]
+  schedule = "0 3 * * 1"

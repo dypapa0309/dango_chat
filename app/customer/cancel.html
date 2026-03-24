@@ -176,7 +176,16 @@
 
       if (!data.cancelable) {
         statusText.className = 'warn';
-        statusText.textContent = '이미 작업이 시작됐거나 끝나서 자동 취소가 어려워요.';
+        const status = job.status;
+        if (status === 'completed') {
+          statusText.textContent = '이미 완료된 주문이라 취소할 수 없어요. 문제가 있다면 운영팀에 문의해주세요.';
+        } else if (status === 'canceled') {
+          statusText.textContent = '이미 취소된 주문이에요.';
+        } else if (status === 'in_progress') {
+          statusText.textContent = '기사가 이미 작업을 시작했어요. 취소가 필요하다면 운영팀에 직접 문의해주세요.';
+        } else {
+          statusText.textContent = '현재 상태에서는 자동 취소가 어려워요. 운영팀에 문의해주세요.';
+        }
         button.disabled = true;
         button.textContent = '자동 취소 어려움';
         return;

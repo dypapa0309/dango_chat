@@ -7,6 +7,16 @@ export const DEFAULT_PRICING_STATE = {
   max_multiplier: 0.9,
   adjust_step_small: 0.02,
   adjust_step_large: 0.04,
+  // ROAS / conversion rate thresholds used in recommendPricingAdjustment
+  threshold_roas_high: 2.2,
+  threshold_conv_high: 0.18,
+  threshold_roas_mid: 1.6,
+  threshold_conv_mid: 0.1,
+  threshold_roas_low: 0.8,
+  threshold_conv_low: 0.05,
+  threshold_roas_warn: 1.1,
+  threshold_conv_warn: 0.07,
+  min_lead_sample: 8,
   last_reason: '초기값',
   last_metrics: null,
   last_evaluated_at: null
@@ -63,19 +73,29 @@ export function recommendPricingAdjustment(state, metrics) {
   let change = 0;
   let reason = '표본이 적어서 유지';
 
-  if (spend <= 0 || effectiveLeads < 8) {
+  const roasHigh = Number(state?.threshold_roas_high ?? DEFAULT_PRICING_STATE.threshold_roas_high);
+  const convHigh = Number(state?.threshold_conv_high ?? DEFAULT_PRICING_STATE.threshold_conv_high);
+  const roasMid = Number(state?.threshold_roas_mid ?? DEFAULT_PRICING_STATE.threshold_roas_mid);
+  const convMid = Number(state?.threshold_conv_mid ?? DEFAULT_PRICING_STATE.threshold_conv_mid);
+  const roasLow = Number(state?.threshold_roas_low ?? DEFAULT_PRICING_STATE.threshold_roas_low);
+  const convLow = Number(state?.threshold_conv_low ?? DEFAULT_PRICING_STATE.threshold_conv_low);
+  const roasWarn = Number(state?.threshold_roas_warn ?? DEFAULT_PRICING_STATE.threshold_roas_warn);
+  const convWarn = Number(state?.threshold_conv_warn ?? DEFAULT_PRICING_STATE.threshold_conv_warn);
+  const minSample = Number(state?.min_lead_sample ?? DEFAULT_PRICING_STATE.min_lead_sample);
+
+  if (spend <= 0 || effectiveLeads < minSample) {
     change = 0;
     reason = '광고비 또는 리드 표본이 적어서 유지';
-  } else if (companyRoas >= 2.2 && paidConversionRate >= 0.18) {
+  } else if (companyRoas >= roasHigh && paidConversionRate >= convHigh) {
     change = largeStep;
     reason = '광고 효율과 결제 전환이 좋아서 인상';
-  } else if (companyRoas >= 1.6 && paidConversionRate >= 0.1) {
+  } else if (companyRoas >= roasMid && paidConversionRate >= convMid) {
     change = smallStep;
     reason = '광고 효율이 좋아서 소폭 인상';
-  } else if (companyRoas <= 0.8 && paidConversionRate <= 0.05) {
+  } else if (companyRoas <= roasLow && paidConversionRate <= convLow) {
     change = -largeStep;
     reason = '광고 효율과 결제 전환이 낮아서 인하';
-  } else if (companyRoas <= 1.1 || paidConversionRate <= 0.07) {
+  } else if (companyRoas <= roasWarn || paidConversionRate <= convWarn) {
     change = -smallStep;
     reason = '광고 효율 또는 결제 전환이 낮아서 소폭 인하';
   } else {

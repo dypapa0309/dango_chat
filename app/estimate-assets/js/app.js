@@ -43,6 +43,23 @@
     const CROSS_LINK = document.body?.dataset.crossLink || "";
     const CROSS_LABEL = document.body?.dataset.crossLabel || (DEFAULT_SERVICE === "clean" ? "이사도 필요하면 눌러주세요." : "청소도 필요하면 눌러주세요.");
 
+    function showToast(message, type) {
+      let stack = document.getElementById('toastStack');
+      if (!stack) {
+        const style = document.createElement('style');
+        style.textContent = '#toastStack{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:9999;pointer-events:none}.toast-item{padding:12px 20px;border-radius:12px;font-size:14px;font-weight:600;color:#fff;background:#215a45;box-shadow:0 8px 24px rgba(0,0,0,.18);animation:toastIn .2s ease;white-space:pre-wrap;max-width:340px;text-align:center}.toast-item.error{background:#b91c1c}.toast-item.info{background:#1e3a5f}@keyframes toastIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}';
+        document.head.appendChild(style);
+        stack = document.createElement('div');
+        stack.id = 'toastStack';
+        document.body.appendChild(stack);
+      }
+      const el = document.createElement('div');
+      el.className = 'toast-item' + (type === 'error' ? ' error' : type === 'info' ? ' info' : '');
+      el.textContent = message;
+      stack.appendChild(el);
+      setTimeout(() => el.remove(), 3500);
+    }
+
     function captureAttributionFromQuery() {
       const qs = new URLSearchParams(window.location.search);
       const source = qs.get("utm_source") || qs.get("source") || qs.get("channel");
@@ -653,18 +670,18 @@ function normalizeItemKey(k) {
 
       const token = getStepToken(sec);
       if (token === "service" && !state.activeService) {
-        alert("서비스를 먼저 선택해주세요.");
+        showToast("서비스를 먼저 선택해주세요.", "error");
         return;
       }
       if (state.activeService === SERVICE.MOVE) {
-        if (token === 1 && !state.vehicle) alert("차량을 선택해주세요.");
-        if (token === 2 && (state.distanceKm <= 0 || state.lastDistanceRouteKey !== currentRouteKey())) alert("주소를 바꿨다면 거리 계산을 다시 눌러주세요.");
-        if (token === 3 && (!state.moveDate || !state.timeSlot)) alert("날짜와 시간을 선택해주세요.");
-        if (token === 6 && state.loadLevel === null) alert("짐양(박스 기준)을 선택해주세요.");
+        if (token === 1 && !state.vehicle) showToast("차량을 선택해주세요.", "error");
+        if (token === 2 && (state.distanceKm <= 0 || state.lastDistanceRouteKey !== currentRouteKey())) showToast("주소를 바꿨다면 거리 계산을 다시 눌러주세요.", "error");
+        if (token === 3 && (!state.moveDate || !state.timeSlot)) showToast("날짜와 시간을 선택해주세요.", "error");
+        if (token === 6 && state.loadLevel === null) showToast("짐양(박스 기준)을 선택해주세요.", "error");
       }
       if (state.activeService === SERVICE.CLEAN) {
-        if (token === 2 && !state.cleanAddress) alert("청소 주소를 입력해주세요.");
-        if (token === 3 && (!state.moveDate || !state.timeSlot)) alert("날짜와 시간을 선택해주세요.");
+        if (token === 2 && !state.cleanAddress) showToast("청소 주소를 입력해주세요.", "error");
+        if (token === 3 && (!state.moveDate || !state.timeSlot)) showToast("날짜와 시간을 선택해주세요.", "error");
       }
     }
 
@@ -788,6 +805,15 @@ function normalizeItemKey(k) {
       const m = document.getElementById(id);
       if (!m) return false;
       if (id === "mattressSizeModal") syncMattressModalFromState();
+      if (id === "checkoutStartModal") {
+        const summaryEl = document.getElementById("checkoutOrderSummary");
+        if (summaryEl) {
+          const pricing = buildCurrentPricingBreakdown({ channel: document.body?.dataset.siteBrand === "당고" ? "dango" : "direct" });
+          const summaryText = document.getElementById("summary")?.textContent || '';
+          summaryEl.textContent = `${summaryText}  /  예상 금액 ${formatWon(pricing.total || 0)}`;
+          summaryEl.style.display = 'block';
+        }
+      }
       m.setAttribute("aria-hidden", "false");
       m.classList.add("open");
       syncModalBodyLock();
@@ -1438,7 +1464,7 @@ function normalizeItemKey(k) {
     function ensureKakaoReady(cb) {
       if (kakaoReady) return cb();
       if (!window.kakao || !window.kakao.maps) {
-        alert("카카오맵 SDK 로딩에 실패했어. 잠깐 뒤 새로고침 해줘.");
+        showToast("카카오맵 SDK 로딩에 실패했어. 잠깐 뒤 새로고침 해줘.", "error");
         return;
       }
       window.kakao.maps.load(() => {
@@ -1502,11 +1528,11 @@ function normalizeItemKey(k) {
       const wp = state.hasWaypoint ? state.waypointAddress : "";
 
       if (!start || !end) {
-        alert("출발지/도착지 주소를 입력해줘.");
+        showToast("출발지/도착지 주소를 입력해줘.", "error");
         return;
       }
       if (state.hasWaypoint && !wp) {
-        alert("경유지 체크했으면 경유지 주소도 입력해줘.");
+        showToast("경유지 체크했으면 경유지 주소도 입력해줘.", "error");
         return;
       }
 
@@ -1538,7 +1564,7 @@ function normalizeItemKey(k) {
           if (distanceText) distanceText.textContent = "주소를 다시 확인해주세요.";
           const hasDetail = isLikelyDetailedAddress(start) || isLikelyDetailedAddress(end) || (state.hasWaypoint && isLikelyDetailedAddress(wp));
           if (hasDetail) showAddressGuidePopup();
-          else alert("거리 계산에 실패했어요. 도로명이나 건물명 기준으로 다시 넣어주세요.");
+          else showToast("거리 계산에 실패했어요. 도로명이나 건물명 기준으로 다시 넣어주세요.", "error");
         }
       });
     }
@@ -1794,7 +1820,7 @@ function normalizeItemKey(k) {
       const inp = modal.querySelector('.itemQty[data-item="' + item + '"]');
       if (!inp) return false;
       const cur = toInt(inp.value, 0);
-      const next = Math.max(0, cur + dir);
+      const next = Math.min(20, Math.max(0, cur + dir));
       inp.value = String(next);
       setItemQty(item, next);
       renderAll();
@@ -1804,7 +1830,7 @@ function normalizeItemKey(k) {
     function handleItemQtyInput(inp) {
       const item = inp?.getAttribute("data-item");
       if (!item) return false;
-      const next = Math.max(0, toInt(inp.value, 0));
+      const next = Math.min(20, Math.max(0, toInt(inp.value, 0)));
       inp.value = String(next);
       setItemQty(item, next);
       renderAll();
@@ -2485,6 +2511,8 @@ function normalizeItemKey(k) {
         driverAmount,
         helperCount,
         ladderCount,
+        helperCustomerAmount,
+        ladderCustomerAmount,
         pricingPolicy: {
           depositRate: MOVE_DEPOSIT_RATE,
           helperDepositAddonPerPerson: HELPER_DEPOSIT_ADDON_PER_PERSON,
@@ -3038,6 +3066,20 @@ const borderColors = comparison.labels.map((label) =>
       $("#stickyBalance") && ($("#stickyBalance").textContent = formatWon(pricing.balance));
 
       renderCompareChart(pricing.total || display);
+
+      const breakdownEl = $("#priceBreakdown");
+      if (breakdownEl && state.activeService === SERVICE.MOVE && (pricing.helperCount || pricing.ladderCount)) {
+        const baseAmount = (pricing.total || 0) - (pricing.helperCustomerAmount || 0) - (pricing.ladderCustomerAmount || 0);
+        const rows = [];
+        rows.push(`<div class="breakdown-row"><span>기본 이사비</span><span>${formatWon(Math.max(0, baseAmount))}</span></div>`);
+        if (pricing.helperCount) rows.push(`<div class="breakdown-row"><span>인부 추가 (${pricing.helperCount}명)</span><span>+${formatWon(pricing.helperCustomerAmount)}</span></div>`);
+        if (pricing.ladderCount) rows.push(`<div class="breakdown-row"><span>사다리차 (${pricing.ladderCount}건)</span><span>+${formatWon(pricing.ladderCustomerAmount)}</span></div>`);
+        rows.push(`<div class="breakdown-row total-row"><span>합계</span><span>${formatWon(pricing.total || 0)}</span></div>`);
+        breakdownEl.innerHTML = rows.join('');
+        breakdownEl.hidden = false;
+      } else if (breakdownEl) {
+        breakdownEl.hidden = true;
+      }
     }
 
     function renderSummary() {
@@ -3088,7 +3130,7 @@ const borderColors = comparison.labels.map((label) =>
         openModal("addressGuideModal");
         return;
       }
-      alert("주소는 동·호수를 빼고 도로명주소/건물명까지만 입력해줘.");
+      showToast("주소는 동·호수를 빼고 도로명주소/건물명까지만 입력해줘.", "error");
     }
 
     function isMoveInquiryReady() {
@@ -3103,7 +3145,7 @@ const borderColors = comparison.labels.map((label) =>
       if (hasDetail || (!!state.startAddress && !!state.endAddress && state.distanceKm <= 0)) {
         showAddressGuidePopup();
       } else {
-        alert("거리 계산이 완료돼야 견적서를 발송할 수 있어. 주소 입력 후 거리 계산하기를 다시 눌러줘.");
+        showToast("거리 계산이 완료돼야 견적서를 발송할 수 있어. 주소 입력 후 거리 계산하기를 다시 눌러줘.", "error");
       }
       return false;
     }
@@ -3223,7 +3265,8 @@ const borderColors = comparison.labels.map((label) =>
         deposit_amount: payload.price_override.deposit,
         balance_amount: payload.price_override.balance,
         payment_status: "draft",
-        dispatch_status: "pending"
+        dispatch_status: "pending",
+        savedAt: new Date().toISOString()
       };
     }
 
@@ -3390,7 +3433,7 @@ const borderColors = comparison.labels.map((label) =>
       const fallbackMessage = copied
         ? "문자 앱이 바로 열리지 않으면, 방금 복사된 견적서를 01075416143 번호로 붙여넣어 전송해줘!"
         : "문자 앱이 바로 열리지 않으면, 01075416143 번호로 견적 내용을 직접 보내줘!";
-      alert(fallbackMessage);
+      showToast(fallbackMessage);
     }
 
     function calcSmsMoveDiscountQuote(displayTotal) {
