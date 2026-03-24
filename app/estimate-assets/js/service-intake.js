@@ -492,6 +492,9 @@
   };
 
   const GENERIC_SERVICES = new Set(Object.keys(GENERIC_SERVICE_CONFIG));
+  const LESSON_SERVICES = new Set(['pt', 'vocal', 'golf', 'tutor', 'counseling']);
+  const LESSON_DURATION_MULTIPLIER = { '30': 0.6, '60': 1.0, '90': 1.4, '120': 1.75 };
+  const LESSON_DURATION_LABEL = { '30': '30분', '60': '1시간', '90': '1시간 30분', '120': '2시간' };
 
   const DETAIL_SELECTION_CONFIG = {
     organize: {
@@ -605,6 +608,7 @@
     errandRoundTrip: false,
     errandWaitMinutes: 0,
     errandUrgent: false,
+    lessonDuration: '60',
     detailSelections: {}
   };
 
@@ -763,6 +767,9 @@
         state.genericQty = Number($("#genericQty")?.value || 1);
       }
       state.modelName = $("#serviceDetailName")?.value?.trim() || "";
+      if (LESSON_SERVICES.has(SERVICE)) {
+        state.lessonDuration = $('input[name="lessonDuration"]:checked')?.value || '60';
+      }
       state.drilling = !!$("#optionVisitEstimate")?.checked;
       state.anchorFix = !!$("#optionHomeVisit")?.checked;
       state.electric = !!$("#optionUrgent")?.checked;
@@ -818,7 +825,9 @@
 
   function calculateGenericPrice() {
     const serviceConfig = genericServiceConfig();
-    const base = genericCategoryMap()[state.category]?.base || 70000;
+    const rawBase = genericCategoryMap()[state.category]?.base || 70000;
+    const durationMult = LESSON_SERVICES.has(SERVICE) ? (LESSON_DURATION_MULTIPLIER[state.lessonDuration] || 1.0) : 1.0;
+    const base = Math.round(rawBase * durationMult);
     const detailConfig = detailSelectionConfig();
     const qty = Math.max(1, Number(state.genericQty || 1));
     let total = base + Math.max(0, qty - 1) * Math.round(base * 0.4);
@@ -869,8 +878,9 @@
     readState();
     if (step === 1) return Boolean(state.category);
     if (step === 2) {
-      if (SERVICE === "errand") return (!!state.address || !!state.extraAddress) && !!state.moveDate && !!state.timeSlot;
-      return !!state.address && !!state.moveDate && !!state.timeSlot;
+      const validAddr = (v) => typeof v === 'string' && v.trim().length >= 5;
+      if (SERVICE === "errand") return (validAddr(state.address) || validAddr(state.extraAddress)) && !!state.moveDate && !!state.timeSlot;
+      return validAddr(state.address) && !!state.moveDate && !!state.timeSlot;
     }
     if (step === 3) {
       if (SERVICE === "waste") return Object.values(state.wasteItems).some((value) => Number(value || 0) > 0);
@@ -958,10 +968,15 @@
       state.ladder ? "사다리차 필요" : null
     ].filter(Boolean);
 
-    return [
+    const summaryLines = [
       `접수 유형: ${labelFromMap(genericCategoryMap(), state.category, "-")}`,
       `${serviceConfig.addressLabel || "방문 주소"}: ${state.address || "-"}`,
-      `희망 날짜: ${state.moveDate || "-"}`,
+      `희망 날짜: ${state.moveDate || "-"}`
+    ];
+    if (LESSON_SERVICES.has(SERVICE)) {
+      summaryLines.push(`수업 시간: ${LESSON_DURATION_LABEL[state.lessonDuration] || '1시간'}`);
+    }
+    summaryLines.push(
       detailSelectionConfig()
         ? `${
             detailSelectionConfig().summaryTitle
@@ -969,7 +984,8 @@
         : `${serviceConfig.quantityLabel || "건수"}: ${Math.max(1, Number(state.genericQty || 1))}${serviceConfig.quantityUnit || "건"}`,
       `${serviceConfig.detailSummaryLabel || "상세 내용"}: ${state.modelName || "미입력"}`,
       `추가 요청: ${genericOptions.length ? genericOptions.join(" · ") : "없음"}`
-    ];
+    );
+    return summaryLines;
   }
 
   function renderPrice() {
@@ -1100,6 +1116,7 @@
                   category: state.category,
                   quantity: state.genericQty,
                   detailName: state.modelName,
+                  lessonDuration: LESSON_SERVICES.has(SERVICE) ? (state.lessonDuration || '60') : undefined,
                   detailSelections: detailSelectionConfig() ? { ...state.detailSelections } : null
                 },
       option_summary:
