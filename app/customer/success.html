@@ -162,6 +162,20 @@
       <a id="completeLinkAction" href="#" hidden>작업 완료 확인 페이지 열기</a>
       <a id="cancelLinkAction" href="#" hidden>작업 시작 전 취소 페이지 열기</a>
     </div>
+    <div id="rejectDriverBox" class="linkbox" hidden style="border-color:#fca5a5; background:#fff5f5;">
+      <strong style="display:block; color:#991b1b; margin-bottom:8px;">전문가 변경 요청</strong>
+      <div id="rejectDriverText" style="color:#6e6255; line-height:1.6; font-size:14px;"></div>
+      <button id="btnRejectDriver" style="margin-top:12px; display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:0 18px; border-radius:12px; background:#ef4444; color:#fff; border:0; font:inherit; font-weight:700; cursor:pointer;" hidden>이 전문가 거절하기</button>
+    </div>
+    <div id="chatBox" class="linkbox" hidden>
+      <strong style="display:block; color:#20170f; margin-bottom:10px;">전문가와 채팅</strong>
+      <div id="chatMessages" style="height:200px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:12px; padding:12px; background:#f8fafc; display:flex; flex-direction:column; gap:8px;"></div>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <input id="chatInput" type="text" placeholder="메시지 입력..." maxlength="1000" style="flex:1; min-height:44px; border-radius:10px; border:1px solid #e5e7eb; padding:0 14px; font:inherit;" />
+        <button id="btnChatSend" style="min-width:70px; min-height:44px; border-radius:10px; border:0; background:#ed6b2f; color:#fff; font:inherit; font-weight:700; cursor:pointer; margin-top:0;">전송</button>
+      </div>
+      <p id="chatStatus" style="font-size:12px; color:#9ca3af; margin:4px 0 0;"></p>
+    </div>
     <div class="service-box">
       <h2>다른 서비스도 이어서 볼 수 있어요.</h2>
       <p>결제가 끝났다면 다음에 필요한 서비스도 같은 방식으로 바로 접수할 수 있습니다.</p>
@@ -215,6 +229,40 @@ function startDispatchPolling(jobId, el) {
       if (dispatch === 'accepted' || dispatch === 'driver_departed' || dispatch === 'driver_arrived') {
         el.className = 'ok';
         el.textContent = `기사 배정이 완료됐어요. 현재 상태: ${label}`;
+        // 거절 UI 표시 (accepted 상태에서만)
+        if (dispatch === 'accepted' && rejectDriverBox && job.customer_reject_token) {
+          const rejCount = Number(job.customer_rejection_count || 0);
+          const remaining = 2 - rejCount;
+          if (remaining > 0) {
+            rejectDriverBox.hidden = false;
+            rejectDriverText.textContent = `담당 전문가: ${job.driver?.name || '확인 중'}${job.driver?.vehicle_type ? ' / ' + job.driver.vehicle_type : ''}. 전문가가 마음에 들지 않으면 변경 요청할 수 있어요. (남은 변경 가능 횟수: ${remaining}회)`;
+            btnRejectDriver.hidden = false;
+            btnRejectDriver.onclick = async () => {
+              if (!confirm('정말로 이 전문가를 거절하고 다른 전문가로 재배차를 요청할까요?')) return;
+              btnRejectDriver.disabled = true;
+              btnRejectDriver.textContent = '처리 중...';
+              try {
+                const r = await fetch('/.netlify/functions/customer-reject-driver', {
+                  method: 'POST', headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ token: job.customer_reject_token })
+                });
+                const d = await r.json();
+                if (d.success) {
+                  rejectDriverText.textContent = `거절이 완료됐어요. 다른 전문가로 재배차를 요청했습니다.${d.canRejectAgain ? ` (남은 변경 가능 횟수: ${2 - d.rejectionCount}회)` : ' 더 이상 변경은 불가해요.'}`;
+                  btnRejectDriver.hidden = true;
+                } else {
+                  rejectDriverText.textContent = d.error || '거절에 실패했어요.';
+                  btnRejectDriver.disabled = false;
+                  btnRejectDriver.textContent = '이 전문가 거절하기';
+                }
+              } catch { btnRejectDriver.disabled = false; btnRejectDriver.textContent = '이 전문가 거절하기'; }
+            };
+          }
+        }
+        // 채팅 활성화 (배정 후 상태에서)
+        if (job.customer_reject_token && typeof window.openCustomerChat === 'function') {
+          window.openCustomerChat(job.customer_reject_token);
+        }
         clearInterval(interval);
       } else if (dispatch === 'completed' || dispatch === 'canceled') {
         el.className = 'muted';
@@ -240,6 +288,9 @@ function startDispatchPolling(jobId, el) {
   const completeLinkText = document.getElementById('completeLinkText');
   const completeLinkAction = document.getElementById('completeLinkAction');
   const cancelLinkAction = document.getElementById('cancelLinkAction');
+  const rejectDriverBox = document.getElementById('rejectDriverBox');
+  const rejectDriverText = document.getElementById('rejectDriverText');
+  const btnRejectDriver = document.getElementById('btnRejectDriver');
 
   function loadDraft() {
     if (!draftId) return null;
@@ -270,6 +321,20 @@ function startDispatchPolling(jobId, el) {
 
       paymentStatusEl.className = 'ok';
       paymentStatusEl.textContent = '전체 결제가 승인됐어요. 주문도 바로 확정됐어요.';
+
+      // GA4 + Meta Pixel 구매 전환 이벤트
+      try {
+        const paidAmount = Number(finalAmount) || 0;
+        if (typeof gtag === 'function') {
+          gtag('event', 'purchase', { transaction_id: orderId, value: paidAmount, currency: 'KRW', items: [{ item_id: jobId, item_name: '당고 서비스' }] });
+        }
+        if (typeof fbq === 'function') {
+          fbq('track', 'Purchase', { value: paidAmount, currency: 'KRW', content_ids: [jobId], content_type: 'service' });
+        }
+        if (window.dataLayer) {
+          window.dataLayer.push({ event: 'purchase', ecommerce: { transaction_id: orderId, value: paidAmount, currency: 'KRW' } });
+        }
+      } catch (_) { /* 추적 실패는 무시 */ }
 
       const assignRes = await fetch('/.netlify/functions/assign-request', {
         method: 'POST',
@@ -325,6 +390,90 @@ function startDispatchPolling(jobId, el) {
     dispatchStatusEl.className = 'muted';
     dispatchStatusEl.textContent = '배차 요청은 아직 들어가지 않았어요.';
   }
+})();
+
+// ── 채팅 ────────────────────────────────────────────────
+(function initChat() {
+  const chatBox = document.getElementById('chatBox');
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const btnChatSend = document.getElementById('btnChatSend');
+  const chatStatus = document.getElementById('chatStatus');
+  let chatToken = null;
+  let chatPollInterval = null;
+  let lastMsgCount = 0;
+
+  function escapeChat(s) {
+    return String(s || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  }
+
+  function renderMessages(messages) {
+    if (!messages.length) {
+      chatMessages.innerHTML = '<div style="color:#9ca3af;font-size:13px;text-align:center;margin:auto;">아직 메시지가 없어요.</div>';
+      return;
+    }
+    chatMessages.innerHTML = messages.map((m) => {
+      const isMine = m.sender_type === 'customer';
+      const bg = isMine ? '#ed6b2f' : '#fff';
+      const color = isMine ? '#fff' : '#111';
+      const align = isMine ? 'flex-end' : 'flex-start';
+      const time = new Date(m.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      return `<div style="display:flex;flex-direction:column;align-items:${align};gap:2px;">
+        <div style="max-width:80%;padding:8px 12px;border-radius:12px;background:${bg};color:${color};font-size:14px;line-height:1.5;word-break:break-word;">${escapeChat(m.content)}</div>
+        <span style="font-size:11px;color:#9ca3af;">${isMine ? '나' : '전문가'} · ${time}</span>
+      </div>`;
+    }).join('');
+    if (messages.length !== lastMsgCount) {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      lastMsgCount = messages.length;
+    }
+  }
+
+  async function fetchMessages() {
+    if (!chatToken) return;
+    try {
+      const res = await fetch(`/.netlify/functions/get-messages?sender_type=customer&token=${encodeURIComponent(chatToken)}`);
+      const data = await res.json();
+      if (data.success) renderMessages(data.messages || []);
+    } catch {}
+  }
+
+  async function sendMessage() {
+    if (!chatToken) return;
+    const content = chatInput.value.trim();
+    if (!content) return;
+    btnChatSend.disabled = true;
+    chatStatus.textContent = '전송 중...';
+    try {
+      const res = await fetch('/.netlify/functions/send-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender_type: 'customer', token: chatToken, content })
+      });
+      const data = await res.json();
+      if (data.success) {
+        chatInput.value = '';
+        chatStatus.textContent = '';
+        await fetchMessages();
+      } else {
+        chatStatus.textContent = data.error || '전송에 실패했어요.';
+      }
+    } catch {
+      chatStatus.textContent = '전송 중 오류가 발생했어요.';
+    }
+    btnChatSend.disabled = false;
+  }
+
+  window.openCustomerChat = function(token) {
+    if (chatPollInterval) return;
+    chatToken = token;
+    chatBox.hidden = false;
+    fetchMessages();
+    chatPollInterval = setInterval(fetchMessages, 10000);
+  };
+
+  btnChatSend.onclick = sendMessage;
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
 })();
 </script>
 <script src="../assets/js/contact-fab.js"></script>

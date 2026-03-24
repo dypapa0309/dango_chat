@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 로그인 중...</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    body { margin: 0; font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f5ead8; color: #2a211b; }
+    .msg { text-align: center; }
+    .msg p { color: #706257; font-size: 14px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="msg">
+    <strong>로그인 처리 중...</strong>
+    <p>잠시만 기다려주세요.</p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const next = qs.get('next') || '/customer/dashboard.html';
+
+    window.dd.onSupabaseReady(async (sb) => {
+      // Supabase가 URL fragment에서 세션을 자동으로 처리
+      const { data, error } = await sb.auth.getSession();
+      if (error || !data?.session) {
+        document.querySelector('strong').textContent = '로그인에 실패했어요.';
+        document.querySelector('p').innerHTML = '다시 시도해주세요. <a href="/auth/login.html">로그인 페이지로</a>';
+        return;
+      }
+      // 세션 확인 후 이동
+      location.replace(next);
+    });
+
+    // 5초 후에도 처리 안 되면 fallback
+    setTimeout(() => {
+      if (document.querySelector('strong').textContent === '로그인 처리 중...') {
+        location.replace(next);
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

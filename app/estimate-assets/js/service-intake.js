@@ -152,6 +152,16 @@
         4: "좋아요. 이제 하나씩 넣으면 돼요. 대면이나 추가 요청을 정리하면 됩니다.",
         5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
       }
+    },
+    marketing: {
+      label: "마케팅",
+      cheer: {
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 마케팅 서비스인지 먼저 골라주세요.",
+        2: "좋아요. 이제 하나씩 넣으면 돼요. 희망 지역과 날짜를 정리하면 됩니다.",
+        3: "좋아요. 이제 하나씩 넣으면 돼요. 건수와 세부 요청을 넣어주세요.",
+        4: "좋아요. 이제 하나씩 넣으면 돼요. 납품 형식이나 추가 요청을 정리하면 됩니다.",
+        5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
+      }
     }
   };
 
@@ -487,6 +497,43 @@
         group: 10000,
         parking: 5000,
         premium: 15000
+      }
+    },
+    marketing: {
+      categories: {
+        sns: { label: "SNS 관리·운영", base: 150000 },
+        blog: { label: "블로그 포스팅", base: 60000 },
+        ads: { label: "광고 대행 (네이버·구글·메타)", base: 200000 },
+        content: { label: "콘텐츠 제작 (이미지·카드뉴스)", base: 120000 },
+        video: { label: "영상 제작·편집", base: 250000 },
+        photo: { label: "사진 촬영·보정", base: 180000 },
+        copy: { label: "카피라이팅·글쓰기", base: 80000 },
+        seo: { label: "SEO·검색 최적화", base: 130000 },
+        branding: { label: "브랜딩·로고 디자인", base: 200000 },
+        email: { label: "이메일·문자 마케팅", base: 90000 }
+      },
+      addressLabel: "희망 미팅 지역 (비대면 가능)",
+      quantityLabel: "작업 건수",
+      quantityDesc: "포스팅, 영상, 광고 등 건수 단위로 접수합니다.",
+      quantityUnit: "건",
+      detailSummaryLabel: "마케팅 목표",
+      priceGuide: "서비스 유형과 건수, 추가 옵션을 반영한 예상 금액입니다.",
+      detailLabel: "브랜드명, 목표 채널, 원하는 방향을 적어주세요.",
+      optionLabels: {
+        visitEstimate: "초기 미팅·브리핑이 필요해요",
+        homeVisit: "방문 미팅이 필요해요",
+        urgent: "빠른 납품이 필요해요",
+        group: "복수 채널 동시 운영이에요",
+        parking: "광고비 예산 별도 협의가 필요해요",
+        premium: "장기 계약을 고려하고 있어요"
+      },
+      optionFees: {
+        visitEstimate: 20000,
+        homeVisit: 30000,
+        urgent: 30000,
+        group: 50000,
+        parking: 0,
+        premium: 0
       }
     }
   };
@@ -1185,9 +1232,17 @@
       button.textContent = "결제 페이지를 준비하고 있어요...";
     }
     try {
+      const headers = { "Content-Type": "application/json" };
+      try {
+        const sb = window.dd?.supabase;
+        if (sb) {
+          const { data: { session } } = await sb.auth.getSession();
+          if (session?.access_token) headers["Authorization"] = `Bearer ${session.access_token}`;
+        }
+      } catch {}
       const res = await fetch("/.netlify/functions/create-job", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify(buildCheckoutPayload(customerName, customerPhone))
       });
       const data = await res.json();

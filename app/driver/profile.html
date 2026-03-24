@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>당고 | 기사 정보 관리</title>
+  <title>당고 | 전문가 정보 관리</title>
   <link rel="stylesheet" href="./accept.css" />
 </head>
 <body>
   <main class="wrap">
     <div class="card">
-      <h1>당고 기사 정보 관리</h1>
-      <div id="profileStatus" class="job-info">기사 정보를 불러오고 있어요.</div>
+      <h1>당고 전문가 정보 관리</h1>
+      <div id="profileStatus" class="job-info">전문가 정보를 불러오고 있어요.</div>
       <div id="profileFormBody">
         <div class="form-grid">
           <input id="driverName" type="text" placeholder="이름" />
@@ -45,6 +45,7 @@
             <label class="service-chip"><input data-service-option type="checkbox" value="golf" /><span><strong>골프</strong><small>입문, 스윙, 필드 레슨</small></span></label>
             <label class="service-chip"><input data-service-option type="checkbox" value="tutor" /><span><strong>과외</strong><small>영어, 입시, 성인 학습</small></span></label>
             <label class="service-chip"><input data-service-option type="checkbox" value="counseling" /><span><strong>심리상담</strong><small>개인, 커플, 가족 상담</small></span></label>
+            <label class="service-chip"><input data-service-option type="checkbox" value="marketing" /><span><strong>마케팅</strong><small>SNS, 광고, 콘텐츠</small></span></label>
           </div>
         </details>
 
@@ -93,6 +94,25 @@
 
         <div class="actions">
           <button id="btnSaveProfile" class="btn primary" disabled>정보 저장</button>
+        </div>
+
+        <div id="dispatchToggleSection" style="margin-top:20px; padding:16px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:14px;">
+          <strong style="display:block; margin-bottom:8px;">배차 수신 설정</strong>
+          <p style="font-size:13px; color:#6b7280; margin:0 0 12px;">OFF로 설정하면 새로운 배차 요청이 오지 않아요.</p>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <button id="btnDispatchOn" class="btn" style="min-height:40px; font-size:14px;">ON (수신 중)</button>
+            <button id="btnDispatchOff" class="btn danger" style="min-height:40px; font-size:14px;">OFF (수신 안 함)</button>
+          </div>
+          <p id="dispatchToggleStatus" style="font-size:13px; color:#6b7280; margin-top:8px;"></p>
+        </div>
+
+        <div id="availabilitySection" style="margin-top:20px; padding:16px; background:#f8fafc; border:1px solid #e5e7eb; border-radius:14px;">
+          <strong style="display:block; margin-bottom:8px;">일정 관리</strong>
+          <p style="font-size:13px; color:#6b7280; margin:0 0 12px;">불가능한 날짜를 미리 설정해두면 배차에서 자동으로 제외돼요.</p>
+          <div id="availabilityCalendar" style="display:grid; grid-template-columns: repeat(7, 1fr); gap:4px; margin-bottom:12px;"></div>
+          <p style="font-size:12px; color:#6b7280; margin:0 0 8px;">날짜를 눌러 불가 여부를 전환합니다. 빨간 날짜는 배차 불가예요.</p>
+          <button id="btnSaveAvailability" class="btn" style="min-height:40px; font-size:14px;" disabled>일정 저장</button>
+          <p id="availabilityStatus" style="font-size:13px; color:#6b7280; margin-top:8px;"></p>
         </div>
       </div>
       <p id="profileResult" class="result"></p>

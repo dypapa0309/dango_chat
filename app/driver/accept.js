@@ -246,12 +246,87 @@
     countdownInterval = setInterval(tick, 1000);
   }
 
-  acceptBtn.onclick = () => respond('accept');
+  acceptBtn.onclick = async () => { await respond('accept'); startChatPolling(); };
   declineBtn.onclick = () => respond('decline');
   departBtn.onclick = () => respond('depart');
   arriveBtn.onclick = () => respond('arrive');
   startBtn.onclick = () => respond('start');
   requestCompleteBtn.onclick = () => respond('request_complete');
 
-  await loadAssignment();
+  // ── 채팅 ──────────────────────────────────────────────
+  const chatPanel = document.getElementById('chatPanel');
+  const chatMessages = document.getElementById('chatMessages');
+  const chatInput = document.getElementById('chatInput');
+  const btnChatSend = document.getElementById('btnChatSend');
+  const chatStatus = document.getElementById('chatStatus');
+  let chatPollInterval = null;
+  let lastMessageCount = 0;
+
+  function renderChatMessages(messages) {
+    if (!messages.length) {
+      chatMessages.innerHTML = '<div style="color:#9ca3af; font-size:13px; text-align:center; margin:auto;">아직 메시지가 없어요.</div>';
+      return;
+    }
+    chatMessages.innerHTML = messages.map((m) => {
+      const isMine = m.sender_type === 'driver';
+      const bg = isMine ? '#0f766e' : '#fff';
+      const color = isMine ? '#fff' : '#111';
+      const align = isMine ? 'flex-end' : 'flex-start';
+      const time = new Date(m.created_at).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      return `<div style="display:flex; flex-direction:column; align-items:${align}; gap:2px;">
+        <div style="max-width:80%; padding:8px 12px; border-radius:12px; background:${bg}; color:${color}; font-size:14px; line-height:1.5; word-break:break-word;">${escapeHtml(m.content)}</div>
+        <span style="font-size:11px; color:#9ca3af;">${isMine ? '나' : '고객'} · ${time}</span>
+      </div>`;
+    }).join('');
+    if (messages.length !== lastMessageCount) {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      lastMessageCount = messages.length;
+    }
+  }
+
+  async function fetchMessages() {
+    try {
+      const res = await fetch(`/.netlify/functions/get-messages?sender_type=driver&token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (data.success) renderChatMessages(data.messages || []);
+    } catch { /* 폴링 실패 무시 */ }
+  }
+
+  async function sendMessage() {
+    const content = chatInput.value.trim();
+    if (!content) return;
+    btnChatSend.disabled = true;
+    chatStatus.textContent = '전송 중...';
+    try {
+      const res = await fetch('/.netlify/functions/send-message', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sender_type: 'driver', token, content })
+      });
+      const data = await res.json();
+      if (data.success) {
+        chatInput.value = '';
+        chatStatus.textContent = '';
+        await fetchMessages();
+      } else {
+        chatStatus.textContent = data.error || '전송에 실패했어요.';
+      }
+    } catch {
+      chatStatus.textContent = '전송 중 오류가 발생했어요.';
+    }
+    btnChatSend.disabled = false;
+  }
+
+  function startChatPolling() {
+    if (chatPollInterval) return;
+    chatPanel.hidden = false;
+    fetchMessages();
+    chatPollInterval = setInterval(fetchMessages, 10000);
+  }
+
+  btnChatSend.onclick = sendMessage;
+  chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
+  const data = await loadAssignment();
+  if (data?.accepted) startChatPolling();
 })();

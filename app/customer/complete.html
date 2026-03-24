@@ -113,6 +113,12 @@
       align-items: center;
       justify-content: center;
     }
+    .review-box { margin-top: 20px; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: 18px; }
+    .review-box h3 { margin: 0 0 12px; font-size: 18px; }
+    .stars { display: flex; gap: 8px; margin-bottom: 14px; }
+    .star-btn { background: none; border: none; font-size: 32px; cursor: pointer; padding: 0; width: auto; min-height: auto; line-height: 1; color: #d1d5db; transition: color .15s; }
+    .star-btn.active { color: #f59e0b; }
+    .review-submit { background: var(--brand); color: #fff; }
   </style>
 </head>
 <body data-analytics-page="customer_complete">
@@ -139,6 +145,24 @@
     <textarea id="completeNote" placeholder="문제가 있었다면 짧게 남겨주세요. 없으면 비워도 돼요."></textarea>
     <button id="btnComplete" disabled>고객 완료 확인</button>
     <a class="ghost" href="/estimate/">다른 견적 보기</a>
+
+    <div id="receiptBox" style="display:none; margin-top:16px;">
+      <button type="button" id="btnReceipt" class="ghost" style="border:1px solid var(--line);">영수증 보기</button>
+    </div>
+
+    <div id="reviewBox" class="review-box" style="display:none;">
+      <h3>기사님은 어떠셨나요?</h3>
+      <div class="stars" id="starButtons">
+        <button type="button" class="star-btn" data-star="1">★</button>
+        <button type="button" class="star-btn" data-star="2">★</button>
+        <button type="button" class="star-btn" data-star="3">★</button>
+        <button type="button" class="star-btn" data-star="4">★</button>
+        <button type="button" class="star-btn" data-star="5">★</button>
+      </div>
+      <textarea id="reviewComment" placeholder="기사님에 대한 의견을 남겨주세요. (선택, 최대 500자)" maxlength="500" style="min-height:90px; margin-top:0;"></textarea>
+      <button id="btnSubmitReview" class="review-submit" style="margin-top:12px;" disabled>리뷰 남기기</button>
+      <p id="reviewResult" style="font-size:14px; margin-top:10px;"></p>
+    </div>
   </div>
 
   <script>
@@ -221,6 +245,96 @@
       statusText.className = 'ok';
       statusText.textContent = '완료 확인이 접수됐어요. 기사 정산도 승인 단계로 넘어가요.';
       button.textContent = '완료 확인 완료';
+      document.getElementById('receiptBox').style.display = 'block';
+      showReviewBox();
+    };
+
+    // Review box logic
+    let selectedRating = 0;
+    const reviewBox = document.getElementById('reviewBox');
+    const starButtons = document.querySelectorAll('.star-btn');
+    const reviewComment = document.getElementById('reviewComment');
+    const btnSubmitReview = document.getElementById('btnSubmitReview');
+    const reviewResult = document.getElementById('reviewResult');
+
+    function showReviewBox() {
+      reviewBox.style.display = 'block';
+    }
+
+    starButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedRating = parseInt(btn.dataset.star, 10);
+        starButtons.forEach((b) => {
+          b.classList.toggle('active', parseInt(b.dataset.star, 10) <= selectedRating);
+        });
+        btnSubmitReview.disabled = false;
+      });
+      btn.addEventListener('mouseover', () => {
+        const hoverVal = parseInt(btn.dataset.star, 10);
+        starButtons.forEach((b) => {
+          b.classList.toggle('active', parseInt(b.dataset.star, 10) <= hoverVal);
+        });
+      });
+      btn.addEventListener('mouseout', () => {
+        starButtons.forEach((b) => {
+          b.classList.toggle('active', parseInt(b.dataset.star, 10) <= selectedRating);
+        });
+      });
+    });
+
+    btnSubmitReview.onclick = async () => {
+      if (!selectedRating) return;
+      btnSubmitReview.disabled = true;
+      btnSubmitReview.textContent = '리뷰 등록 중...';
+
+      const res = await fetch('/.netlify/functions/submit-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, rating: selectedRating, comment: reviewComment.value.trim() })
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        reviewResult.style.color = 'var(--warn)';
+        reviewResult.textContent = data.error || '리뷰 등록에 실패했어요.';
+        btnSubmitReview.disabled = false;
+        btnSubmitReview.textContent = '리뷰 남기기';
+        return;
+      }
+
+      reviewResult.style.color = 'var(--ok)';
+      reviewResult.textContent = '리뷰를 남겨주셔서 감사해요!';
+      btnSubmitReview.textContent = '리뷰 등록 완료';
+    };
+
+    document.getElementById('btnReceipt').onclick = async () => {
+      const res = await fetch(`/.netlify/functions/get-receipt?token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (!data.success || !data.receipt) { alert('영수증을 불러오지 못했어요.'); return; }
+      const r = data.receipt;
+      const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>당고 영수증 ${r.receiptNumber}</title>
+<style>body{font-family:sans-serif;max-width:480px;margin:24px auto;padding:24px;border:1px solid #ddd;border-radius:12px;}h2{margin:0 0 4px;font-size:22px;}p{margin:6px 0;color:#444;}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;}.label{color:#888;}.amount{font-weight:700;font-size:18px;}.footer{margin-top:16px;font-size:12px;color:#aaa;text-align:center;}</style>
+</head><body>
+<p style="color:#ed6b2f;font-weight:700;margin:0 0 4px">당고 (DANG-O)</p>
+<h2>서비스 영수증</h2>
+<p style="color:#888;font-size:13px;">${r.receiptNumber} · ${r.issuedAt.slice(0,10)}</p>
+<hr style="margin:16px 0">
+<div class="row"><span class="label">서비스</span><span>${r.service}</span></div>
+<div class="row"><span class="label">서비스 날짜</span><span>${r.moveDate}</span></div>
+<div class="row"><span class="label">고객명</span><span>${r.customerName}</span></div>
+<div class="row"><span class="label">출발지</span><span>${r.startAddress}</span></div>
+${r.endAddress ? `<div class="row"><span class="label">도착지</span><span>${r.endAddress}</span></div>` : ''}
+${r.driverName ? `<div class="row"><span class="label">담당 전문가</span><span>${r.driverName}${r.driverVehicleType ? ' (' + r.driverVehicleType + ')' : ''}</span></div>` : ''}
+<div class="row"><span class="label">완료 확인일</span><span>${r.completedAt}</span></div>
+<hr style="margin:16px 0">
+<div class="row"><span class="label">선결제(계약금)</span><span>${r.depositAmount}</span></div>
+<div class="row"><span class="label">잔금</span><span>${r.balanceAmount}</span></div>
+<div class="row"><span class="label">합계</span><span class="amount">${r.totalPrice}</span></div>
+<p class="footer">본 영수증은 서비스 완료 후 발급된 증빙용 문서입니다.<br>문의: support@dang-o.kr</p>
+</body></html>`;
+      const w = window.open('', '_blank');
+      w.document.write(html);
+      w.document.close();
     };
 
     loadJob();

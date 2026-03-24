@@ -2,6 +2,7 @@ import { adminClient } from '../../shared/db.js';
 import { env } from '../../shared/env.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 import { resolveRevenueSplit } from '../../shared/revenue.js';
+import { sendEmail } from '../../shared/email.js';
 
 function basicAuth(secretKey) {
   return Buffer.from(`${secretKey}:`).toString('base64');
@@ -148,6 +149,37 @@ export async function handler(event) {
           memo: '전체 결제 후 기사 정산 대기'
         });
       }
+    }
+
+    // 결제 완료 이메일 발송 (실패해도 결제 응답에 영향 없음)
+    try {
+      if (job?.customer_email) {
+        const money = (v) => `${Number(v || 0).toLocaleString()}원`;
+        const SERVICE_LABEL = {
+          move: '소형이사', clean: '입주청소', yd: '용달', waste: '폐기물', install: '설치',
+          errand: '심부름', organize: '정리수납', ac_clean: '에어컨청소', appliance_clean: '가전청소',
+          interior: '인테리어', interior_help: '인테리어 보조'
+        };
+        const svc = SERVICE_LABEL[job.service_type] || job.service_type || '서비스';
+        const dateText = job.move_date ? `<p>작업일: <strong>${job.move_date}</strong></p>` : '';
+        await sendEmail({
+          to: job.customer_email,
+          subject: '당고 결제 완료 안내',
+          html: `<div style="font-family:sans-serif; max-width:560px; margin:0 auto; padding:24px;">
+            <h2 style="color:#ed6b2f;">당고 결제가 완료됐어요!</h2>
+            <p>안녕하세요, ${job.customer_name || '고객'}님.</p>
+            <p>결제가 성공적으로 완료되었습니다. 아래 내용을 확인해주세요.</p>
+            <div style="background:#f8f8f8; border-radius:12px; padding:16px; margin:16px 0;">
+              <p>서비스: <strong>${svc}</strong></p>
+              ${dateText}
+              <p>결제 금액: <strong>${money(amount)}</strong></p>
+            </div>
+            <p style="color:#6e6255; font-size:14px;">배차가 완료되면 별도로 안내드릴게요. 감사합니다.</p>
+          </div>`
+        });
+      }
+    } catch (emailErr) {
+      console.error('[confirm-toss-payment] 이메일 발송 오류', emailErr.message);
     }
 
     return ok({

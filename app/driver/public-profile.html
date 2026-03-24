@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 전문가 프로필</title>
+  <meta name="description" content="당고 전문가 프로필 페이지입니다." />
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --card: #fffaf3;
+      --line: rgba(70, 50, 31, 0.12);
+      --text: #20170f;
+      --muted: #6e6255;
+      --brand: #ed6b2f;
+      --ok: #215a45;
+      --warn: #9a3412;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SUIT", Arial, sans-serif;
+      padding: 24px;
+      background: linear-gradient(180deg, #f8e6c3, #f7f3ec);
+      color: var(--text);
+    }
+    .card {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(77, 45, 13, 0.12);
+      border: 1px solid var(--line);
+    }
+    .eyebrow { margin: 0 0 8px; color: #bc4d16; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+    h1 { margin: 0 0 6px; font-size: 32px; line-height: 1.15; }
+    .muted { color: var(--muted); line-height: 1.7; }
+    .meta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 16px;
+      align-items: center;
+    }
+    .meta-chip {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .meta-chip.brand { background: #fef3eb; border-color: #f8c9a4; color: var(--brand); }
+    .services-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .service-chip {
+      background: #f5efe4;
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      padding: 5px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    .stats-row {
+      display: flex;
+      gap: 16px;
+      margin-top: 20px;
+    }
+    .stat-card {
+      flex: 1;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--brand);
+      line-height: 1;
+    }
+    .stat-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    .section-title {
+      margin: 28px 0 12px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+    .review-item {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+    }
+    .review-stars { color: #f59e0b; font-size: 18px; margin-bottom: 6px; }
+    .review-comment { font-size: 14px; line-height: 1.6; color: var(--text); }
+    .review-date { font-size: 12px; color: var(--muted); margin-top: 6px; }
+    .no-reviews { color: var(--muted); font-size: 14px; padding: 12px 0; }
+    .cta-section { margin-top: 28px; }
+    .cta-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 54px;
+      border: 0;
+      border-radius: 14px;
+      font-family: inherit;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: none;
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 16px 28px rgba(237, 107, 47, 0.24);
+    }
+    .loading { color: var(--muted); padding: 24px 0; text-align: center; }
+    .error-msg { color: var(--warn); font-weight: 700; padding: 20px 0; }
+    .topnav {
+      max-width: 760px;
+      margin: 0 auto 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .topnav a {
+      flex: 1;
+      min-width: 120px;
+      min-height: 46px;
+      border-radius: 14px;
+      background: rgba(255, 250, 243, 0.92);
+      border: 1px solid var(--line);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-family: inherit;
+    }
+  </style>
+</head>
+<body>
+  <nav class="topnav" aria-label="이동 메뉴">
+    <a href="/">홈화면</a>
+    <a href="/services/">서비스 접수</a>
+  </nav>
+  <div class="card">
+    <p class="eyebrow">DANG-O EXPERT</p>
+    <div id="profileContent">
+      <p class="loading">전문가 정보를 불러오고 있어요...</p>
+    </div>
+  </div>
+
+  <script>
+    const SERVICE_LABELS = {
+      move: '이사', clean: '청소', yd: '용달', waste: '폐기물',
+      install: '설치', errand: '심부름', organize: '정리수납',
+      ac_clean: '에어컨청소', appliance_clean: '가전청소',
+      interior: '인테리어', interior_help: '인테리어 보조',
+      pt: 'PT', vocal: '보컬', golf: '골프', tutor: '과외',
+      counseling: '심리상담', marketing: '마케팅'
+    };
+
+    function formatDate(iso) {
+      const d = new Date(iso);
+      return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    function renderStars(rating) {
+      return '★'.repeat(rating) + '☆'.repeat(5 - rating);
+    }
+
+    async function loadProfile() {
+      const qs = new URLSearchParams(location.search);
+      const driverId = qs.get('id');
+      const container = document.getElementById('profileContent');
+
+      if (!driverId) {
+        container.innerHTML = '<p class="error-msg">전문가 ID가 필요해요.</p>';
+        return;
+      }
+
+      try {
+        const res = await fetch(`/.netlify/functions/get-driver-public-profile?driverId=${encodeURIComponent(driverId)}`);
+        const data = await res.json();
+
+        if (!data.success) {
+          container.innerHTML = `<p class="error-msg">${data.error || '전문가를 찾을 수 없어요.'}</p>`;
+          return;
+        }
+
+        const { driver, reviews } = data;
+
+        const servicesHtml = driver.services.length
+          ? driver.services.map((s) => `<span class="service-chip">${SERVICE_LABELS[s] || s}</span>`).join('')
+          : '<span class="service-chip">정보 없음</span>';
+
+        const avgRatingDisplay = driver.avg_rating
+          ? `${Number(driver.avg_rating).toFixed(1)} / 5.0`
+          : '-';
+
+        const reviewsHtml = reviews.length
+          ? reviews.map((r) => `
+              <div class="review-item">
+                <div class="review-stars">${renderStars(r.rating)}</div>
+                ${r.comment ? `<p class="review-comment">${r.comment.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>` : ''}
+                <p class="review-date">${formatDate(r.created_at)}</p>
+              </div>
+            `).join('')
+          : '<p class="no-reviews">아직 리뷰가 없어요.</p>';
+
+        document.title = `당고 | ${driver.name} 전문가 프로필`;
+
+        container.innerHTML = `
+          <h1>${driver.name}</h1>
+          ${driver.vehicle_type ? `<p class="muted">${driver.vehicle_type}</p>` : ''}
+
+          <div class="services-row">
+            ${servicesHtml}
+          </div>
+
+          <div class="stats-row">
+            <div class="stat-card">
+              <div class="stat-value">${driver.completed_jobs}</div>
+              <div class="stat-label">완료한 작업</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${avgRatingDisplay}</div>
+              <div class="stat-label">평균 별점</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value">${driver.review_count}</div>
+              <div class="stat-label">받은 리뷰</div>
+            </div>
+          </div>
+
+          <p class="section-title">최근 리뷰</p>
+          ${reviewsHtml}
+
+          <div class="cta-section">
+            <a class="cta-btn" href="/services/">서비스 접수하러 가기</a>
+          </div>
+        `;
+      } catch (err) {
+        document.getElementById('profileContent').innerHTML = '<p class="error-msg">프로필을 불러오는 중 오류가 발생했어요.</p>';
+      }
+    }
+
+    loadProfile();
+  </script>
+</body>
+</html>

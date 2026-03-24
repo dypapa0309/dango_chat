@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 내 주문 현황</title>
+  <meta name="description" content="당고 고객 주문 현황 페이지입니다." />
+  <meta name="robots" content="noindex, nofollow" />
+  <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src='https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);})(window,document,'script','dataLayer','GTM-PZCBT88P');</script>
+  <style>
+    :root { --brand:#ed6b2f; --card:#fffaf3; --line:rgba(70,50,31,.12); --text:#20170f; --muted:#6e6255; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"SUIT",Arial,sans-serif; background:linear-gradient(180deg,#f8e6c3,#f7f3ec); color:var(--text); padding:24px; }
+    .wrap,.topnav { max-width:860px; margin:0 auto; }
+    .topnav { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+    .topnav a { flex:1; min-width:120px; min-height:46px; border-radius:14px; background:rgba(255,250,243,.92); border:1px solid var(--line); color:var(--text); text-decoration:none; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:24px; box-shadow:0 24px 60px rgba(77,45,13,.12); padding:28px; margin-bottom:20px; }
+    .eyebrow { margin:0 0 8px; color:#bc4d16; font-size:13px; font-weight:700; text-transform:uppercase; }
+    h1 { margin:0 0 8px; font-size:28px; }
+    .muted { color:var(--muted); line-height:1.7; }
+    .form { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:20px; }
+    .form input,.btn { min-height:54px; border-radius:14px; border:1px solid var(--line); font:inherit; }
+    .form input { padding:0 16px; background:#fff; }
+    .btn { display:inline-flex; align-items:center; justify-content:center; font-weight:700; cursor:pointer; text-decoration:none; }
+    .btn.primary { background:var(--brand); color:#fff; border:0; }
+    .btn.ghost { background:#fff; color:var(--muted); }
+    .btn.google { background:#fff; color:#3c4043; border:1px solid #dadce0; gap:8px; }
+    .btn.logout { background:transparent; color:var(--muted); border:1px solid var(--line); font-size:13px; min-height:36px; padding:0 14px; border-radius:999px; }
+    .user-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; padding:12px 16px; background:rgba(255,255,255,.7); border:1px solid var(--line); border-radius:14px; flex-wrap:wrap; }
+    .user-bar .name { font-weight:700; font-size:15px; }
+    .user-bar .email { font-size:13px; color:var(--muted); }
+    .job-card { background:#fff; border:1px solid var(--line); border-radius:18px; padding:20px; margin-bottom:14px; }
+    .job-top { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+    .badges { display:flex; gap:8px; flex-wrap:wrap; }
+    .badge { padding:5px 10px; border-radius:999px; background:#f1f5f9; border:1px solid var(--line); font-size:12px; font-weight:700; }
+    .badge.active { background:#ecfdf5; color:#065f46; }
+    .badge.done { background:#eff6ff; color:#1d4ed8; }
+    .badge.cancel { background:#fef2f2; color:#991b1b; }
+    .row { color:var(--muted); font-size:14px; margin-top:6px; }
+    .btn-row { display:flex; flex-wrap:wrap; gap:10px; margin-top:14px; }
+    .btn-row .btn { flex:1; min-width:140px; min-height:46px; font-size:14px; }
+    .driver-box { margin-top:12px; padding:12px 14px; background:#f8fafc; border-radius:12px; border:1px solid #e5e7eb; }
+    .driver-box strong { display:block; margin-bottom:4px; font-size:14px; }
+    .driver-box .meta { font-size:13px; color:#6b7280; }
+    @media (max-width:720px){ .form { grid-template-columns:1fr; } }
+  </style>
+</head>
+<body data-analytics-page="customer_dashboard">
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PZCBT88P" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <nav class="topnav" aria-label="고객 이동 메뉴">
+    <a href="/">홈화면</a>
+    <a href="/estimate/">소형이사</a>
+    <a href="/ddclean/">입주청소</a>
+    <a href="/yd/">용달</a>
+    <a href="/services/">전체 서비스</a>
+  </nav>
+  <main class="wrap">
+    <div id="userBar" class="user-bar" hidden></div>
+
+    <div class="card">
+      <p class="eyebrow">MY ORDERS</p>
+      <h1>내 주문 현황</h1>
+      <p id="cardDesc" class="muted">이름과 연락처로 접수한 주문을 한 번에 확인하고 진행 상태를 관리해요.</p>
+
+      <div id="loginPrompt" style="margin-top:16px;">
+        <a class="btn google" href="/auth/login.html?next=/customer/dashboard.html" style="width:100%; max-width:320px;">
+          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.3 33.1 29.7 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 16.2 4 9.5 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.3-1.9 14.1-5.1l-6.5-5.3C29.6 35.5 26.9 36.5 24 36.5c-5.7 0-10.4-3.8-11.8-9H4.5C7.6 36.6 15.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20H24v8h11.3c-.8 2.2-2.1 4.1-3.9 5.5l6.5 5.3C41.4 35.4 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+          Google로 로그인해서 바로 확인하기
+        </a>
+        <p style="margin:12px 0 0; font-size:13px; color:var(--muted);">또는 이름과 연락처로 직접 조회하세요.</p>
+      </div>
+
+      <form id="lookupForm" class="form" style="margin-top:12px;">
+        <input id="customerName" placeholder="이름" required />
+        <input id="customerPhone" placeholder="연락처" required />
+        <button class="btn primary" type="submit" style="grid-column:1/-1;">주문 불러오기</button>
+      </form>
+      <p id="statusText" class="muted" style="margin-top:16px;"></p>
+    </div>
+    <div id="resultArea"></div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script>
+    const STATUS_LABEL = {
+      draft: '임시 저장', deposit_pending: '결제 대기', confirmed: '결제 완료',
+      assigned: '배정됨', in_progress: '작업 중', completed: '완료', canceled: '취소됨', archived: '보관됨'
+    };
+    const DISPATCH_LABEL = {
+      idle: '배차 대기', requesting: '기사 연결 중', accepted: '기사 수락',
+      driver_departed: '기사 출발', driver_arrived: '기사 도착', in_progress: '작업 중',
+      completion_requested: '완료 요청', completed: '완료', canceled: '취소됨', reassign_needed: '재배차 필요'
+    };
+    const SERVICE_LABEL = {
+      move: '소형이사', clean: '입주청소', yd: '용달', waste: '폐기물', install: '설치',
+      errand: '심부름', organize: '정리수납', ac_clean: '에어컨청소', appliance_clean: '가전청소',
+      interior: '인테리어', interior_help: '인테리어 보조', pt: 'PT', vocal: '보컬',
+      golf: '골프', tutor: '과외', counseling: '심리상담', marketing: '마케팅'
+    };
+    const ACTIVE_STATUSES = new Set(['deposit_pending', 'confirmed', 'assigned', 'in_progress']);
+
+    const money = (v) => `${Number(v || 0).toLocaleString()}원`;
+    const escape = (s) => String(s || '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    function badgeClass(status) {
+      if (ACTIVE_STATUSES.has(status)) return 'badge active';
+      if (status === 'completed') return 'badge done';
+      if (status === 'canceled') return 'badge cancel';
+      return 'badge';
+    }
+
+    function renderJobs(jobs) {
+      const area = document.getElementById('resultArea');
+      if (!jobs.length) { area.innerHTML = '<div class="card muted">조회된 주문이 없어요.</div>'; return; }
+      area.innerHTML = jobs.map((job) => {
+        const svc = SERVICE_LABEL[job.service_type] || job.service_type || '서비스';
+        const statusText = STATUS_LABEL[job.status] || job.status || '-';
+        const dispatchText = DISPATCH_LABEL[job.dispatch_status] || job.dispatch_status || '-';
+        const addr = job.start_address ? (job.end_address ? `${escape(job.start_address)} → ${escape(job.end_address)}` : escape(job.start_address)) : '-';
+        const driver = job.driver;
+        const driverHtml = driver ? `
+          <div class="driver-box">
+            <strong>담당 전문가</strong>
+            <div class="meta">${escape(driver.name || '-')} / ${escape(driver.vehicle_type || '-')} / ${escape(driver.phone || '')}</div>
+          </div>` : '';
+        const actions = [];
+        if (job.actions?.canPay) actions.push(`<a class="btn primary" href="/customer/pay.html?jobId=${encodeURIComponent(job.id)}">결제하기</a>`);
+        if (job.actions?.canComplete) actions.push(`<a class="btn ghost" href="/customer/complete.html?token=${encodeURIComponent(job.customer_complete_token)}">완료 확인</a>`);
+        if (job.actions?.canCancel) actions.push(`<a class="btn ghost" href="/customer/cancel.html?token=${encodeURIComponent(job.customer_cancel_token)}">취소 요청</a>`);
+        if (['completed', 'canceled'].includes(job.status)) {
+          actions.push(`<button class="btn ghost reorder-btn" data-job-id="${encodeURIComponent(job.id)}" data-name="${encodeURIComponent(job.customer_name||'')}" data-phone="${encodeURIComponent(job.customer_phone||'')}">같은 조건으로 재접수</button>`);
+        }
+        return `<div class="job-card">
+          <div class="job-top">
+            <strong>${escape(svc)} · ${escape(job.move_date || '날짜 미정')}</strong>
+            <div class="badges">
+              <span class="${badgeClass(job.status)}">${escape(statusText)}</span>
+              <span class="badge">${escape(dispatchText)}</span>
+            </div>
+          </div>
+          <div class="row">${addr}</div>
+          <div class="row">총 결제 ${money(job.total_price)}</div>
+          ${driverHtml}
+          ${actions.length ? `<div class="btn-row">${actions.join('')}</div>` : ''}
+        </div>`;
+      }).join('');
+    }
+
+    // 재접수 버튼 위임 클릭 핸들러
+    document.getElementById('resultArea').addEventListener('click', async (e) => {
+      const btn = e.target.closest('.reorder-btn');
+      if (!btn) return;
+      btn.disabled = true;
+      btn.textContent = '재접수 중...';
+      const jobId = decodeURIComponent(btn.dataset.jobId || '');
+      const name = decodeURIComponent(btn.dataset.name || '');
+      const phone = decodeURIComponent(btn.dataset.phone || '');
+      try {
+        const reorderHeaders = { 'Content-Type': 'application/json' };
+        try {
+          const sb = window.dd?.supabase;
+          if (sb) {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session?.access_token) reorderHeaders['Authorization'] = `Bearer ${session.access_token}`;
+          }
+        } catch {}
+        const res = await fetch('/.netlify/functions/reorder-job', {
+          method: 'POST',
+          headers: reorderHeaders,
+          body: JSON.stringify({ originalJobId: jobId, customerName: name, customerPhone: phone })
+        });
+        const data = await res.json();
+        if (!data.success) {
+          alert(data.error || '재접수에 실패했어요.');
+          btn.disabled = false;
+          btn.textContent = '같은 조건으로 재접수';
+          return;
+        }
+        location.href = data.payUrl;
+      } catch (err) {
+        alert('재접수 중 오류가 발생했어요.');
+        btn.disabled = false;
+        btn.textContent = '같은 조건으로 재접수';
+      }
+    });
+
+    let autoRefresh = null;
+    const statusEl = document.getElementById('statusText');
+
+    async function fetchJobs(name, phone) {
+      const res = await fetch('/.netlify/functions/get-customer-jobs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerName: name, customerPhone: phone })
+      });
+      const data = await res.json();
+      if (!data.success) { statusEl.textContent = data.error || '주문 조회에 실패했어요.'; return; }
+      const jobs = data.jobs || [];
+      statusEl.textContent = `주문 ${jobs.length}건을 찾았어요.`;
+      renderJobs(jobs);
+      const hasActive = jobs.some((j) => ACTIVE_STATUSES.has(j.status));
+      if (hasActive && !autoRefresh) {
+        autoRefresh = setInterval(() => fetchJobs(name, phone), 30000);
+        statusEl.textContent += ' (진행 중 주문이 있어 30초마다 자동으로 갱신돼요.)';
+      } else if (!hasActive && autoRefresh) {
+        clearInterval(autoRefresh); autoRefresh = null;
+      }
+    }
+
+    document.getElementById('lookupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (autoRefresh) { clearInterval(autoRefresh); autoRefresh = null; }
+      const name = document.getElementById('customerName').value.trim();
+      const phone = document.getElementById('customerPhone').value.trim();
+      statusEl.textContent = '주문을 찾고 있어요...';
+      document.getElementById('resultArea').innerHTML = '';
+      await fetchJobs(name, phone);
+    });
+
+    // ── 로그인 상태 확인 ──────────────────────────────────
+    window.dd.onSupabaseReady(async (sb) => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) {
+        statusEl.textContent = '이름과 연락처를 넣으면 주문 내역을 확인할 수 있어요.';
+        return;
+      }
+
+      // 로그인 상태 — 상단 사용자 바 표시
+      const user = session.user;
+      const name = user.user_metadata?.full_name || user.email || '회원';
+      const userBar = document.getElementById('userBar');
+      userBar.hidden = false;
+      userBar.innerHTML = `
+        <div>
+          <div class="name">${escape(name)}</div>
+          <div class="email">${escape(user.email || '')}</div>
+        </div>
+        <button id="btnLogout" class="btn logout">로그아웃</button>
+      `;
+      document.getElementById('btnLogout').onclick = async () => {
+        await sb.auth.signOut();
+        location.reload();
+      };
+
+      // 로그인 유도 문구 숨기고 폼 설명 변경
+      document.getElementById('loginPrompt').hidden = true;
+      document.getElementById('cardDesc').textContent = '로그인된 계정의 주문을 확인하거나, 이름과 연락처로 직접 조회할 수 있어요.';
+
+      // user_id 기반 자동 주문 조회
+      statusEl.textContent = '로그인된 주문 내역을 불러오는 중...';
+      try {
+        const accessToken = session.access_token;
+        const res = await fetch('/.netlify/functions/get-jobs-by-user', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        const data = await res.json();
+        if (data.success && data.jobs) {
+          statusEl.textContent = `주문 ${data.jobs.length}건을 찾았어요.`;
+          renderJobs(data.jobs);
+        } else {
+          statusEl.textContent = '이름과 연락처를 넣으면 주문 내역을 확인할 수 있어요.';
+        }
+      } catch (err) {
+        statusEl.textContent = '이름과 연락처를 넣으면 주문 내역을 확인할 수 있어요.';
+      }
+    });
+
+    statusEl.textContent = '이름과 연락처를 넣으면 주문 내역을 확인할 수 있어요.';
+  </script>
+  <script src="../assets/js/contact-fab.js"></script>
+  <script src="../assets/js/meta-pixel.js"></script>
+  <script src="../assets/js/site-analytics.js"></script>
+</body>
+</html>

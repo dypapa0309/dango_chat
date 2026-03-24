@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 전문가 활동 현황</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="stylesheet" href="./accept.css" />
+  <style>
+    .summary-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 16px; }
+    .stat-card { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 14px; text-align: center; }
+    .stat-card span { display: block; font-size: 12px; color: #6b7280; margin-bottom: 4px; }
+    .stat-card strong { font-size: 20px; color: #111; }
+    .job-item { padding: 14px; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; margin-bottom: 10px; }
+    .job-item .row { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .job-item .sub { font-size: 13px; color: #6b7280; margin-top: 4px; }
+    .pill { display: inline-block; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #f1f5f9; color: #374151; }
+    .pill.active { background: #ecfdf5; color: #065f46; }
+    .pill.done { background: #eff6ff; color: #1d4ed8; }
+    .pill.cancel { background: #fef2f2; color: #991b1b; }
+    .settle-item { padding: 12px 14px; border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+    .settle-item .amt { font-weight: 700; }
+    .settle-item .meta { font-size: 13px; color: #6b7280; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+    .tab-btn { flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; font: inherit; font-size: 14px; cursor: pointer; color: #374151; }
+    .tab-btn.is-active { background: #0f766e; color: #fff; border-color: #0f766e; }
+    .tab-panel { display: none; }
+    .tab-panel.is-active { display: block; }
+    @media (max-width: 480px) { .summary-row { grid-template-columns: 1fr 1fr; } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="card" style="max-width:720px;">
+      <h1>전문가 활동 현황</h1>
+      <div id="activityStatus" class="job-info">활동 정보를 불러오고 있어요.</div>
+
+      <div id="activityBody" hidden>
+        <div class="summary-row">
+          <div class="stat-card"><span>완료 건수</span><strong id="statCompleted">0건</strong></div>
+          <div class="stat-card"><span>정산 대기</span><strong id="statPending">0원</strong></div>
+          <div class="stat-card"><span>총 수령액</span><strong id="statEarned">0원</strong></div>
+        </div>
+
+        <div class="tabs">
+          <button type="button" class="tab-btn is-active" data-tab="jobs">주문 내역</button>
+          <button type="button" class="tab-btn" data-tab="settlements">정산 내역</button>
+        </div>
+
+        <div id="tabJobs" class="tab-panel is-active">
+          <div id="jobList"></div>
+        </div>
+        <div id="tabSettlements" class="tab-panel">
+          <div id="settlementList"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <script src="../assets/js/contact-fab.js"></script>
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const token = qs.get('token');
+    const statusEl = document.getElementById('activityStatus');
+    const bodyEl = document.getElementById('activityBody');
+
+    const STATUS_LABEL = {
+      draft: '임시 저장', deposit_pending: '결제 대기', confirmed: '결제 완료',
+      assigned: '배정됨', in_progress: '작업 중', completed: '완료', canceled: '취소됨'
+    };
+    const SETTLE_LABEL = { approved: '지급 대기', held: '보류', paid: '지급 완료' };
+    const SERVICE_LABEL = {
+      move: '소형이사', clean: '입주청소', yd: '용달', waste: '폐기물',
+      install: '설치', errand: '심부름', organize: '정리수납', ac_clean: '에어컨청소',
+      appliance_clean: '가전청소', interior: '인테리어', interior_help: '인테리어 보조',
+      pt: 'PT', vocal: '보컬', golf: '골프', tutor: '과외', counseling: '심리상담', marketing: '마케팅'
+    };
+
+    function money(v) { return `${Number(v || 0).toLocaleString()}원`; }
+    function pillClass(status) {
+      if (['assigned', 'in_progress', 'confirmed'].includes(status)) return 'pill active';
+      if (status === 'completed') return 'pill done';
+      if (status === 'canceled') return 'pill cancel';
+      return 'pill';
+    }
+
+    if (!token) {
+      statusEl.innerHTML = '<strong>유효하지 않은 링크입니다.</strong><div>운영팀이 보낸 활동 현황 링크를 다시 열어주세요.</div>';
+    } else {
+      (async () => {
+        try {
+          const res = await fetch(`/.netlify/functions/get-driver-activity?token=${encodeURIComponent(token)}`);
+          const data = await res.json();
+          if (!data.success) throw new Error(data.error || '정보를 불러오지 못했어요.');
+
+          const { driver, assignments, settlements, summary } = data;
+          statusEl.innerHTML = `<strong>${driver.name || '전문가'}님 활동 현황</strong><div>배차 수락, 완료 주문, 정산 내역을 확인합니다.</div>`;
+          bodyEl.hidden = false;
+
+          document.getElementById('statCompleted').textContent = `${Number(driver.completed_jobs || 0)}건`;
+          document.getElementById('statPending').textContent = money(summary.pendingAmount);
+          document.getElementById('statEarned').textContent = money(summary.totalEarned);
+
+          // 주문 내역
+          const jobList = document.getElementById('jobList');
+          if (!assignments.length) {
+            jobList.innerHTML = '<div class="job-info" style="color:#6b7280;">아직 배차 내역이 없어요.</div>';
+          } else {
+            jobList.innerHTML = assignments.map((a) => {
+              const job = a.jobs || {};
+              const svcLabel = SERVICE_LABEL[job.service_type] || job.service_type || '-';
+              const statusLabel = STATUS_LABEL[job.status] || job.status || '-';
+              return `<div class="job-item">
+                <div class="row">
+                  <strong>${svcLabel} · ${job.move_date || '날짜 미정'}</strong>
+                  <span class="${pillClass(job.status)}">${statusLabel}</span>
+                </div>
+                <div class="sub">${job.start_address || '-'}${job.end_address ? ' → ' + job.end_address : ''}</div>
+                <div class="sub">총 금액 ${money(job.total_price)}</div>
+              </div>`;
+            }).join('');
+          }
+
+          // 정산 내역
+          const settleList = document.getElementById('settlementList');
+          if (!settlements.length) {
+            settleList.innerHTML = '<div class="job-info" style="color:#6b7280;">아직 정산 내역이 없어요.</div>';
+          } else {
+            settleList.innerHTML = settlements.map((s) => `
+              <div class="settle-item">
+                <div>
+                  <div class="amt">${money(s.driver_net_amount)}</div>
+                  <div class="meta">${s.payout_period_key || '-'}</div>
+                </div>
+                <span class="pill ${s.status === 'paid' ? 'done' : s.status === 'held' ? 'cancel' : ''}">${SETTLE_LABEL[s.status] || s.status}</span>
+              </div>`).join('');
+          }
+
+          // 탭 전환
+          document.querySelectorAll('.tab-btn').forEach((btn) => {
+            btn.addEventListener('click', () => {
+              document.querySelectorAll('.tab-btn').forEach((b) => b.classList.remove('is-active'));
+              document.querySelectorAll('.tab-panel').forEach((p) => p.classList.remove('is-active'));
+              btn.classList.add('is-active');
+              document.getElementById('tab' + btn.dataset.tab.charAt(0).toUpperCase() + btn.dataset.tab.slice(1))?.classList.add('is-active');
+            });
+          });
+
+        } catch (err) {
+          statusEl.innerHTML = `<strong>${err.message || '정보를 불러오지 못했어요.'}</strong><div>링크가 만료됐거나 잘못됐을 수 있어요.</div>`;
+        }
+      })();
+    }
+  </script>
+</body>
+</html>

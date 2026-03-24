@@ -7,6 +7,8 @@ let runtimeAdminToken = '';
 const adminPage = document.body?.dataset?.adminPage || 'orders';
 let latestSettlementDashboard = null;
 let manualOrderDraft = null;
+let cachedDrivers = [];
+let cachedJobs = [];
 const HELPER_CUSTOMER_FEE = 60000;
 const HELPER_DRIVER_FEE = 40000;
 const LADDER_CUSTOMER_FEE = 120000;
@@ -27,7 +29,8 @@ const SERVICE_OPTIONS = [
   { value: 'vocal', label: '보컬', description: '취미, 오디션, 발성' },
   { value: 'golf', label: '골프', description: '입문, 스윙, 필드 레슨' },
   { value: 'tutor', label: '과외', description: '영어, 입시, 성인 학습' },
-  { value: 'counseling', label: '심리상담', description: '개인, 커플, 가족 상담' }
+  { value: 'counseling', label: '심리상담', description: '개인, 커플, 가족 상담' },
+  { value: 'marketing', label: '마케팅', description: 'SNS, 광고, 콘텐츠' }
 ];
 
 const money = (n) => `${Number(n || 0).toLocaleString()}원`;
@@ -214,8 +217,27 @@ function buildDriverSettlementSnapshot(driverId) {
 
 function renderDriverSummaryDetail(driver) {
   const settlement = buildDriverSettlementSnapshot(driver.id);
+  const activeJobs = cachedJobs.filter((j) => {
+    const isAssigned = j.assigned_driver_id === driver.id || j.driver_id === driver.id;
+    const isActive = ['confirmed', 'assigned', 'in_progress', 'deposit_pending'].includes(j.status);
+    return isAssigned && isActive;
+  });
+  const recentJobs = cachedJobs.filter((j) => {
+    return (j.assigned_driver_id === driver.id || j.driver_id === driver.id) && j.status === 'completed';
+  }).slice(0, 3);
   return `
     <div class="detail-grid">
+      <section class="detail-card" style="grid-column:1/-1;">
+        <h4>현재 진행 현황</h4>
+        ${activeJobs.length ? activeJobs.map((j) => `
+          <div class="detail-kv" style="margin-bottom:8px;padding:10px;background:#f8fafc;border-radius:8px;">
+            <div><span>서비스</span><strong>${escapeHtml(inferServiceTypeLabel(j.service_type || 'move'))}</strong></div>
+            <div><span>상태</span><strong>${escapeHtml(jobStatusLabel(j.status))} / ${escapeHtml(dispatchStatusLabel(j.dispatch_status))}</strong></div>
+            <div><span>날짜</span><strong>${escapeHtml(j.move_date || '-')}</strong></div>
+            <div><span>금액</span><strong>${money(j.total_price)}</strong></div>
+          </div>`).join('') : '<div class="muted" style="font-size:14px;">현재 진행 중인 주문이 없어요.</div>'}
+        ${recentJobs.length ? `<div style="margin-top:8px;font-size:13px;color:#6b7280;">최근 완료 ${recentJobs.length}건 있음</div>` : ''}
+      </section>
       <section class="detail-card">
         <h4>기본 정보</h4>
         <div class="detail-kv">
@@ -395,6 +417,16 @@ function renderJobDetail(job) {
       <section class="detail-card">
         <h4>결제 내역</h4>
         ${renderPaymentItems(job.payments || [])}
+        ${(job.payments || []).some((p) => p.status === 'paid' || p.status === 'partial_refunded') ? `
+        <div style="margin-top:14px; padding-top:14px; border-top:1px solid #e5e7eb;">
+          <strong style="display:block; font-size:13px; margin-bottom:8px;">환불 처리</strong>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <input id="refundAmount_${escapeHtml(job.id)}" type="number" placeholder="부분환불 금액 (전액 비워두기)" style="flex:1; min-width:160px; padding:8px 12px; border:1px solid #e5e7eb; border-radius:8px; font:inherit; font-size:13px;" />
+            <input id="refundReason_${escapeHtml(job.id)}" type="text" placeholder="환불 사유 (필수)" style="flex:2; min-width:160px; padding:8px 12px; border:1px solid #e5e7eb; border-radius:8px; font:inherit; font-size:13px;" />
+            <button onclick="adminRefund('${escapeHtml(job.id)}')" style="padding:8px 16px; background:#ef4444; color:#fff; border:0; border-radius:8px; font:inherit; font-size:13px; font-weight:700; cursor:pointer; white-space:nowrap;">환불 실행</button>
+          </div>
+          <div id="refundResult_${escapeHtml(job.id)}" style="font-size:13px; margin-top:6px; color:#6b7280;"></div>
+        </div>` : ''}
       </section>
       <section class="detail-card">
         <h4>정산 내역</h4>
@@ -491,7 +523,8 @@ function inferServiceTypeLabel(serviceType) {
     vocal: '보컬',
     golf: '골프',
     tutor: '과외',
-    counseling: '심리상담'
+    counseling: '심리상담',
+    marketing: '마케팅'
   };
   return map[serviceType] || serviceType || '-';
 }
@@ -858,6 +891,35 @@ function showAdminApp() {
   window.scrollTo({ top: 0, behavior: 'auto' });
 }
 
+async function adminRefund(jobId) {
+  const amountEl = document.getElementById(`refundAmount_${jobId}`);
+  const reasonEl = document.getElementById(`refundReason_${jobId}`);
+  const resultEl = document.getElementById(`refundResult_${jobId}`);
+  const reason = reasonEl?.value?.trim();
+  if (!reason) { if (resultEl) resultEl.textContent = '환불 사유를 입력해주세요.'; return; }
+  const cancelAmount = amountEl?.value ? Number(amountEl.value) : null;
+  const label = cancelAmount ? `${cancelAmount.toLocaleString()}원 부분환불` : '전액 환불';
+  if (!confirm(`${label}을 실행할까요?\n사유: ${reason}\n\n이 작업은 되돌릴 수 없습니다.`)) return;
+  if (resultEl) resultEl.textContent = '처리 중...';
+  try {
+    const body = { jobId, reason };
+    if (cancelAmount) body.cancelAmount = cancelAmount;
+    const data = await adminFetch(api('admin-refund'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (data.success) {
+      if (resultEl) resultEl.textContent = `✅ ${data.partial ? `부분환불 ${Number(data.refundAmount).toLocaleString()}원` : '전액 환불'} 완료`;
+      setTimeout(() => showDetail(jobId), 1500);
+    } else {
+      if (resultEl) resultEl.textContent = `❌ ${data.error || '환불 실패'}`;
+    }
+  } catch (e) {
+    if (resultEl) resultEl.textContent = `❌ ${e.message || '환불 실패'}`;
+  }
+}
+
 async function adminFetch(url, options = {}) {
   const token = getAdminToken();
   const headers = new Headers(options.headers || {});
@@ -901,6 +963,7 @@ async function loadJobs() {
   const res = await adminFetch(`${api('get-jobs')}?status=${encodeURIComponent(currentFilter)}&page=${currentPage}&limit=${PAGE_SIZE}`);
   const data = await res.json();
   const jobs = data.jobs || [];
+  cachedJobs = [...cachedJobs.filter((j) => !jobs.find((nj) => nj.id === j.id)), ...jobs];
   const total = data.total || 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   jobCountEl.textContent = `${total}건`;
@@ -981,6 +1044,7 @@ async function loadDrivers() {
   const res = await adminFetch(api('get-drivers'));
   const data = await res.json();
   const drivers = data.drivers || [];
+  cachedDrivers = drivers;
   if (eligibleList) {
     try {
       const settlementRes = await adminFetch(api('get-settlement-dashboard'));
@@ -1506,11 +1570,90 @@ async function regenCustomerTokens(jobId) {
   showToast('토큰을 재발급하고 새 링크를 클립보드에 복사했어요.');
 }
 
+async function loadDisputeList(statusFilter) {
+  const list = document.getElementById('disputeList');
+  const countEl = document.getElementById('disputeCount');
+  if (!list) return;
+  list.innerHTML = '<div class="muted mini-card">불러오는 중...</div>';
+  const params = new URLSearchParams();
+  if (statusFilter) params.set('status', statusFilter);
+  const res = await adminFetch(api('disputes') + (params.toString() ? '?' + params.toString() : ''));
+  const data = await res.json();
+  if (!data.success) { list.innerHTML = `<div class="muted mini-card">${escapeHtml(data.error || '불러오기 실패')}</div>`; return; }
+  const disputes = data.disputes || [];
+  if (countEl) countEl.textContent = `${data.count ?? disputes.length}건`;
+  if (!disputes.length) { list.innerHTML = '<div class="muted mini-card">해당 분쟁이 없어요.</div>'; return; }
+  const STATUS_LABEL = { open: '오픈', in_progress: '처리 중', resolved: '해결됨', closed: '종결' };
+  const PRIORITY_LABEL = { low: '낮음', normal: '보통', high: '높음', urgent: '긴급' };
+  const CAT_LABEL = { general: '일반 문의', refund: '환불', damage: '파손/분실', no_show: '노쇼', complaint: '불만', other: '기타' };
+  list.innerHTML = disputes.map((d) => `
+    <div class="mini-card" style="cursor:pointer;" data-dispute-id="${d.id}">
+      <strong>${escapeHtml(d.title)}</strong>
+      <span class="chip" style="font-size:11px;">${CAT_LABEL[d.category] || d.category}</span>
+      <span class="chip" style="font-size:11px;">${STATUS_LABEL[d.status] || d.status}</span>
+      <span class="chip" style="font-size:11px;">${PRIORITY_LABEL[d.priority] || d.priority}</span>
+      <div style="color:#888;font-size:12px;margin-top:4px;">${escapeHtml(d.customer_name || '')} ${escapeHtml(d.customer_phone || '')} · ${d.created_at?.slice(0, 10)}</div>
+      ${d.job_id ? `<div style="color:#888;font-size:12px;">주문 ID: ${escapeHtml(d.job_id)}</div>` : ''}
+    </div>
+  `).join('');
+  list.querySelectorAll('[data-dispute-id]').forEach((card) => {
+    card.addEventListener('click', () => showDisputeDetail(card.dataset.disputeId, disputes));
+  });
+}
+
+function showDisputeDetail(id, disputes) {
+  const dispute = disputes.find((d) => d.id === id);
+  if (!dispute) return;
+  const detailEl = document.getElementById('disputeDetail');
+  const bodyEl = document.getElementById('detailBody');
+  const titleEl = document.getElementById('detailTitle');
+  if (!detailEl || !bodyEl) return;
+  detailEl.hidden = false;
+  titleEl.textContent = `티켓 상세: ${dispute.title}`;
+  bodyEl.innerHTML = `
+    <div class="mini-card">
+      <div><strong>내용</strong></div>
+      <div style="white-space:pre-wrap;">${escapeHtml(dispute.description || '')}</div>
+      ${dispute.resolution ? `<div style="margin-top:8px;"><strong>처리 내용</strong></div><div style="white-space:pre-wrap;">${escapeHtml(dispute.resolution)}</div>` : ''}
+    </div>
+  `;
+  const statusSel = document.getElementById('detailStatus');
+  const prioritySel = document.getElementById('detailPriority');
+  const resolutionEl = document.getElementById('detailResolution');
+  if (statusSel) statusSel.value = dispute.status;
+  if (prioritySel) prioritySel.value = dispute.priority;
+  if (resolutionEl) resolutionEl.value = dispute.resolution || '';
+  const updateBtn = document.getElementById('btnUpdateDispute');
+  if (updateBtn) {
+    updateBtn.onclick = async () => {
+      const updateResult = document.getElementById('updateResult');
+      updateBtn.disabled = true;
+      const res = await adminFetch(api('disputes'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id,
+          status: statusSel?.value,
+          priority: prioritySel?.value,
+          resolution: resolutionEl?.value || null
+        })
+      });
+      const data = await res.json();
+      updateBtn.disabled = false;
+      if (!data.success) { if (updateResult) updateResult.textContent = data.error || '저장 실패'; return; }
+      if (updateResult) updateResult.textContent = '저장됐어요.';
+      const statusFilter = document.getElementById('filterStatus')?.value;
+      loadDisputeList(statusFilter);
+    };
+  }
+}
+
 async function loadAll() {
   let tasks = [];
   if (adminPage === 'orders') tasks = [loadJobs(), loadDrivers()];
   if (adminPage === 'drivers') tasks = [loadDrivers()];
   if (adminPage === 'finance') tasks = [loadSettlementDashboard(), loadPricingDashboard()];
+  if (adminPage === 'cs') tasks = [loadDisputeList()];
   const results = await Promise.allSettled(tasks);
   const firstRejected = results.find((result) => result.status === 'rejected');
   if (firstRejected) {
@@ -1540,6 +1683,9 @@ async function bootstrapAdmin() {
   if (adminPage === 'finance') {
     await loadSettlementDashboard();
     loadPricingDashboard().catch((error) => console.warn('가격 패널 로드 실패', error));
+  }
+  if (adminPage === 'cs') {
+    await loadDisputeList();
   }
 }
 
@@ -1616,6 +1762,31 @@ document.addEventListener('DOMContentLoaded', () => {
   }));
   document.getElementById('btnCloseDialog')?.addEventListener('click', () => document.getElementById('detailDialog')?.close());
   document.getElementById('btnCloseDriverDialog')?.addEventListener('click', () => document.getElementById('driverDetailDialog')?.close());
+
+  // 전화번호로 정보 관리 링크 생성
+  document.getElementById('btnGenerateProfileLink')?.addEventListener('click', async (e) => {
+    withButtonBusy(e.currentTarget, '찾는 중...', async () => {
+      const phone = (document.getElementById('profileLinkPhone')?.value || '').replace(/\D/g, '');
+      const resultEl = document.getElementById('profileLinkResult');
+      if (!phone) { if (resultEl) resultEl.textContent = '전화번호를 입력해주세요.'; return; }
+      const driver = cachedDrivers.find((d) => (d.phone || '').replace(/\D/g, '') === phone);
+      if (!driver) { if (resultEl) resultEl.textContent = '전화번호와 일치하는 전문가가 없어요. 기사 목록을 새로고침 후 다시 시도해주세요.'; return; }
+      if (!driver.join_token) { if (resultEl) resultEl.textContent = `${driver.name || '기사'}님은 아직 가입 토큰이 없어요.`; return; }
+      const url = `${location.origin}/driver/profile.html?token=${encodeURIComponent(driver.join_token)}`;
+      await navigator.clipboard.writeText(url);
+      if (resultEl) resultEl.textContent = `${driver.name || '기사'}님 링크를 복사했어요.`;
+      showToast(`${driver.name || '기사'}님 정보 관리 링크 복사 완료`);
+    });
+  });
+
+  // 기사 목록 검색 필터
+  document.getElementById('driverSearchInput')?.addEventListener('input', (e) => {
+    const q = (e.target.value || '').trim().toLowerCase();
+    document.querySelectorAll('#driverList .driver-card').forEach((card) => {
+      const text = card.textContent.toLowerCase();
+      card.style.display = !q || text.includes(q) ? '' : 'none';
+    });
+  });
   const marketingDateInput = document.querySelector('#marketingForm input[name="metricAt"]');
   if (marketingDateInput && !marketingDateInput.value) {
     const now = new Date();
@@ -1756,6 +1927,37 @@ document.addEventListener('DOMContentLoaded', () => {
     showToast(`배율을 ${Number(data.recommendation?.nextMultiplier || 0).toFixed(3)}로 계산했어요.`);
     await loadPricingDashboard();
   }));
+  // CS page
+  document.getElementById('filterStatus')?.addEventListener('change', (e) => {
+    loadDisputeList(e.target.value);
+  });
+  document.getElementById('createDisputeForm')?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const resultEl = document.getElementById('createResult');
+    const btn = e.target.querySelector('button[type="submit"]');
+    await withButtonBusy(btn, '등록 중...', async () => {
+      const res = await adminFetch(api('disputes'), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          jobId: document.getElementById('dJobId')?.value.trim() || null,
+          customerName: document.getElementById('dCustomerName')?.value.trim() || null,
+          customerPhone: document.getElementById('dCustomerPhone')?.value.trim() || null,
+          category: document.getElementById('dCategory')?.value,
+          priority: document.getElementById('dPriority')?.value,
+          title: document.getElementById('dTitle')?.value.trim(),
+          description: document.getElementById('dDescription')?.value.trim()
+        })
+      });
+      const data = await res.json();
+      if (!data.success) { if (resultEl) resultEl.textContent = data.error || '등록 실패'; return; }
+      if (resultEl) resultEl.textContent = '티켓이 등록됐어요.';
+      e.target.reset();
+      const statusFilter = document.getElementById('filterStatus')?.value;
+      loadDisputeList(statusFilter);
+    });
+  });
+
   const existingToken = getAdminToken();
   if (existingToken) {
     bootstrapAdmin().catch((error) => {

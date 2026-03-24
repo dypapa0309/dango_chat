@@ -75,7 +75,21 @@ export async function handler(event) {
     } else {
       const { data: drivers, error } = await supabase.from('drivers').select('*');
       if (error) throw error;
-      const eligibleDrivers = (drivers || []).filter((driver) => isDriverEligible(driver, jobServiceType) && supportsJobService(driver, jobServiceType));
+      // Filter out drivers who marked themselves unavailable on the job date
+      let unavailableDriverIds = new Set();
+      if (job.move_date) {
+        const { data: unavailRows } = await supabase
+          .from('driver_availability')
+          .select('driver_id')
+          .eq('date', job.move_date)
+          .eq('is_available', false);
+        if (unavailRows) unavailRows.forEach((row) => unavailableDriverIds.add(row.driver_id));
+      }
+      const eligibleDrivers = (drivers || []).filter((driver) =>
+        isDriverEligible(driver, jobServiceType) &&
+        supportsJobService(driver, jobServiceType) &&
+        !unavailableDriverIds.has(driver.id)
+      );
       const ranked = rankDrivers(job, eligibleDrivers);
       selectedDriver = ranked[0];
 

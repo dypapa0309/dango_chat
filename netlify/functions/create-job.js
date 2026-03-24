@@ -1,9 +1,24 @@
 import crypto from 'crypto';
+import { createClient } from '@supabase/supabase-js';
 import { adminClient } from '../../shared/db.js';
 import { calculatePrice } from '../../shared/price.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 import { ensurePricingStateRow } from '../../shared/pricing-state.js';
 import { resolveRevenueSplit } from '../../shared/revenue.js';
+import { mustEnv } from '../../shared/env.js';
+
+async function resolveAuthUser(event) {
+  try {
+    const authHeader = event.headers?.authorization || event.headers?.Authorization || '';
+    const accessToken = authHeader.replace(/^Bearer\s+/i, '').trim();
+    if (!accessToken) return null;
+    const userClient = createClient(mustEnv('SUPABASE_URL'), mustEnv('SUPABASE_PUBLISHABLE_KEY', 'SUPABASE_ANON_KEY'));
+    const { data: { user } } = await userClient.auth.getUser(accessToken);
+    return user || null;
+  } catch {
+    return null;
+  }
+}
 
 export async function handler(event) {
   const opt = handleOptions(event);
@@ -13,6 +28,7 @@ export async function handler(event) {
   try {
     const body = parseBody(event);
     const override = body.price_override || null;
+    const authUser = await resolveAuthUser(event);
     const supabase = adminClient();
     const pricingState = await ensurePricingStateRow(supabase);
     const calculated = calculatePrice({
@@ -77,7 +93,9 @@ export async function handler(event) {
       status: 'deposit_pending',
       dispatch_status: 'idle',
       created_by: body.created_by || 'customer-form',
-      updated_by: body.updated_by || body.created_by || 'customer-form'
+      updated_by: body.updated_by || body.created_by || 'customer-form',
+      ...(authUser?.id ? { user_id: authUser.id } : {}),
+      ...(authUser?.email ? { customer_email: authUser.email } : {})
     };
 
     let insertPayload = payload;

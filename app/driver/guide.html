@@ -3,37 +3,47 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>당고 기사 안내</title>
+  <title>당고 전문가 안내</title>
   <link rel="stylesheet" href="./accept.css" />
+  <style>
+    .guide-section { margin-top: 24px; }
+    .guide-section h2 { font-size: 18px; margin: 0 0 12px; border-left: 3px solid #0f766e; padding-left: 10px; }
+    .service-guide-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .service-guide-card { background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 10px; padding: 14px; }
+    .service-guide-card strong { display: block; margin-bottom: 6px; font-size: 14px; }
+    .service-guide-card ul { margin: 0; padding-left: 16px; font-size: 13px; color: #4b5563; line-height: 1.7; }
+    .guide-tag { display: inline-block; background: #ecfdf5; color: #065f46; border: 1px solid #a7f3d0; border-radius: 999px; font-size: 12px; font-weight: 700; padding: 2px 10px; margin-bottom: 8px; }
+    @media (max-width: 640px) { .service-guide-grid { grid-template-columns: 1fr; } }
+  </style>
 </head>
 <body>
   <main class="wrap">
-    <div class="card" style="max-width:760px;">
-      <h1>당고 기사 안내</h1>
+    <div class="card" style="max-width:800px;">
+      <h1>당고 전문가 안내</h1>
       <div class="job-info">
-        <strong>기사님은 이렇게 일합니다.</strong>
-        <div style="margin-top:8px;">가입과 계약 동의가 끝나면 배차 요청 링크를 받고, 그 링크에서 수락과 진행 상태를 처리합니다.</div>
+        <strong>전문가님은 이렇게 일합니다.</strong>
+        <div style="margin-top:8px;">가입과 계약 동의가 끝나면 배차 요청 링크를 받고, 그 링크에서 수락과 진행 상태를 처리합니다. 서비스 종류와 무관하게 흐름은 동일합니다.</div>
       </div>
 
       <div class="job-grid">
         <section class="info-block">
-          <strong>1. 신규 지원 또는 기사 가입</strong>
-          <div>기사 모집 링크로 지원합니다.</div>
+          <strong>1. 신규 지원 또는 전문가 가입</strong>
+          <div>전문가 모집 링크로 지원합니다.</div>
           <div>또는 운영팀이 보낸 개별 가입 링크에서 정보 입력과 계약 동의를 완료합니다.</div>
         </section>
         <section class="info-block">
           <strong>2. 계약 동의와 정산 정보 입력</strong>
-          <div>영업용 차량 기준 확인과 위탁운송 계약 동의를 합니다.</div>
+          <div>서비스별 자격 요건 확인과 위탁 계약 동의를 합니다.</div>
           <div>정산 계좌와 3.3% 세금 정산 정보를 입력합니다.</div>
         </section>
         <section class="info-block">
           <strong>3. 내 서비스 직접 관리</strong>
           <div>운영팀이 보낸 정보 관리 링크에서 가능한 서비스를 직접 추가하거나 뺄 수 있습니다.</div>
-          <div>정산 계좌와 세금 정보도 같은 페이지에서 다시 바꿀 수 있습니다.</div>
+          <div>정산 계좌와 세금 정보도 같은 페이지에서 바꿀 수 있습니다.</div>
         </section>
         <section class="info-block">
           <strong>4. 배차 요청 링크 수신</strong>
-          <div>배차가 잡히면 기사님마다 별도 링크가 전달됩니다.</div>
+          <div>배차가 잡히면 전문가마다 별도 링크가 SMS로 전달됩니다.</div>
           <div>그 링크에서 주문 정보, 운임, 고객 요청을 확인합니다.</div>
         </section>
         <section class="info-block">
@@ -43,28 +53,127 @@
         </section>
         <section class="info-block">
           <strong>6. 작업 진행</strong>
-          <div>기사 화면에서 출발 중, 도착, 작업 시작 순서로 상태를 바꿉니다.</div>
-          <div>고객 메모와 짐, 가구·가전, 거리 정보도 같은 화면에서 확인합니다.</div>
+          <div>전문가 화면에서 출발 중, 도착, 작업 시작 순서로 상태를 바꿉니다.</div>
+          <div>고객 메모와 요청 정보도 같은 화면에서 확인합니다.</div>
         </section>
         <section class="info-block">
           <strong>7. 고객 완료 확인과 정산</strong>
           <div>작업이 끝나면 완료 요청을 보냅니다.</div>
-          <div>고객 완료 확인 뒤 기사 정산 예정 금액이 반영됩니다.</div>
+          <div>고객 완료 확인 뒤 전문가 정산 예정 금액이 반영됩니다.</div>
         </section>
+        <section class="info-block">
+          <strong>8. 정산 수령</strong>
+          <div>운영팀이 정산을 확인하고 등록된 계좌로 정산금을 송금합니다.</div>
+          <div>3.3% 원천징수 후 지급, 지급명세서는 별도 안내합니다.</div>
+        </section>
+      </div>
+
+      <!-- 서비스별 안내 -->
+      <div class="guide-section">
+        <h2>서비스별 주의 안내</h2>
+        <div class="service-guide-grid">
+
+          <div class="service-guide-card">
+            <span class="guide-tag">이사 · 용달</span>
+            <strong>차량 서비스</strong>
+            <ul>
+              <li>영업용 번호판 또는 적법한 운송 자격 필수</li>
+              <li>자가용 유상운송 금지 (화물자동차 운수사업법)</li>
+              <li>화물 보험 가입 여부 직접 확인</li>
+              <li>거리·층수·짐양 현장 재확인 후 진행</li>
+            </ul>
+          </div>
+
+          <div class="service-guide-card">
+            <span class="guide-tag">입주청소 · 에어컨청소 · 가전청소</span>
+            <strong>청소 서비스</strong>
+            <ul>
+              <li>고가 물품·특수 오염 현장 확인 후 진행</li>
+              <li>파손·분실 발생 시 즉시 사진과 함께 보고</li>
+              <li>보호구 착용 및 현장 안전수칙 준수</li>
+              <li>약품 사용 전 고객 동의 확인</li>
+            </ul>
+          </div>
+
+          <div class="service-guide-card">
+            <span class="guide-tag">폐기물</span>
+            <strong>폐기물 수거</strong>
+            <ul>
+              <li>허가 또는 적법한 위탁 체계 없이 임의 수거 금지</li>
+              <li>일반·사업장·건설폐기물 기준 다름 — 반드시 확인</li>
+              <li>배출물 성격·반입 가능 여부 사전 확인</li>
+            </ul>
+          </div>
+
+          <div class="service-guide-card">
+            <span class="guide-tag">설치 · 인테리어</span>
+            <strong>설치 및 시공</strong>
+            <ul>
+              <li>전기·가스·수도 연결 등 자격 필요 공사 무자격 금지</li>
+              <li>전기공사업법, 가스 안전 법령 확인</li>
+              <li>구조 변경·타공은 범위 사전 협의 필수</li>
+            </ul>
+          </div>
+
+          <div class="service-guide-card">
+            <span class="guide-tag">정리수납 · 심부름</span>
+            <strong>생활 서비스</strong>
+            <ul>
+              <li>심부름은 단순 대행 범위 내에서만 수행</li>
+              <li>위법 요청(감시·채권추심·대리시험 등) 즉시 거절</li>
+              <li>물건 운송이 화물운송 성격 시 운송 법령 준수</li>
+            </ul>
+          </div>
+
+          <div class="service-guide-card">
+            <span class="guide-tag">PT · 보컬 · 골프 · 과외</span>
+            <strong>레슨 서비스</strong>
+            <ul>
+              <li>과장 광고·자격 허위표시 금지</li>
+              <li>치료·의료 효과 보장 발언 금지</li>
+              <li>위험한 신체 접촉 및 부적절한 언행 금지</li>
+              <li>수업 취소·변경은 사전 협의 필수</li>
+            </ul>
+          </div>
+
+          <div class="service-guide-card">
+            <span class="guide-tag">심리상담</span>
+            <strong>상담 서비스</strong>
+            <ul>
+              <li>자격 범위 내 상담만 진행</li>
+              <li>의료적 진단·치료 효과 보장 금지</li>
+              <li>위기 상황(자해·자살 징후) 즉시 전문기관 연계</li>
+              <li>상담 내용 비밀유지 의무 준수</li>
+            </ul>
+          </div>
+
+          <div class="service-guide-card">
+            <span class="guide-tag">마케팅</span>
+            <strong>마케팅 서비스</strong>
+            <ul>
+              <li>허위 과장 광고·리뷰 조작 금지</li>
+              <li>광고 집행 시 광고주 사전 승인 필수</li>
+              <li>저작권·초상권 침해 콘텐츠 제작 금지</li>
+              <li>개인정보 수집·활용 시 동의 절차 준수</li>
+            </ul>
+          </div>
+
+        </div>
       </div>
 
       <details class="agreement-box" style="margin-top:16px;">
         <summary>
-          <span>기사 화면에서 볼 수 있는 정보</span>
+          <span>전문가 화면에서 볼 수 있는 정보</span>
           <span class="agreement-summary">주문 요약과 운임 확인</span>
         </summary>
         <div class="agreement-body">
-          <p>기사 화면에서는 아래 정보를 볼 수 있습니다.</p>
+          <p>전문가 화면에서는 아래 정보를 볼 수 있습니다.</p>
           <ul>
-            <li>출발지, 도착지, 경유지, 이동일</li>
-            <li>총 결제, 기사 정산 예정 운임, 당고 수수료</li>
-            <li>차량 종류, 이사 방식, 짐양, 거리</li>
-            <li>가구·가전 선택, 버릴 물건, 고객 메모</li>
+            <li>서비스 유형, 날짜, 출발지·도착지, 경유지</li>
+            <li>총 결제, 전문가 정산 예정 운임</li>
+            <li>서비스 옵션, 고객 메모</li>
+            <li>이사·용달: 차량 종류, 짐양, 거리, 가구·가전 선택</li>
+            <li>레슨: 세션 시간, 횟수, 상담 주제</li>
           </ul>
         </div>
       </details>

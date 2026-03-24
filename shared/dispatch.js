@@ -44,11 +44,15 @@ export function scoreDriver(job, driver) {
   };
 }
 
-export function rankDrivers(job, drivers = []) {
-  return [...drivers]
+export function rankDrivers(job, drivers = [], preferRadiusKm = 5) {
+  const scored = [...drivers]
     .filter((driver) => driver.status === 'active' && driver.dispatch_enabled)
     .map((driver) => scoreDriver(job, driver))
     .sort((a, b) => b.dispatch_score - a.dispatch_score);
+
+  // 전문가 주소지(current_lat/lng) 기준 반경 내 우선 배차
+  const nearby = scored.filter((d) => Number.isFinite(d.distance_km) && d.distance_km <= preferRadiusKm);
+  return nearby.length > 0 ? nearby : scored;
 }
 
 export function dispatchMessage({ job, driver, token, siteUrl }) {

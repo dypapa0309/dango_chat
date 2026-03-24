@@ -536,9 +536,17 @@
     ].join('\n');
 
     try {
+      const headers = { 'Content-Type': 'application/json' };
+      try {
+        const sb = window.dd?.supabase;
+        if (sb) {
+          const { data: { session } } = await sb.auth.getSession();
+          if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+        }
+      } catch {}
       const res = await fetch('/.netlify/functions/create-job', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           service_type: 'yd',
           customer_name: name,

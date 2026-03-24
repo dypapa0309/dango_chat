@@ -1537,6 +1537,9 @@ function normalizeItemKey(k) {
       }
 
       const distanceText = $("#distanceText");
+      const calcBtn = $("#calcDistance");
+      const originalBtnText = calcBtn?.textContent || "거리 계산하기";
+      if (calcBtn) { calcBtn.disabled = true; calcBtn.innerHTML = '계산 중 <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>'; }
       if (distanceText) distanceText.textContent = "계산 중...";
 
       ensureKakaoReady(async () => {
@@ -1565,6 +1568,8 @@ function normalizeItemKey(k) {
           const hasDetail = isLikelyDetailedAddress(start) || isLikelyDetailedAddress(end) || (state.hasWaypoint && isLikelyDetailedAddress(wp));
           if (hasDetail) showAddressGuidePopup();
           else showToast("거리 계산에 실패했어요. 도로명이나 건물명 기준으로 다시 넣어주세요.", "error");
+        } finally {
+          if (calcBtn) { calcBtn.disabled = false; calcBtn.textContent = originalBtnText; }
         }
       });
     }
@@ -3296,9 +3301,17 @@ const borderColors = comparison.labels.map((label) =>
       const payload = buildCheckoutPayload(customerName, customerPhone);
 
       try {
+        const headers = { 'Content-Type': 'application/json' };
+        try {
+          const sb = window.dd?.supabase;
+          if (sb) {
+            const { data: { session } } = await sb.auth.getSession();
+            if (session?.access_token) headers['Authorization'] = `Bearer ${session.access_token}`;
+          }
+        } catch {}
         const res = await fetch('/.netlify/functions/create-job', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify(payload)
         });
         const data = await res.json();
@@ -3776,25 +3789,6 @@ document.querySelectorAll("[data-price]").forEach(el=>{
 })
 
 
-/* 거리 계산 버튼 로딩 */
-const distanceBtn = document.querySelector("#calcDistance")
-
-if(distanceBtn){
-
-  distanceBtn.addEventListener("click",()=>{
-
-    const original = distanceBtn.innerText
-
-    distanceBtn.innerHTML =
-    '거리 계산 중 <span class="loading-dots"><span>.</span><span>.</span><span>.</span></span>'
-
-    setTimeout(()=>{
-      distanceBtn.innerText = original
-    },2000)
-
-  })
-
-}
 
 /* ===== FIX PATCH START ===== */
 
