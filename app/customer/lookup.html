@@ -135,26 +135,41 @@
       });
     }
 
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      statusText.textContent = '주문을 찾고 있어요.';
-      resultList.innerHTML = '';
+    const ACTIVE_STATUSES = new Set(['deposit_pending', 'confirmed', 'assigned', 'in_progress']);
+    let autoRefreshInterval = null;
 
+    async function fetchAndRender(customerName, customerPhone) {
       const res = await fetch('/.netlify/functions/get-customer-jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          customerName: document.getElementById('customerName').value.trim(),
-          customerPhone: document.getElementById('customerPhone').value.trim()
-        })
+        body: JSON.stringify({ customerName, customerPhone })
       });
       const data = await res.json();
       if (!data.success) {
         statusText.textContent = data.error || '주문 조회에 실패했어요.';
         return;
       }
-      statusText.textContent = `최근 주문 ${data.jobs.length || 0}건을 찾았어요.`;
-      renderJobs(data.jobs || []);
+      const jobs = data.jobs || [];
+      statusText.textContent = `최근 주문 ${jobs.length}건을 찾았어요.`;
+      renderJobs(jobs);
+      const hasActive = jobs.some((j) => ACTIVE_STATUSES.has(j.status));
+      if (hasActive && !autoRefreshInterval) {
+        autoRefreshInterval = setInterval(() => fetchAndRender(customerName, customerPhone), 30000);
+        statusText.textContent += ' (진행 중 주문이 있어 30초마다 자동으로 새로고침돼요.)';
+      } else if (!hasActive && autoRefreshInterval) {
+        clearInterval(autoRefreshInterval);
+        autoRefreshInterval = null;
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (autoRefreshInterval) { clearInterval(autoRefreshInterval); autoRefreshInterval = null; }
+      statusText.textContent = '주문을 찾고 있어요.';
+      resultList.innerHTML = '';
+      const customerName = document.getElementById('customerName').value.trim();
+      const customerPhone = document.getElementById('customerPhone').value.trim();
+      await fetchAndRender(customerName, customerPhone);
     });
 
     statusText.textContent = '이름과 연락처를 넣으면 최근 주문을 확인할 수 있어요.';

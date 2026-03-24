@@ -191,6 +191,42 @@
     <a href="/estimate/">다른 견적도 계속 확인하기</a>
   </div>
 <script>
+const DISPATCH_LABEL = {
+  idle: '배차 대기', requesting: '기사 연결 중', accepted: '기사 수락',
+  driver_departed: '기사 출발', driver_arrived: '기사 도착',
+  in_progress: '작업 중', completion_requested: '완료 요청',
+  completed: '완료', canceled: '취소됨', reassign_needed: '재배차 필요'
+};
+
+function startDispatchPolling(jobId, el) {
+  const TERMINAL = new Set(['accepted', 'driver_departed', 'driver_arrived', 'in_progress', 'completion_requested', 'completed', 'canceled']);
+  const MAX_TRIES = 20; // 5분 (15초 × 20)
+  let tries = 0;
+  const interval = setInterval(async () => {
+    tries++;
+    if (tries > MAX_TRIES) { clearInterval(interval); return; }
+    try {
+      const res = await fetch(`/.netlify/functions/get-job-public?jobId=${encodeURIComponent(jobId)}`);
+      const data = await res.json();
+      const job = data.job;
+      if (!job) return;
+      const dispatch = job.dispatch_status;
+      const label = DISPATCH_LABEL[dispatch] || dispatch || '-';
+      if (dispatch === 'accepted' || dispatch === 'driver_departed' || dispatch === 'driver_arrived') {
+        el.className = 'ok';
+        el.textContent = `기사 배정이 완료됐어요. 현재 상태: ${label}`;
+        clearInterval(interval);
+      } else if (dispatch === 'completed' || dispatch === 'canceled') {
+        el.className = 'muted';
+        el.textContent = `배차 상태: ${label}`;
+        clearInterval(interval);
+      } else if (TERMINAL.has(dispatch)) {
+        clearInterval(interval);
+      }
+    } catch { /* 폴링 실패는 무시 */ }
+  }, 15000);
+}
+
 (async () => {
   const qs = new URLSearchParams(location.search);
   const jobId = qs.get('jobId');
@@ -247,6 +283,7 @@
         dispatchStatusEl.textContent = assignData.reused
           ? `배차 요청이 이미 잡혀 있어요. 현재 기사: ${assignData.driver?.name || '확인 중'}`
           : `자동 배차 요청이 들어갔어요. 현재 요청 기사: ${assignData.driver?.name || '확인 중'}`;
+        startDispatchPolling(jobId, dispatchStatusEl);
       } else {
         dispatchStatusEl.className = 'warn';
         dispatchStatusEl.textContent = (assignData.error || '결제는 끝났지만 배차 요청은 다시 확인이 필요해요.') + ' 문제가 계속되면 고객센터(010-7541-6143)로 연락해주세요.';
