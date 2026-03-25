@@ -940,16 +940,8 @@
       }
       return true;
     }
-    // 기타 서비스: 2=일정, 3=주소, 4=세부내용
+    // 기타 서비스: 2=세부내용, 3=일정, 4=주소
     if (step === 2) {
-      return !!state.moveDate && !!state.timeSlot;
-    }
-    if (step === 3) {
-      const validAddr = (v) => typeof v === 'string' && v.trim().length >= 5;
-      if (SERVICE === "errand") return validAddr(state.address) || validAddr(state.extraAddress);
-      return validAddr(state.address);
-    }
-    if (step === 4) {
       if (SERVICE === "waste") return Object.values(state.wasteItems).some((value) => Number(value || 0) > 0);
       if (SERVICE === "install") return Number(state.installQty || 0) > 0;
       if (GENERIC_SERVICES.has(SERVICE)) {
@@ -957,6 +949,14 @@
         return Number(state.genericQty || 0) > 0;
       }
       return Number(state.errandQty || 0) > 0;
+    }
+    if (step === 3) {
+      return !!state.moveDate && !!state.timeSlot;
+    }
+    if (step === 4) {
+      const validAddr = (v) => typeof v === 'string' && v.trim().length >= 5;
+      if (SERVICE === "errand") return validAddr(state.address) || validAddr(state.extraAddress);
+      return validAddr(state.address);
     }
     return true;
   }
