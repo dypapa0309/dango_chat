@@ -924,6 +924,17 @@
   function validateStep(step) {
     readState();
     if (step === 1) return Boolean(state.category);
+    // ac_clean: 2=세부내용, 3=일정, 4=주소
+    if (SERVICE === "ac_clean") {
+      if (step === 2) return Number(state.genericQty || 0) > 0;
+      if (step === 3) return !!state.moveDate && !!state.timeSlot;
+      if (step === 4) {
+        const validAddr = (v) => typeof v === 'string' && v.trim().length >= 5;
+        return validAddr(state.address);
+      }
+      return true;
+    }
+    // 기타 서비스: 2=일정, 3=주소, 4=세부내용
     if (step === 2) {
       return !!state.moveDate && !!state.timeSlot;
     }
