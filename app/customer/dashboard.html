@@ -127,6 +127,7 @@
         if (job.actions?.canPay) actions.push(`<a class="btn primary" href="/customer/pay.html?jobId=${encodeURIComponent(job.id)}">결제하기</a>`);
         if (job.actions?.canComplete) actions.push(`<a class="btn ghost" href="/customer/complete.html?token=${encodeURIComponent(job.customer_complete_token)}">완료 확인</a>`);
         if (job.actions?.canCancel) actions.push(`<a class="btn ghost" href="/customer/cancel.html?token=${encodeURIComponent(job.customer_cancel_token)}">취소 요청</a>`);
+        if (job.customer_complete_token && ACTIVE_STATUSES.has(job.status)) actions.push(`<a class="btn ghost" href="/customer/chat.html?token=${encodeURIComponent(job.customer_complete_token)}">전문가와 채팅</a>`);
         if (['completed', 'canceled'].includes(job.status)) {
           actions.push(`<button class="btn ghost reorder-btn" data-job-id="${encodeURIComponent(job.id)}" data-name="${encodeURIComponent(job.customer_name||'')}" data-phone="${encodeURIComponent(job.customer_phone||'')}">같은 조건으로 재접수</button>`);
         }

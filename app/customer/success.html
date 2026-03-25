@@ -167,12 +167,14 @@
       <div id="rejectDriverText" style="color:#6e6255; line-height:1.6; font-size:14px;"></div>
       <button id="btnRejectDriver" style="margin-top:12px; display:inline-flex; align-items:center; justify-content:center; min-height:44px; padding:0 18px; border-radius:12px; background:#ef4444; color:#fff; border:0; font:inherit; font-weight:700; cursor:pointer;" hidden>이 전문가 거절하기</button>
     </div>
-    <div id="chatBox" class="linkbox" hidden>
+    <div id="chatBox" class="linkbox">
       <strong style="display:block; color:#20170f; margin-bottom:10px;">전문가와 채팅</strong>
-      <div id="chatMessages" style="height:200px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:12px; padding:12px; background:#f8fafc; display:flex; flex-direction:column; gap:8px;"></div>
+      <div id="chatMessages" style="height:200px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:12px; padding:12px; background:#f8fafc; display:flex; flex-direction:column; gap:8px;">
+        <div id="chatPending" style="color:#9ca3af;font-size:13px;text-align:center;margin:auto;">전문가가 배정되면 채팅이 가능해요.</div>
+      </div>
       <div style="display:flex; gap:8px; margin-top:8px;">
-        <input id="chatInput" type="text" placeholder="메시지 입력..." maxlength="1000" style="flex:1; min-height:44px; border-radius:10px; border:1px solid #e5e7eb; padding:0 14px; font:inherit;" />
-        <button id="btnChatSend" style="min-width:70px; min-height:44px; border-radius:10px; border:0; background:#ed6b2f; color:#fff; font:inherit; font-weight:700; cursor:pointer; margin-top:0;">전송</button>
+        <input id="chatInput" type="text" placeholder="메시지 입력..." maxlength="1000" style="flex:1; min-height:44px; border-radius:10px; border:1px solid #e5e7eb; padding:0 14px; font:inherit;" disabled />
+        <button id="btnChatSend" style="min-width:70px; min-height:44px; border-radius:10px; border:0; background:#d1d5db; color:#fff; font:inherit; font-weight:700; cursor:not-allowed; margin-top:0;" disabled>전송</button>
       </div>
       <p id="chatStatus" style="font-size:12px; color:#9ca3af; margin:4px 0 0;"></p>
     </div>
@@ -467,7 +469,12 @@ function startDispatchPolling(jobId, el) {
   window.openCustomerChat = function(token) {
     if (chatPollInterval) return;
     chatToken = token;
-    chatBox.hidden = false;
+    const pending = document.getElementById('chatPending');
+    if (pending) pending.remove();
+    chatInput.disabled = false;
+    btnChatSend.disabled = false;
+    btnChatSend.style.background = '#ed6b2f';
+    btnChatSend.style.cursor = 'pointer';
     fetchMessages();
     chatPollInterval = setInterval(fetchMessages, 10000);
   };
