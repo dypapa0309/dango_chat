@@ -143,7 +143,7 @@
     </section>
 
     <main class="yd-flow">
-      <section class="section step-card yd-step-card">
+      <section class="section step-card yd-step-card" data-yd-step="1">
         <h2>출발지 · 도착지 · 거리 계산</h2>
         <div class="card yd-card">
 
@@ -165,10 +165,13 @@
             <div class="distance-line muted" id="distanceMeta">부개동·화곡동·까치산역 같은 러프한 주소도 최대한 계산해드려요.</div>
           </div>
         </div>
+        <div class="yd-step-nav">
+          <button type="button" class="wizard-primary yd-cta-btn" id="ydNext1">다음으로 →</button>
+        </div>
         </div>
       </section>
 
-      <section class="section step-card yd-step-card">
+      <section class="section step-card yd-step-card" data-yd-step="2" hidden>
         <h2>날짜 · 이동 시간 선택</h2>
         <div class="card yd-card">
         <p class="section-copy">기사 배차와 이동 가능 시간을 빠르게 맞추기 위한 정보입니다.</p>
@@ -183,10 +186,14 @@
             <input type="time" id="moveTime" />
           </label>
         </div>
+        <div class="yd-step-nav">
+          <button type="button" class="wizard-btn ghost yd-prev-btn" id="ydPrev2">← 이전</button>
+          <button type="button" class="wizard-primary yd-cta-btn" id="ydNext2">다음으로 →</button>
+        </div>
         </div>
       </section>
 
-      <section class="section step-card yd-step-card">
+      <section class="section step-card yd-step-card" data-yd-step="3" hidden>
         <h2>짐 크기 선택</h2>
         <div class="card yd-card">
         <p class="section-copy">품목별 추가요금이 아니라 짐 규모를 빠르게 파악하기 위한 선택입니다.</p>
@@ -210,11 +217,15 @@
           <div class="summary-label">선택한 짐</div>
           <div id="selectedItemsSummary" class="summary-value empty">아직 선택한 짐이 없어요.</div>
         </div>
+        <div class="yd-step-nav">
+          <button type="button" class="wizard-btn ghost yd-prev-btn" id="ydPrev3">← 이전</button>
+          <button type="button" class="wizard-primary yd-cta-btn" id="ydNext3">다음으로 →</button>
+        </div>
         </div>
       </section>
 
-      <section class="section step-card yd-step-card">
-        <h2>기사 도움 여부</h2>
+      <section class="section step-card yd-step-card" data-yd-step="4" hidden>
+        <h2>기사 도움 · 동승 여부</h2>
         <div class="card yd-card">
         <p class="section-copy">기사님이 함께 들어드려야 하는 경우만 체크해주세요.</p>
 
@@ -234,14 +245,8 @@
             </span>
           </label>
         </div>
-        </div>
-      </section>
 
-      <section class="section step-card yd-step-card">
-        <h2>동승 여부</h2>
-        <div class="card yd-card">
-        <p class="section-copy">차에 같이 타고 이동해야 하면 여기에서 선택해주세요.</p>
-
+        <p class="section-copy" style="margin-top:16px">차에 같이 타고 이동해야 하면 선택해주세요.</p>
         <div class="help-grid help-grid--single">
           <label class="check-card yd-check-card">
             <input type="checkbox" id="riderSeat" />
@@ -251,10 +256,14 @@
             </span>
           </label>
         </div>
+        <div class="yd-step-nav">
+          <button type="button" class="wizard-btn ghost yd-prev-btn" id="ydPrev4">← 이전</button>
+          <button type="button" class="wizard-primary yd-cta-btn" id="ydNext4">결과 확인 →</button>
+        </div>
         </div>
       </section>
 
-      <section class="section step-card yd-step-card result-step">
+      <section class="section step-card yd-step-card result-step" data-yd-step="5" hidden>
         <h2>예상 용달비</h2>
         <div class="card yd-card total-card">
 
@@ -272,6 +281,9 @@
               <span class="desc">전체 결제를 하면 주문이 바로 등록됩니다.</span>
             </span>
           </button>
+        </div>
+        <div class="yd-step-nav" style="margin-top:12px">
+          <button type="button" class="wizard-btn ghost yd-prev-btn" id="ydPrev5">← 이전으로</button>
         </div>
         </div>
       </section>

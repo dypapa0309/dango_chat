@@ -376,3 +376,17 @@
     font-size: 24px;
   }
 }
+
+/* Step navigation */
+.yd-step-nav {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.yd-step-nav .wizard-primary {
+  flex: 1;
+}
+.yd-step-nav .wizard-btn.ghost {
+  flex: 0 0 auto;
+  min-width: 90px;
+}

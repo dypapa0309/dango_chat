@@ -129,6 +129,51 @@
 
   let activeSize = null;
   let kakaoReadyPromise = null;
+  let currentStep = 1;
+  const TOTAL_STEPS = 5;
+
+  const CHEER_TEXT = {
+    1: '좋아요. 이제 하나씩 넣으면 돼요. 주소와 거리부터 먼저 확인하면 됩니다.',
+    2: '주소 확인 완료! 이동 날짜와 시간을 선택해주세요.',
+    3: '날짜 선택 완료! 옮길 짐 크기를 선택해주세요. (선택 안 해도 괜찮아요)',
+    4: '거의 다 왔어요! 기사 도움이나 동승이 필요하면 선택해주세요.',
+    5: '다 됐어요! 예상 금액을 확인하고 결제로 넘어가세요.',
+  };
+
+  function goToStep(n) {
+    currentStep = Math.max(1, Math.min(TOTAL_STEPS, n));
+    $$('[data-yd-step]').forEach((sec) => {
+      sec.hidden = Number(sec.dataset.ydStep) !== currentStep;
+    });
+    $$('.stage-pill').forEach((pill, i) => {
+      pill.classList.toggle('is-active', i + 1 === currentStep);
+    });
+    const bar = document.querySelector('.yd-stage-bar');
+    if (bar) bar.style.width = `${((currentStep - 1) / (TOTAL_STEPS - 1)) * 100}%`;
+    const cheer = document.querySelector('.wizard-cheer');
+    if (cheer) cheer.textContent = CHEER_TEXT[currentStep] || '';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (currentStep === TOTAL_STEPS) renderFees();
+  }
+
+  function validateStep(step) {
+    if (step === 1) {
+      if (!state.startAddress || !state.endAddress) {
+        showToast('출발지와 도착지 주소를 입력해주세요.', 'error'); return false;
+      }
+      if (state.distanceKm <= 0) {
+        showToast('거리 계산 버튼을 먼저 눌러주세요.', 'error'); return false;
+      }
+      return true;
+    }
+    if (step === 2) {
+      if (!state.moveDate) {
+        showToast('이동 날짜를 선택해주세요.', 'error'); return false;
+      }
+      return true;
+    }
+    return true; // 3, 4단계는 선택사항
+  }
 
   function ensureKakaoReady() {
     if (kakaoReadyPromise) return kakaoReadyPromise;
@@ -577,6 +622,16 @@
       btn.textContent = '전체 결제하고 접수하기';
     }
   }
+
+  // 스텝 네비게이션
+  document.getElementById('ydNext1')?.addEventListener('click', () => { if (validateStep(1)) goToStep(2); });
+  document.getElementById('ydNext2')?.addEventListener('click', () => { if (validateStep(2)) goToStep(3); });
+  document.getElementById('ydNext3')?.addEventListener('click', () => goToStep(4));
+  document.getElementById('ydNext4')?.addEventListener('click', () => goToStep(5));
+  document.getElementById('ydPrev2')?.addEventListener('click', () => goToStep(1));
+  document.getElementById('ydPrev3')?.addEventListener('click', () => goToStep(2));
+  document.getElementById('ydPrev4')?.addEventListener('click', () => goToStep(3));
+  document.getElementById('ydPrev5')?.addEventListener('click', () => goToStep(4));
 
   $$('.size-card').forEach((btn) =>
     btn.addEventListener('click', () => openModal(btn.dataset.size))
