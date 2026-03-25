@@ -1465,20 +1465,8 @@ textarea {
   overflow: hidden;
 }
 
-.biz-footer summary {
-  cursor: pointer;
-  list-style: none;
-  padding: 18px 20px;
-  font-weight: 800;
-}
-
-.biz-footer summary::-webkit-details-marker {
-  display: none;
-}
-
 .biz-lines {
-  padding: 0 20px 18px;
-  border-top: 1px solid rgba(70, 50, 31, 0.08);
+  padding: 18px 20px;
 }
 
 .biz-lines p {
