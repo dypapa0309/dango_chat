@@ -66,10 +66,10 @@
     ac_clean: {
       label: "에어컨청소",
       cheer: {
-        1: "좋아요. 이제 하나씩 넣으면 돼요. 어떤 에어컨 청소인지 먼저 골라주세요.",
-        2: "좋아요. 방문 날짜와 시간을 골라주세요.",
-        3: "좋아요. 방문 주소를 입력해주세요.",
-        4: "거의 다 왔어요. 대수와 분해 세척 여부를 넣어주세요.",
+        1: "좋아요. 이제 하나씩 넣으면 돼요. 에어컨 기종을 먼저 골라주세요.",
+        2: "좋아요. 청소할 에어컨 종류와 대수를 골라주세요.",
+        3: "좋아요. 방문 날짜와 희망 시간을 골라주세요.",
+        4: "좋아요. 방문 주소를 입력해주세요.",
         5: "좋아요. 이제 거의 끝났어요. 금액과 접수 내용을 확인하면 됩니다."
       }
     },
@@ -600,6 +600,19 @@
         cleanup: { label: "현장 청소", desc: "작업 후 현장 정리", price: 85000 },
         demolitionHelp: { label: "철거 보조", desc: "철거 현장 보조 작업", price: 120000 }
       }
+    },
+    ac_clean: {
+      title: "청소할 에어컨 종류와 대수를 골라주세요.",
+      summaryTitle: "에어컨 종류",
+      unit: "대",
+      items: {
+        wall: { label: "벽걸이", desc: "가정용 벽걸이 에어컨", price: 56000 },
+        stand: { label: "스탠드", desc: "스탠드형 에어컨", price: 92000 },
+        twoinone: { label: "2in1", desc: "벽걸이+스탠드 세트", price: 139000 },
+        system1: { label: "시스템 1way", desc: "천장형 1way 매립형", price: 82000 },
+        system2: { label: "시스템 2way", desc: "천장형 2way 매립형", price: 110000 },
+        system4: { label: "시스템 4way", desc: "천장형 4way 매립형", price: 150000 }
+      }
     }
   };
 
@@ -866,7 +879,13 @@
     const qty = Math.max(1, Number(state.genericQty || 1));
     let total = base + Math.max(0, qty - 1) * Math.round(base * 0.4);
     if (detailConfig) {
-      total = base + getDetailSelectionTotalPrice();
+      const modalTotal = getDetailSelectionTotalPrice();
+      // ac_clean: price comes entirely from modal (not base + modal, which would double-count)
+      if (SERVICE === 'ac_clean') {
+        total = modalTotal > 0 ? modalTotal : base;
+      } else {
+        total = base + modalTotal;
+      }
     }
     const optionFees = {
       visitEstimate: 30000,
@@ -1354,27 +1373,24 @@
     const config = detailSelectionConfig();
     if (!config) return;
     ensureDetailSelectionState();
-    const step3 = document.querySelector('.step-card[data-step="3"]');
-    if (!step3) return;
-    const heading = step3.querySelector("h2");
-    const content = `
-      <div class="card">
-        <div class="sub">${config.summaryTitle}</div>
-        <button type="button" class="detail-picker-launch" data-open-modal="detailSelectionModal">
-          <span>세부 항목 선택하기</span>
-          <strong>${config.summaryTitle} ${getDetailSelectionTotalQty()}${config.unit}</strong>
-        </button>
-        <div id="detailSelectionSummary" class="detail-selection-summary"></div>
-        <div class="sub" style="margin-top:16px;">상세 요청</div>
-        <input type="text" id="serviceDetailName" class="address-input" placeholder="${GENERIC_SERVICE_CONFIG[SERVICE]?.detailLabel || "요청 내용을 적어주세요."}" />
-      </div>
-    `;
-    if (heading) {
-      heading.insertAdjacentHTML("afterend", content);
-    }
-    step3.querySelectorAll(".card").forEach((card, index) => {
-      if (index > 0) card.remove();
-    });
+    // ac_clean: step 2 is 세부내용; all other services: step 4 is 세부내용
+    const detailStepNum = SERVICE === 'ac_clean' ? '2' : '4';
+    const detailStep = document.querySelector(`.step-card[data-step="${detailStepNum}"]`);
+    if (!detailStep) return;
+    const card = detailStep.querySelector('.card');
+    if (!card) return;
+    // Insert picker launcher + summary at top of existing card (keeps checkboxes & memo)
+    card.insertAdjacentHTML('afterbegin', `
+      <div class="sub">${config.summaryTitle}</div>
+      <button type="button" class="detail-picker-launch" data-open-modal="detailSelectionModal">
+        <span>세부 항목 선택하기</span>
+        <strong>${config.summaryTitle} ${getDetailSelectionTotalQty()}${config.unit}</strong>
+      </button>
+      <div id="detailSelectionSummary" class="detail-selection-summary" style="margin-bottom:8px;"></div>
+    `);
+    // Hide the plain qty stepper row (replaced by the modal picker)
+    const qtyRow = card.querySelector('.item-qty-row');
+    if (qtyRow) qtyRow.hidden = true;
 
     if (!$("#detailSelectionModal")) {
       document.body.insertAdjacentHTML(
@@ -1471,6 +1487,13 @@
         if (!input || input.disabled) return;
         event.preventDefault();
         input.checked = true;
+        // Sync is-selected class across all chips with the same name
+        const name = input.name;
+        if (name) {
+          $$(`input[name="${name}"]`).forEach((r) => {
+            r.closest('.time-chip')?.classList.toggle('is-selected', r === input);
+          });
+        }
         input.dispatchEvent(new Event("change", { bubbles: true }));
       });
     });

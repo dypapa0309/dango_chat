@@ -585,7 +585,8 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
 .time-chip input{ position:absolute; opacity:0; pointer-events:none; }
 .time-chip span{ font-weight:1000; color:var(--text); }
 .time-chip *{ pointer-events:none; }
-.time-chip:has(input:checked){
+.time-chip:has(input:checked),
+.time-chip.is-selected{
   background:#EFF6FF;
   border-color:rgba(47,128,237,0.24);
 }
@@ -2737,6 +2738,7 @@ body{
 .vehicle.active,
 .vehicle.selected,
 .time-chip:has(input:checked),
+.time-chip.is-selected,
 .seg-item:has(input:checked){
   background:rgba(237,107,47,0.09);
   border-color:rgba(237,107,47,0.24);
