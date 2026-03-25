@@ -42,8 +42,8 @@
     <div class="stage-pill-row" id="wizardStagePills">
       <button type="button" class="stage-pill is-active">1. 서비스 선택</button>
       <button type="button" class="stage-pill">2. 일정 선택</button>
-      <button type="button" class="stage-pill">3. 서비스 내용</button>
-      <button type="button" class="stage-pill">4. 방문 주소</button>
+      <button type="button" class="stage-pill">3. 방문 주소</button>
+      <button type="button" class="stage-pill">4. 세부 내용</button>
       <button type="button" class="stage-pill">5. 결과 확인</button>
     </div>
   </section>
@@ -76,7 +76,13 @@
     </div>
   </section>
   <section class="section step-card" data-step="3" hidden>
-    <h2>서비스 내용</h2>
+    <h2>방문 주소</h2>
+    <div class="card">
+      <div class="sub">수업 지역</div><div class="address-search-row"><input type="text" id="serviceAddress" class="address-input" placeholder="예: 서울 강남구, 경기 수원시" /><button type="button" class="address-search-btn" data-address-target="serviceAddress">주소 검색</button></div>
+    </div>
+  </section>
+  <section class="section step-card" data-step="4" hidden>
+    <h2>세부 내용</h2>
     <div class="card">
       <div class="option item-qty-row">
         <div><strong>작업 건수</strong><br />포스팅, 영상, 광고 등 작업 건수를 넣어주세요.</div>
@@ -89,12 +95,6 @@
       </div>
       <div class="sub" style="margin-top:16px;">마케팅 목표·상세 요청</div>
       <input type="text" id="serviceDetailName" class="address-input" placeholder="브랜드명, 목표 채널, 원하는 방향을 적어주세요." />
-    </div>
-  </section>
-  <section class="section step-card" data-step="4" hidden>
-    <h2>방문 주소</h2>
-    <div class="card">
-      <div class="sub">수업 지역</div><div class="address-search-row"><input type="text" id="serviceAddress" class="address-input" placeholder="예: 서울 강남구, 경기 수원시" /><button type="button" class="address-search-btn" data-address-target="serviceAddress">주소 검색</button></div><div style="margin-bottom:16px;"></div>
       <div class="option"><div>초기 미팅·브리핑이 필요해요</div><input type="checkbox" id="optionVisitEstimate" /></div>
       <div class="option"><div>방문 미팅이 필요해요</div><input type="checkbox" id="optionHomeVisit" /></div>
       <div class="option"><div>빠른 납품이 필요해요</div><input type="checkbox" id="optionUrgent" /></div>

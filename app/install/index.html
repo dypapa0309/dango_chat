@@ -50,8 +50,8 @@
     <div class="stage-pill-row" id="wizardStagePills">
       <button type="button" class="stage-pill is-active">1. 서비스 선택</button>
       <button type="button" class="stage-pill">2. 일정 선택</button>
-      <button type="button" class="stage-pill">3. 설치 내용</button>
-      <button type="button" class="stage-pill">4. 방문 주소</button>
+      <button type="button" class="stage-pill">3. 방문 주소</button>
+      <button type="button" class="stage-pill">4. 세부 내용</button>
       <button type="button" class="stage-pill">5. 결과 확인</button>
     </div>
   </section>
@@ -85,7 +85,14 @@
   </section>
 
   <section class="section step-card" data-step="3" hidden>
-    <h2>설치 내용</h2>
+    <h2>방문 주소</h2>
+    <div class="card">
+      <div class="sub">방문 주소</div><div class="address-search-row"><input type="text" id="serviceAddress" class="address-input" placeholder="예: 서울 송파구 문정동 ..." /><button type="button" class="address-search-btn" data-address-target="serviceAddress">주소 검색</button></div>
+    </div>
+  </section>
+
+  <section class="section step-card" data-step="4" hidden>
+    <h2>세부 내용</h2>
     <div class="card">
       <div class="sub" style="margin-top:16px;">수량</div>
       <div class="stepper">
@@ -94,13 +101,6 @@
         <button type="button" class="stepper-btn" data-stepper="installQty" data-dir="1">+</button>
         <span class="stepper-unit">건</span>
       </div>
-    </div>
-  </section>
-
-  <section class="section step-card" data-step="4" hidden>
-    <h2>방문 주소</h2>
-    <div class="card">
-      <div class="sub">방문 주소</div><div class="address-search-row"><input type="text" id="serviceAddress" class="address-input" placeholder="예: 서울 송파구 문정동 ..." /><button type="button" class="address-search-btn" data-address-target="serviceAddress">주소 검색</button></div><div style="margin-bottom:16px;"></div>
       <div class="option"><div>타공이 필요해요</div><input type="checkbox" id="installDrilling" /></div>
       <div class="option"><div>벽고정이 필요해요</div><input type="checkbox" id="installAnchorFix" /></div>
       <div class="option"><div>전기 연결이 있어요</div><input type="checkbox" id="installElectric" /></div>
