@@ -576,19 +576,19 @@ textarea {
 .service-hop-card__media--move {
   background:
     linear-gradient(to top, rgba(30,18,8,0.52) 0%, rgba(30,18,8,0.1) 55%, transparent 100%),
-    url('../img/home/card-move.png') center/cover no-repeat;
+    url('img/home/card-move.png') center/cover no-repeat;
 }
 
 .service-hop-card__media--clean {
   background:
     linear-gradient(to top, rgba(20,40,28,0.50) 0%, rgba(20,40,28,0.08) 55%, transparent 100%),
-    url('../img/home/card-clean.png') center/cover no-repeat;
+    url('img/home/card-clean.png') center/cover no-repeat;
 }
 
 .service-hop-card__media--delivery {
   background:
     linear-gradient(to top, rgba(30,40,60,0.38) 0%, rgba(30,40,60,0.04) 50%, transparent 100%),
-    url('../img/home/card-truck.png') center/cover no-repeat;
+    url('img/home/card-truck.png') center/cover no-repeat;
 }
 
 /* 사진 카드에서 도형 숨김 */
