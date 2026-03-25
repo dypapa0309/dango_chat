@@ -1026,6 +1026,12 @@ button[disabled].wizard-btn{
   gap:14px;
 }
 
+@media (max-width: 480px){
+  .detail-selection-grid{
+    grid-template-columns:1fr;
+  }
+}
+
 .detail-select-card{
   border:1px solid rgba(17,24,39,0.08);
   border-radius:22px;
