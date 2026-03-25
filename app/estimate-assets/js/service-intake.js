@@ -1466,18 +1466,15 @@
 
   function bindDateAndTimeCards() {
     $$(".date-wrap").forEach((wrap) => {
-      wrap.addEventListener("click", (event) => {
-        if (event.target.closest("input, button")) return;
+      wrap.addEventListener("click", () => {
         const input = wrap.querySelector('input[type="date"]');
         if (!input) return;
-        if (typeof input.showPicker === "function") {
-          try {
-            input.showPicker();
-            return;
-          } catch (_) {}
-        }
         input.focus();
-        input.click();
+        if (typeof input.showPicker === "function") {
+          try { input.showPicker(); } catch (_) { input.click(); }
+        } else {
+          input.click();
+        }
       });
     });
 
