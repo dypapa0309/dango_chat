@@ -43,9 +43,9 @@
     <div class="wizard-cheer" id="wizardCheer">좋아요. 이제 하나씩 넣으면 돼요. 먼저 어떤 가전청소인지 골라주세요.</div>
     <div class="stage-pill-row" id="wizardStagePills">
       <button type="button" class="stage-pill is-active">1. 서비스 선택</button>
-      <button type="button" class="stage-pill">2. 기본 정보</button>
+      <button type="button" class="stage-pill">2. 일정 선택</button>
       <button type="button" class="stage-pill">3. 서비스 내용</button>
-      <button type="button" class="stage-pill">4. 추가 요청</button>
+      <button type="button" class="stage-pill">4. 방문 주소</button>
       <button type="button" class="stage-pill">5. 결과 확인</button>
     </div>
   </section>
@@ -61,13 +61,8 @@
   </section>
 
   <section class="section step-card" data-step="2" hidden>
-    <h2>기본 정보</h2>
+    <h2>일정 선택</h2>
     <div class="card">
-      <div class="sub">방문 주소</div>
-      <div class="address-search-row">
-        <input type="text" id="serviceAddress" class="address-input" placeholder="예: 서울 강동구 천호동 ..." />
-        <button type="button" class="address-search-btn" data-address-target="serviceAddress">주소 검색</button>
-      </div>
       <div class="sub" style="margin-top:16px;">방문 날짜</div>
       <div class="date-wrap"><input type="date" id="moveDate" class="address-input date-input" /><span class="date-icon" aria-hidden="true"></span></div>
       <div class="sub" style="margin-top:16px;">희망 시간</div>
@@ -97,8 +92,9 @@
   </section>
 
   <section class="section step-card" data-step="4" hidden>
-    <h2>추가 요청</h2>
+    <h2>방문 주소</h2>
     <div class="card">
+      <div class="sub">방문 주소</div><div class="address-search-row"><input type="text" id="serviceAddress" class="address-input" placeholder="예: 서울 송파구 문정동 ..." /><button type="button" class="address-search-btn" data-address-target="serviceAddress">주소 검색</button></div><div style="margin-bottom:16px;"></div>
       <div class="option"><div>현장 확인이 먼저 필요해요</div><input type="checkbox" id="optionVisitEstimate" /></div>
       <div class="option"><div>당일 방문이 필요해요</div><input type="checkbox" id="optionHomeVisit" /></div>
       <div class="option"><div>빠른 일정이 필요해요</div><input type="checkbox" id="optionUrgent" /></div>
