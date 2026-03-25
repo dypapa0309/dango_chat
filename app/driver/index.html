@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 전문가 포털</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --brand:#ed6b2f; --card:#fffaf3; --line:rgba(70,50,31,.12); --text:#20170f; --muted:#6e6255; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: "SUIT", Arial, sans-serif; background: linear-gradient(180deg,#f8e6c3,#f7f3ec); color: var(--text); padding: 24px; }
+    .wrap { max-width: 860px; margin: 0 auto; }
+    .user-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; padding: 14px 18px; background: rgba(255,255,255,.7); border: 1px solid var(--line); border-radius: 14px; flex-wrap: wrap; }
+    .user-bar .name { font-weight: 700; font-size: 15px; }
+    .user-bar .sub { font-size: 13px; color: var(--muted); }
+    .btn-logout { background: transparent; color: var(--muted); border: 1px solid var(--line); font-size: 13px; min-height: 34px; padding: 0 14px; border-radius: 999px; cursor: pointer; font: inherit; }
+    .nav-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .nav-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 20px 12px; background: var(--card); border: 1px solid var(--line); border-radius: 18px; text-decoration: none; color: var(--text); font-weight: 700; font-size: 14px; text-align: center; }
+    .nav-card .icon { font-size: 28px; }
+    .section-title { font-size: 18px; font-weight: 800; margin: 0 0 12px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 20px; padding: 22px; margin-bottom: 16px; }
+    .dispatch-popup { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); width: calc(100% - 48px); max-width: 480px; background: #20170f; color: #fff; border-radius: 20px; padding: 20px 22px; box-shadow: 0 8px 40px rgba(0,0,0,.3); z-index: 100; }
+    .dispatch-popup h3 { margin: 0 0 6px; font-size: 17px; }
+    .dispatch-popup p { margin: 0 0 14px; font-size: 14px; color: rgba(255,255,255,.7); line-height: 1.5; }
+    .dispatch-btns { display: flex; gap: 10px; }
+    .btn-accept { flex: 1; min-height: 48px; border-radius: 12px; border: 0; background: var(--brand); color: #fff; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; }
+    .btn-decline { flex: 1; min-height: 48px; border-radius: 12px; border: 1px solid rgba(255,255,255,.2); background: transparent; color: rgba(255,255,255,.7); font: inherit; font-size: 14px; cursor: pointer; }
+    .countdown { font-size: 13px; color: rgba(255,255,255,.5); margin-top: 8px; text-align: center; }
+    .job-card { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 10px; }
+    .job-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+    .badge { padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #f1f5f9; border: 1px solid var(--line); }
+    .badge.active { background: #ecfdf5; color: #065f46; }
+    .row { color: var(--muted); font-size: 13px; margin-top: 5px; }
+    .btn-chat { display: inline-flex; align-items: center; justify-content: center; min-height: 38px; padding: 0 16px; border-radius: 10px; border: 1px solid var(--brand); color: var(--brand); background: transparent; font: inherit; font-size: 13px; font-weight: 700; text-decoration: none; margin-top: 10px; cursor: pointer; }
+    #statusText { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+    @media (max-width: 480px) { .nav-grid { grid-template-columns: repeat(2, 1fr); } }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <div class="user-bar">
+      <div>
+        <div class="name" id="driverName">불러오는 중...</div>
+        <div class="sub" id="driverSub"></div>
+      </div>
+      <button class="btn-logout" id="btnLogout">로그아웃</button>
+    </div>
+
+    <div class="nav-grid">
+      <a href="/driver/activity.html" class="nav-card">
+        <span class="icon">📋</span>주문·정산
+      </a>
+      <a href="/driver/profile.html" class="nav-card">
+        <span class="icon">⚙️</span>내 프로필
+      </a>
+      <a href="/driver/guide.html" class="nav-card">
+        <span class="icon">📖</span>이용 가이드
+      </a>
+    </div>
+
+    <p class="section-title">진행 중인 주문</p>
+    <p id="statusText">주문을 불러오는 중...</p>
+    <div id="jobList"></div>
+  </main>
+
+  <!-- 배차 팝업 -->
+  <div id="dispatchPopup" class="dispatch-popup" hidden>
+    <h3 id="popupTitle">새 배차 요청</h3>
+    <p id="popupDesc"></p>
+    <div class="dispatch-btns">
+      <button class="btn-accept" id="btnAccept">수락하기</button>
+      <button class="btn-decline" id="btnDecline">거절하기</button>
+    </div>
+    <div class="countdown" id="popupCountdown"></div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script>
+    const SERVICE_LABEL = {
+      move: '소형이사', clean: '입주청소', yd: '용달', waste: '폐기물', install: '설치',
+      errand: '심부름', organize: '정리수납', ac_clean: '에어컨청소', appliance_clean: '가전청소',
+      interior: '인테리어', interior_help: '인테리어 보조', pt: 'PT', vocal: '보컬',
+      golf: '골프', tutor: '과외', counseling: '심리상담', marketing: '마케팅'
+    };
+    const DISPATCH_LABEL = {
+      idle: '배차 대기', requesting: '기사 연결 중', accepted: '수락됨',
+      driver_departed: '출발', driver_arrived: '도착', in_progress: '작업 중',
+      completion_requested: '완료 요청', completed: '완료', canceled: '취소됨'
+    };
+    const money = (v) => `${Number(v || 0).toLocaleString()}원`;
+    const escape = (s) => String(s || '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+    let accessToken = null;
+    let driverId = null;
+    let pendingAssignment = null;
+    let countdownInterval = null;
+
+    window.dd.onSupabaseReady(async (sb) => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.replace('/auth/login.html?role=driver'); return; }
+
+      accessToken = session.access_token;
+
+      // 기사 정보 로드
+      const res = await fetch('/.netlify/functions/get-driver-me', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const data = await res.json();
+
+      if (!data.success || !data.linked) {
+        location.replace('/driver/link-phone.html');
+        return;
+      }
+
+      const driver = data.driver;
+      driverId = driver.id;
+      document.getElementById('driverName').textContent = driver.name || '전문가';
+      document.getElementById('driverSub').textContent =
+        `${driver.dispatch_enabled ? '🟢 배차 활성' : '🔴 배차 비활성'} · ${(driver.supported_services || []).map(s => SERVICE_LABEL[s] || s).join(', ')}`;
+
+      document.getElementById('btnLogout').onclick = async () => {
+        await sb.auth.signOut();
+        location.replace('/auth/login.html?role=driver');
+      };
+
+      await loadActiveJobs();
+      startRealtimeDispatch(sb);
+    });
+
+    async function loadActiveJobs() {
+      const res = await fetch('/.netlify/functions/get-driver-activity', {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const data = await res.json();
+      const statusText = document.getElementById('statusText');
+      const jobList = document.getElementById('jobList');
+
+      if (!data.success) { statusText.textContent = '주문을 불러오지 못했어요.'; return; }
+
+      const active = (data.assignments || []).filter((a) =>
+        ['accepted', 'driver_departed', 'driver_arrived', 'in_progress', 'completion_requested'].includes(a.jobs?.dispatch_status)
+      );
+
+      if (!active.length) { statusText.textContent = '진행 중인 주문이 없어요.'; return; }
+      statusText.textContent = '';
+      jobList.innerHTML = active.map((a) => {
+        const job = a.jobs;
+        const svc = SERVICE_LABEL[job?.service_type] || job?.service_type || '서비스';
+        const ds = DISPATCH_LABEL[job?.dispatch_status] || job?.dispatch_status || '-';
+        return `<div class="job-card">
+          <div class="job-top">
+            <strong>${escape(svc)} · ${escape(job?.move_date || '날짜 미정')}</strong>
+            <span class="badge active">${escape(ds)}</span>
+          </div>
+          <div class="row">${escape(job?.start_address || '-')}</div>
+          <div class="row">결제 ${money(job?.total_price)}</div>
+          <a class="btn-chat" href="/driver/accept.html?jobId=${encodeURIComponent(job?.id || '')}">상세 · 채팅</a>
+        </div>`;
+      }).join('');
+    }
+
+    function startRealtimeDispatch(sb) {
+      if (!driverId) return;
+      sb.channel(`driver-dispatch-${driverId}`)
+        .on('postgres_changes', {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'assignments',
+          filter: `driver_id=eq.${driverId}`
+        }, (payload) => {
+          showDispatchPopup(payload.new);
+        })
+        .subscribe();
+    }
+
+    async function showDispatchPopup(assignment) {
+      const popup = document.getElementById('dispatchPopup');
+      // 배차 상세 로드
+      const res = await fetch(`/.netlify/functions/driver-respond?jobId=${encodeURIComponent(assignment.job_id)}`, {
+        headers: { Authorization: `Bearer ${accessToken}` }
+      });
+      const data = await res.json();
+      if (!data.success || data.handled || data.expired) return;
+
+      const job = data.job;
+      pendingAssignment = assignment;
+
+      const svc = SERVICE_LABEL[job?.service_type] || '서비스';
+      document.getElementById('popupTitle').textContent = `새 배차 요청 — ${svc}`;
+      document.getElementById('popupDesc').textContent =
+        `${job?.move_date || '날짜 미정'} · ${job?.start_address || '-'}\n결제 ${money(job?.total_price)}`;
+
+      popup.hidden = false;
+
+      // 카운트다운
+      const expiresAt = assignment.expires_at ? new Date(assignment.expires_at) : null;
+      if (expiresAt) {
+        const tick = () => {
+          const left = Math.max(0, Math.round((expiresAt - Date.now()) / 1000));
+          document.getElementById('popupCountdown').textContent = left > 0 ? `${left}초 안에 응답해주세요` : '시간이 초과됐어요.';
+          if (left <= 0) { clearInterval(countdownInterval); popup.hidden = true; }
+        };
+        tick();
+        countdownInterval = setInterval(tick, 1000);
+      }
+    }
+
+    document.getElementById('btnAccept').addEventListener('click', async () => {
+      if (!pendingAssignment) return;
+      document.getElementById('dispatchPopup').hidden = true;
+      clearInterval(countdownInterval);
+      await fetch('/.netlify/functions/driver-respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ jobId: pendingAssignment.job_id, action: 'accept' })
+      });
+      await loadActiveJobs();
+    });
+
+    document.getElementById('btnDecline').addEventListener('click', async () => {
+      if (!pendingAssignment) return;
+      document.getElementById('dispatchPopup').hidden = true;
+      clearInterval(countdownInterval);
+      await fetch('/.netlify/functions/driver-respond', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+        body: JSON.stringify({ jobId: pendingAssignment.job_id, action: 'decline' })
+      });
+    });
+  </script>
+</body>
+</html>

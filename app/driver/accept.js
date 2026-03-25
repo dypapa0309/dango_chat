@@ -1,10 +1,20 @@
-(async () => {
+// accept.js — ?jobId= (Bearer 세션) 또는 ?token= (SMS 레거시) 양쪽 지원
+async function initAccept() {
   const HELPER_CUSTOMER_FEE = 60000;
   const HELPER_DRIVER_FEE = 40000;
   const LADDER_CUSTOMER_FEE = 120000;
   const LADDER_DRIVER_FEE = 100000;
   const qs = new URLSearchParams(location.search);
   const token = qs.get('token');
+  const jobId = qs.get('jobId');
+
+  // Bearer 토큰 (세션 방식)
+  let accessToken = null;
+  if (jobId && window.dd?.supabase) {
+    const { data: { session } } = await window.dd.supabase.auth.getSession();
+    if (!session) { location.replace(`/auth/login.html?role=driver&next=${encodeURIComponent(location.href)}`); return; }
+    accessToken = session.access_token;
+  }
   const info = document.getElementById('jobInfo');
   const expiryCountdown = document.getElementById('expiryCountdown');
   const agreementGate = document.getElementById('agreementGate');
@@ -149,14 +159,18 @@
   }
 
   async function loadAssignment() {
-    if (!token) {
+    if (!token && !jobId) {
       info.textContent = '유효하지 않은 접근입니다.';
       disablePrimary(true);
       disableProgress(true);
       return null;
     }
 
-    const res = await fetch(`/.netlify/functions/driver-respond?token=${encodeURIComponent(token)}`);
+    const url = jobId
+      ? `/.netlify/functions/driver-respond?jobId=${encodeURIComponent(jobId)}`
+      : `/.netlify/functions/driver-respond?token=${encodeURIComponent(token)}`;
+    const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+    const res = await fetch(url, { headers });
     const data = await res.json();
     if (!data.success) {
       info.textContent = data.error || '정보 불러오기 실패';
@@ -206,10 +220,15 @@
     disablePrimary(true);
     disableProgress(true);
     result.textContent = '처리 중...';
+    const body = jobId
+      ? { jobId, action, responseNote: note.value.trim() }
+      : { token, action, responseNote: note.value.trim() };
+    const headers = { 'Content-Type': 'application/json' };
+    if (accessToken) headers.Authorization = `Bearer ${accessToken}`;
     const res = await fetch('/.netlify/functions/driver-respond', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ token, action, responseNote: note.value.trim() })
+      headers,
+      body: JSON.stringify(body)
     });
     const data = await res.json();
     if (!data.success) {
@@ -286,7 +305,10 @@
 
   async function fetchMessages() {
     try {
-      const res = await fetch(`/.netlify/functions/get-messages?sender_type=driver&token=${encodeURIComponent(token)}`);
+      const chatToken = token || jobId;
+      const senderParam = token ? `&token=${encodeURIComponent(token)}` : `&jobId=${encodeURIComponent(jobId)}`;
+      const chatHeaders = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
+      const res = await fetch(`/.netlify/functions/get-messages?sender_type=driver${senderParam}`, { headers: chatHeaders });
       const data = await res.json();
       if (data.success) renderChatMessages(data.messages || []);
     } catch { /* 폴링 실패 무시 */ }
@@ -298,10 +320,15 @@
     btnChatSend.disabled = true;
     chatStatus.textContent = '전송 중...';
     try {
+      const msgBody = token
+        ? { sender_type: 'driver', token, content }
+        : { sender_type: 'driver', jobId, content };
+      const msgHeaders = { 'Content-Type': 'application/json' };
+      if (accessToken) msgHeaders.Authorization = `Bearer ${accessToken}`;
       const res = await fetch('/.netlify/functions/send-message', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sender_type: 'driver', token, content })
+        headers: msgHeaders,
+        body: JSON.stringify(msgBody)
       });
       const data = await res.json();
       if (data.success) {
@@ -329,4 +356,12 @@
 
   const data = await loadAssignment();
   if (data?.accepted) startChatPolling();
-})();
+}
+
+// jobId 방식 — 세션 준비 후 실행
+const _qs = new URLSearchParams(location.search);
+if (_qs.get('jobId')) {
+  window.dd.onSupabaseReady(() => initAccept());
+} else {
+  initAccept();
+}

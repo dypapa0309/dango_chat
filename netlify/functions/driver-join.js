@@ -1,5 +1,6 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { resolveDriver } from '../../shared/driver-auth.js';
 
 const CONTRACT_VERSION = '2026-03-21-v1';
 const VEHICLE_SERVICES = ['move', 'yd', 'waste', 'install', 'interior', 'interior_help'];
@@ -23,9 +24,10 @@ export async function handler(event) {
 
     if (event.httpMethod === 'GET') {
       const token = event?.queryStringParameters?.token;
-      if (!token) return fail('token이 필요합니다.');
-      const driver = await loadDriverByToken(supabase, token);
-      return ok({ driver, contractVersion: CONTRACT_VERSION });
+      // Bearer 세션 우선, 없으면 레거시 token
+      const resolved = await resolveDriver(event, token || null);
+      if (!resolved) return fail('로그인이 필요하거나 유효하지 않은 토큰입니다.', null, 401);
+      return ok({ driver: resolved.driver, contractVersion: CONTRACT_VERSION });
     }
 
     if (event.httpMethod !== 'POST') return fail('POST 요청만 허용됩니다.');
@@ -54,7 +56,6 @@ export async function handler(event) {
       taxWithholdingAgreed
     } = parseBody(event);
 
-    if (!token) return fail('token이 필요합니다.');
     if (!contractAgreed) return fail('위탁운송 계약 동의가 필요합니다.');
     if (!taxWithholdingAgreed) return fail('3.3% 세금 정산 동의가 필요합니다.');
     if (!(taxName || '').trim()) return fail('세금 신고용 이름을 입력해주세요.');
@@ -74,7 +75,9 @@ export async function handler(event) {
     const hasVehicleService = normalizedServices.some((s) => VEHICLE_SERVICES.includes(s));
     if (hasVehicleService && !commercialPlateConfirmed) return fail('영업용 차량 기준과 자격 요건 확인이 필요합니다.');
 
-    const driver = await loadDriverByToken(supabase, token);
+    const resolved = await resolveDriver(event, token || null);
+    if (!resolved) return fail('로그인이 필요하거나 유효하지 않은 토큰입니다.', null, 401);
+    const driver = resolved.driver;
 
     const { data, error } = await supabase
       .from('drivers')

@@ -56,10 +56,10 @@
       </div>
     </div>
   </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
   <script src="../assets/js/contact-fab.js"></script>
   <script>
-    const qs = new URLSearchParams(location.search);
-    const token = qs.get('token');
     const statusEl = document.getElementById('activityStatus');
     const bodyEl = document.getElementById('activityBody');
 
@@ -83,12 +83,16 @@
       return 'pill';
     }
 
-    if (!token) {
-      statusEl.innerHTML = '<strong>유효하지 않은 링크입니다.</strong><div>운영팀이 보낸 활동 현황 링크를 다시 열어주세요.</div>';
-    } else {
+    window.dd.onSupabaseReady(async (sb) => {
+      const { data: { session } } = await sb.auth.getSession();
+      if (!session) { location.replace('/auth/login.html?role=driver'); return; }
+      const accessToken = session.access_token;
+
       (async () => {
         try {
-          const res = await fetch(`/.netlify/functions/get-driver-activity?token=${encodeURIComponent(token)}`);
+          const res = await fetch('/.netlify/functions/get-driver-activity', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
           const data = await res.json();
           if (!data.success) throw new Error(data.error || '정보를 불러오지 못했어요.');
 
@@ -146,10 +150,10 @@
           });
 
         } catch (err) {
-          statusEl.innerHTML = `<strong>${err.message || '정보를 불러오지 못했어요.'}</strong><div>링크가 만료됐거나 잘못됐을 수 있어요.</div>`;
+          statusEl.innerHTML = `<strong>${err.message || '정보를 불러오지 못했어요.'}</strong><div>다시 시도해주세요.</div>`;
         }
       })();
-    }
+    });
   </script>
 </body>
 </html>

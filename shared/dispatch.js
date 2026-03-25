@@ -57,6 +57,9 @@ export function rankDrivers(job, drivers = [], preferRadiusKm = 5) {
 
 export function dispatchMessage({ job, driver, token, siteUrl }) {
   const baseUrl = (siteUrl || '').replace(/\/$/, '');
-  const url = `${baseUrl}/driver/accept.html?token=${encodeURIComponent(token)}`;
+  // jobId 방식 우선 (로그인 세션 지원), dispatch_token 레거시 폴백
+  const url = job?.id
+    ? `${baseUrl}/driver/accept.html?jobId=${encodeURIComponent(job.id)}`
+    : `${baseUrl}/driver/accept.html?token=${encodeURIComponent(token)}`;
   return `[당고 배차 요청]\n날짜: ${job.move_date || '-'}\n출발: ${job.start_address || '-'}\n도착: ${job.end_address || '-'}\n운임: ${Number(job.total_price || 0).toLocaleString()}원\n기사: ${driver.name || '-'}\n아래 링크에서 배차 수락/거절해주세요:\n${url}`;
 }

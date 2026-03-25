@@ -1,5 +1,6 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { resolveDriver } from '../../shared/driver-auth.js';
 
 export async function handler(event) {
   const opt = handleOptions(event);
@@ -10,21 +11,12 @@ export async function handler(event) {
   try {
     const { token, enabled } = parseBody(event);
 
-    if (!token) return fail('token이 필요합니다.');
     if (typeof enabled !== 'boolean') return fail('enabled는 true 또는 false여야 합니다.');
 
-    const supabase = adminClient();
+    const resolved = await resolveDriver(event, token || null);
+    if (!resolved) return fail('로그인이 필요하거나 유효하지 않은 토큰이에요.', null, 401);
+    const { driver, supabase } = resolved;
 
-    // Look up driver by join_token
-    const { data: driver, error: lookupError } = await supabase
-      .from('drivers')
-      .select('id, name')
-      .eq('join_token', token)
-      .single();
-
-    if (lookupError || !driver) return fail('유효하지 않은 토큰이에요.');
-
-    // Update dispatch_enabled
     const { error: updateError } = await supabase
       .from('drivers')
       .update({ dispatch_enabled: enabled })

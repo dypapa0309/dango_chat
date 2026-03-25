@@ -20,21 +20,41 @@
   <script src="../assets/js/supabase-client.js"></script>
   <script>
     const qs = new URLSearchParams(location.search);
-    const next = qs.get('next') || '/customer/dashboard.html';
+    const role = qs.get('role') || 'customer'; // 'customer' | 'driver'
+    const next = qs.get('next') || (role === 'driver' ? '/driver/' : '/customer/dashboard.html');
 
     window.dd.onSupabaseReady(async (sb) => {
-      // Supabase가 URL fragment에서 세션을 자동으로 처리
       const { data, error } = await sb.auth.getSession();
       if (error || !data?.session) {
         document.querySelector('strong').textContent = '로그인에 실패했어요.';
         document.querySelector('p').innerHTML = '다시 시도해주세요. <a href="/auth/login.html">로그인 페이지로</a>';
         return;
       }
-      // 세션 확인 후 이동
-      location.replace(next);
+
+      if (role === 'driver') {
+        // 전문가 로그인 — drivers 테이블 확인
+        const accessToken = data.session.access_token;
+        try {
+          const res = await fetch('/.netlify/functions/get-driver-me', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
+          const result = await res.json();
+          if (result.success && result.linked) {
+            // 이미 등록된 전문가 → 포털로
+            location.replace('/driver/');
+          } else {
+            // 미등록 전문가 → 전화번호 연결 페이지로
+            location.replace('/driver/link-phone.html');
+          }
+        } catch {
+          location.replace('/driver/');
+        }
+      } else {
+        // 고객 로그인
+        location.replace(next);
+      }
     });
 
-    // 5초 후에도 처리 안 되면 fallback
     setTimeout(() => {
       if (document.querySelector('strong').textContent === '로그인 처리 중...') {
         location.replace(next);

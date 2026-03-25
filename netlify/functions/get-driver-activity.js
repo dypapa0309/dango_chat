@@ -1,25 +1,17 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, handleOptions } from '../../shared/http.js';
+import { resolveDriver } from '../../shared/driver-auth.js';
 
 export async function handler(event) {
   const opt = handleOptions(event);
   if (opt) return opt;
 
-  const token = new URL(event.rawUrl || `http://x?${event.rawQuery || ''}`).searchParams.get('token') ||
-    new URLSearchParams(event.queryStringParameters || {}).get('token');
-  if (!token) return fail('token이 필요합니다.');
+  const token = event.queryStringParameters?.token || null;
 
   try {
-    const supabase = adminClient();
-
-    // 토큰으로 기사 조회
-    const { data: driver, error: driverError } = await supabase
-      .from('drivers')
-      .select('id, name, phone, vehicle_type, completed_jobs, rating, acceptance_rate, status, dispatch_enabled, supported_services')
-      .eq('join_token', token)
-      .single();
-    if (driverError) throw driverError;
-    if (!driver) return fail('유효하지 않은 토큰입니다.');
+    const resolved = await resolveDriver(event, token);
+    if (!resolved) return fail('로그인이 필요하거나 유효하지 않은 토큰입니다.', null, 401);
+    const { driver, supabase } = resolved;
 
     // 기사의 주문 조회 (assignment를 통해)
     const { data: assignments, error: assignError } = await supabase

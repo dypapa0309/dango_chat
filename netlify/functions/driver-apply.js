@@ -1,4 +1,5 @@
-import { adminClient } from '../../shared/db.js';
+import { createClient } from '@supabase/supabase-js';
+import { adminClient, publicConfig } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 
 const CONTRACT_VERSION = '2026-03-21-v1';
@@ -59,6 +60,21 @@ export async function handler(event) {
     const normalizedServices = normalizedServicesEarly;
     if (!normalizedServices.length) return fail('가능 서비스는 하나 이상 선택해주세요.');
 
+    // 세션에서 user_id 추출 (로그인된 전문가 지원 시 자동 연결)
+    let authUserId = null;
+    const authHeader = event.headers?.authorization || event.headers?.Authorization || '';
+    const bearerToken = authHeader.replace(/^Bearer\s+/i, '').trim();
+    if (bearerToken) {
+      try {
+        const { supabaseUrl, supabaseAnonKey } = publicConfig();
+        const userClient = createClient(supabaseUrl, supabaseAnonKey, {
+          auth: { persistSession: false, autoRefreshToken: false }
+        });
+        const { data: { user } } = await userClient.auth.getUser(bearerToken);
+        if (user?.id) authUserId = user.id;
+      } catch {}
+    }
+
     const supabase = adminClient();
     const phoneValue = normalizePhone(phone);
     const { data: existing } = await supabase
@@ -89,13 +105,14 @@ export async function handler(event) {
       consign_contract_agreed: true,
       consign_contract_version: CONTRACT_VERSION,
       consign_contract_accepted_at: new Date().toISOString(),
-      dispatch_enabled: false,
+      dispatch_enabled: true,
       payout_enabled: false,
       supports_move: normalizedServices.includes('move'),
       supports_clean: normalizedServices.includes('clean'),
       supports_yd: normalizedServices.includes('yd'),
       supported_services: normalizedServices,
-      status: existing?.status === 'active' ? 'active' : 'pending_review'
+      status: 'active',
+      ...(authUserId ? { user_id: authUserId } : {})
     };
 
     let data;
@@ -162,9 +179,7 @@ export async function handler(event) {
     if (error) throw error;
     return ok({
       driver: data,
-      message: data.status === 'active'
-        ? '이미 등록된 기사 정보로 다시 저장됐어요. 운영팀 확인 후 배차를 이어갑니다.'
-        : '기사 가입이 접수됐어요. 운영팀이 확인 후 배차 가능 상태를 안내드립니다.'
+      message: '전문가 가입이 완료됐어요. 지금 바로 배차를 받을 수 있어요.'
     });
   } catch (error) {
     return fail('기사 가입 접수 실패', error.message, 500);

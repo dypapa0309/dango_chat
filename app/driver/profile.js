@@ -1,6 +1,8 @@
-(async () => {
-  const qs = new URLSearchParams(location.search);
-  const token = qs.get('token');
+window.dd.onSupabaseReady(async (sb) => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { location.replace('/auth/login.html?role=driver'); return; }
+  const accessToken = session.access_token;
+
   const statusEl = document.getElementById('profileStatus');
   const resultEl = document.getElementById('profileResult');
   const saveBtn = document.getElementById('btnSaveProfile');
@@ -38,19 +40,15 @@
   });
   serviceInputs.forEach((input) => input.addEventListener('change', syncButton));
 
-  if (!token) {
-    statusEl.innerHTML = '<strong>유효하지 않은 정보 관리 링크입니다.</strong><div>운영팀이 보낸 개인별 서비스 관리 링크를 다시 열어주세요.</div>';
-    formBody.hidden = true;
-    return;
-  }
-
   try {
-    const res = await fetch(`/.netlify/functions/driver-join?token=${encodeURIComponent(token)}`);
+    const res = await fetch('/.netlify/functions/driver-join', {
+      headers: { Authorization: `Bearer ${accessToken}` }
+    });
     const data = await res.json();
     if (!data.success) throw new Error(data.error || '기사 정보를 불러오지 못했어요.');
 
     const driver = data.driver;
-    statusEl.innerHTML = `<strong>${driver.name || '기사님'}</strong><div>가능 서비스와 정산 정보를 직접 바꿀 수 있어요.</div>`;
+    statusEl.innerHTML = `<strong>${driver.name || '전문가님'}</strong><div>가능 서비스와 정산 정보를 직접 바꿀 수 있어요.</div>`;
     fields.name.value = driver.name || '';
     fields.phone.value = driver.phone || '';
     fields.vehicleType.value = driver.vehicle_type || '';
@@ -91,9 +89,7 @@
       if (btnDispatchOn) btnDispatchOn.style.opacity = enabled ? '1' : '0.4';
       if (btnDispatchOff) btnDispatchOff.style.opacity = enabled ? '0.4' : '1';
       if (dispatchToggleStatus) {
-        dispatchToggleStatus.textContent = enabled
-          ? '현재 배차 수신 중이에요.'
-          : '현재 배차 수신이 꺼져 있어요.';
+        dispatchToggleStatus.textContent = enabled ? '현재 배차 수신 중이에요.' : '현재 배차 수신이 꺼져 있어요.';
       }
     }
 
@@ -103,12 +99,11 @@
       if (dispatchToggleStatus) dispatchToggleStatus.textContent = '설정 변경 중...';
       if (btnDispatchOn) btnDispatchOn.disabled = true;
       if (btnDispatchOff) btnDispatchOff.disabled = true;
-
       try {
         const res = await fetch('/.netlify/functions/driver-toggle-dispatch', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ token, enabled })
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+          body: JSON.stringify({ enabled })
         });
         const data = await res.json();
         if (!data.success) {
@@ -140,7 +135,9 @@
       const toDate = new Date(today); toDate.setDate(today.getDate() + 41);
       const to = toDate.toISOString().slice(0, 10);
       try {
-        const res = await fetch(`/.netlify/functions/driver-availability?token=${encodeURIComponent(token)}&from=${from}&to=${to}`);
+        const res = await fetch(`/.netlify/functions/driver-availability?from=${from}&to=${to}`, {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
         const data = await res.json();
         if (data.success) {
           unavailableDates.clear();
@@ -194,8 +191,8 @@
         try {
           const res = await fetch('/.netlify/functions/driver-availability', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ token, dates })
+            headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
+            body: JSON.stringify({ dates })
           });
           const data = await res.json();
           if (availStatusEl) availStatusEl.textContent = data.success ? '일정을 저장했어요.' : (data.error || '저장 실패');
@@ -209,7 +206,7 @@
 
     await loadAvailability();
 
-    // dirty tracking — snapshot originals and highlight changed fields
+    // dirty tracking
     const origValues = {};
     Object.entries(fields).forEach(([key, el]) => { if (el) origValues[key] = el.value; });
     const origServices = new Set(getSelectedServices());
@@ -233,7 +230,7 @@
       });
     });
   } catch (error) {
-    statusEl.innerHTML = `<strong>${error.message || '기사 정보를 불러오지 못했어요.'}</strong><div>링크가 만료됐거나 잘못됐을 수 있어요. 운영팀에 다시 요청해주세요.</div>`;
+    statusEl.innerHTML = `<strong>${error.message || '기사 정보를 불러오지 못했어요.'}</strong><div>다시 시도해주세요.</div>`;
     formBody.hidden = true;
     return;
   }
@@ -243,7 +240,6 @@
     saveBtn.textContent = '저장하고 있어요...';
 
     const payload = {
-      token,
       name: fields.name.value.trim(),
       phone: fields.phone.value.trim(),
       vehicleType: fields.vehicleType.value.trim(),
@@ -272,7 +268,7 @@
 
     const res = await fetch('/.netlify/functions/driver-join', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
       body: JSON.stringify(payload)
     });
     const data = await res.json();
@@ -287,9 +283,8 @@
     resultEl.textContent = '서비스와 정산 정보를 저장했어요.';
     saveBtn.textContent = '정보 저장';
     saveBtn.disabled = false;
-    // reset dirty state after save
     Object.entries(fields).forEach(([key, el]) => { if (el) { origValues[key] = el.value; el.classList.remove('is-dirty'); } });
     origServices.clear(); getSelectedServices().forEach((v) => origServices.add(v));
     document.querySelectorAll('.service-chip-grid').forEach((grid) => grid.classList.remove('is-dirty'));
   };
-})();
+});

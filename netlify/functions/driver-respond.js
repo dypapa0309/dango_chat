@@ -1,6 +1,7 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
 import { sendSms } from '../../shared/sms.js';
+import { resolveDriver } from '../../shared/driver-auth.js';
 
 const VEHICLE_SERVICES = ['move', 'yd', 'waste', 'install', 'interior', 'interior_help'];
 
@@ -40,13 +41,34 @@ export async function handler(event) {
 
   try {
     if (event.httpMethod === 'GET') {
-      const token = event?.queryStringParameters?.token;
-      if (!token) return fail('token이 필요합니다.');
-      const { data: assignment, error } = await supabase
-        .from('assignments')
-        .select('*, jobs(*), drivers(*)')
-        .eq('dispatch_token', token)
-        .single();
+      const qs = event?.queryStringParameters || {};
+      const dispatchToken = qs.token;
+      const jobId = qs.jobId;
+
+      let assignment, error;
+
+      if (jobId) {
+        // 새 방식: Bearer 세션 + jobId
+        const resolved = await resolveDriver(event, null);
+        if (!resolved) return fail('로그인이 필요합니다.', null, 401);
+        ({ data: assignment, error } = await supabase
+          .from('assignments')
+          .select('*, jobs(*), drivers(*)')
+          .eq('job_id', jobId)
+          .eq('driver_id', resolved.driver.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
+          .single());
+      } else if (dispatchToken) {
+        // 레거시: SMS dispatch_token
+        ({ data: assignment, error } = await supabase
+          .from('assignments')
+          .select('*, jobs(*), drivers(*)')
+          .eq('dispatch_token', dispatchToken)
+          .single());
+      } else {
+        return fail('jobId 또는 token이 필요합니다.');
+      }
       if (error) throw error;
       if (!assignment) return fail('배차 요청을 찾을 수 없습니다.');
       if (assignment.status === 'accepted' && String(assignment.jobs?.assigned_driver_id || '') === String(assignment.driver_id || '')) {
@@ -77,14 +99,32 @@ export async function handler(event) {
     }
 
     if (event.httpMethod !== 'POST') return fail('POST 요청만 허용됩니다.');
-    const { token, action, responseNote } = parseBody(event);
-    if (!token || !action) return fail('token, action이 필요합니다.');
+    const { token, jobId: postJobId, action, responseNote } = parseBody(event);
+    if (!action) return fail('action이 필요합니다.');
 
-    const { data: assignment, error } = await supabase
-      .from('assignments')
-      .select('*, jobs(*), drivers(*)')
-      .eq('dispatch_token', token)
-      .single();
+    let assignment, error;
+    if (postJobId) {
+      // 새 방식: Bearer + jobId
+      const resolved = await resolveDriver(event, null);
+      if (!resolved) return fail('로그인이 필요합니다.', null, 401);
+      ({ data: assignment, error } = await supabase
+        .from('assignments')
+        .select('*, jobs(*), drivers(*)')
+        .eq('job_id', postJobId)
+        .eq('driver_id', resolved.driver.id)
+        .order('created_at', { ascending: false })
+        .limit(1)
+        .single());
+    } else if (token) {
+      // 레거시: SMS dispatch_token
+      ({ data: assignment, error } = await supabase
+        .from('assignments')
+        .select('*, jobs(*), drivers(*)')
+        .eq('dispatch_token', token)
+        .single());
+    } else {
+      return fail('jobId 또는 token이 필요합니다.');
+    }
     if (error) throw error;
     if (!assignment) return fail('없는 요청입니다.');
     if (!isDriverEligible(assignment.drivers, assignment.jobs?.service_type || 'move')) {

@@ -1,5 +1,6 @@
 import { adminClient } from '../../shared/db.js';
 import { ok, fail, parseBody, handleOptions } from '../../shared/http.js';
+import { resolveDriver } from '../../shared/driver-auth.js';
 
 export async function handler(event) {
   const opt = handleOptions(event);
@@ -13,15 +14,11 @@ export async function handler(event) {
     const { token, driverId, from, to } = qs;
 
     let resolvedDriverId = driverId;
-    if (!resolvedDriverId && token) {
-      const { data: driver } = await supabase
-        .from('drivers')
-        .select('id')
-        .or(`join_token.eq.${token},dispatch_token.eq.${token}`)
-        .maybeSingle();
-      resolvedDriverId = driver?.id;
+    if (!resolvedDriverId) {
+      const resolved = await resolveDriver(event, token || null);
+      resolvedDriverId = resolved?.driver?.id;
     }
-    if (!resolvedDriverId) return fail('driverId 또는 token이 필요합니다.');
+    if (!resolvedDriverId) return fail('로그인이 필요하거나 유효하지 않은 토큰이에요.', null, 401);
 
     let query = supabase
       .from('driver_availability')
@@ -44,16 +41,12 @@ export async function handler(event) {
       const { token, dates } = body;
       // dates: [{ date: '2026-04-01', is_available: false, note: '개인 사정' }]
 
-      if (!token) return fail('token이 필요합니다.');
       if (!Array.isArray(dates) || !dates.length) return fail('dates 배열이 필요합니다.');
       if (dates.length > 60) return fail('한 번에 최대 60일까지 설정할 수 있어요.');
 
-      const { data: driver } = await supabase
-        .from('drivers')
-        .select('id')
-        .or(`join_token.eq.${token},dispatch_token.eq.${token}`)
-        .maybeSingle();
-      if (!driver) return fail('유효하지 않은 토큰이에요.');
+      const resolved = await resolveDriver(event, token || null);
+      if (!resolved) return fail('로그인이 필요하거나 유효하지 않은 토큰이에요.', null, 401);
+      const { driver } = resolved;
 
       const rows = dates.map((d) => ({
         driver_id: driver.id,

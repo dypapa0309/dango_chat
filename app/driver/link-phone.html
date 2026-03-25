@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 전문가 계정 연결</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --brand: #d97846; --line: rgba(83,62,40,.12); --text: #2a211b; --muted: #706257; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'SUIT', sans-serif; background: linear-gradient(180deg,#f5ead8,#f8f4ee); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; color: var(--text); }
+    .card { width: 100%; max-width: 420px; background: rgba(255,250,244,.95); border: 1px solid var(--line); border-radius: 28px; padding: 40px 36px; box-shadow: 0 24px 60px rgba(90,63,34,.12); }
+    .brand { font-size: 1.3rem; font-weight: 800; letter-spacing: .08em; display: block; margin-bottom: 28px; color: var(--text); text-decoration: none; }
+    h1 { margin: 0 0 8px; font-size: 22px; }
+    .sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 28px; }
+    .field { margin-bottom: 14px; }
+    .field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px; color: var(--muted); }
+    .field input { width: 100%; min-height: 52px; border-radius: 14px; border: 1px solid var(--line); padding: 0 16px; font: inherit; font-size: 15px; background: #fff; }
+    .btn-primary { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 52px; border-radius: 14px; border: 0; background: var(--brand); color: #fff; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; margin-top: 8px; }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-new { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; border-radius: 14px; border: 1px solid var(--line); background: transparent; font: inherit; font-size: 14px; cursor: pointer; color: var(--muted); margin-top: 10px; text-decoration: none; }
+    #statusMsg { font-size: 13px; margin-top: 14px; text-align: center; min-height: 20px; }
+    .err { color: #b91c1c; }
+    .ok { color: #065f46; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <a class="brand" href="/">DANG-O</a>
+    <h1>전문가 계정 연결</h1>
+    <p class="sub">기존에 당고 전문가로 활동하셨다면 가입 시 입력한 전화번호를 입력해주세요. 자동으로 계정이 연결돼요.</p>
+
+    <div class="field">
+      <label>전화번호</label>
+      <input id="phoneInput" type="tel" placeholder="010-0000-0000" inputmode="numeric" />
+    </div>
+
+    <button id="btnLink" class="btn-primary">계정 연결하기</button>
+    <a href="/driver/apply.html" class="btn-new">처음 가입하기</a>
+
+    <p id="statusMsg"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script>
+    const statusMsg = document.getElementById('statusMsg');
+    const btnLink = document.getElementById('btnLink');
+    const phoneInput = document.getElementById('phoneInput');
+
+    btnLink.addEventListener('click', async () => {
+      const phone = phoneInput.value.replace(/[^0-9]/g, '').trim();
+      if (phone.length < 10) {
+        statusMsg.textContent = '올바른 전화번호를 입력해주세요.';
+        statusMsg.className = 'err';
+        return;
+      }
+
+      btnLink.disabled = true;
+      statusMsg.textContent = '연결 중...';
+      statusMsg.className = '';
+
+      window.dd.onSupabaseReady(async (sb) => {
+        try {
+          const { data: { session } } = await sb.auth.getSession();
+          if (!session) {
+            statusMsg.textContent = '로그인 세션이 없어요. 다시 로그인해주세요.';
+            statusMsg.className = 'err';
+            btnLink.disabled = false;
+            return;
+          }
+
+          const res = await fetch('/.netlify/functions/link-driver-phone', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${session.access_token}`
+            },
+            body: JSON.stringify({ phone })
+          });
+          const data = await res.json();
+
+          if (data.success) {
+            statusMsg.textContent = '연결 완료! 전문가 포털로 이동해요.';
+            statusMsg.className = 'ok';
+            setTimeout(() => location.replace('/driver/'), 1200);
+          } else {
+            statusMsg.textContent = data.error || '연결에 실패했어요. 전화번호를 확인해주세요.';
+            statusMsg.className = 'err';
+            btnLink.disabled = false;
+          }
+        } catch {
+          statusMsg.textContent = '오류가 발생했어요. 다시 시도해주세요.';
+          statusMsg.className = 'err';
+          btnLink.disabled = false;
+        }
+      });
+    });
+  </script>
+</body>
+</html>
