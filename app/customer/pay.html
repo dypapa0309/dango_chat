@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>당고 | 전체 결제</title>
-  <meta name="description" content="당고 주문 전체 결제를 진행하는 페이지입니다. 금액을 확인하고 바로 결제할 수 있습니다." />
+  <title>당고 | 예약금 결제</title>
+  <meta name="description" content="당고 예약금 결제 페이지입니다. 전체 금액의 20%를 예약금으로 결제해 일정을 확정하세요." />
   <meta name="robots" content="noindex, nofollow" />
   <script>
     (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -13,7 +13,8 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-PZCBT88P');
   </script>
-  <script src="https://js.tosspayments.com/v1"></script>
+  <!-- Toss SDK: 전체 결제 복원 시 아래 주석 해제 -->
+  <!-- <script src="https://js.tosspayments.com/v1"></script> -->
   <style>
     :root {
       --bg: #f5efe4;
@@ -29,82 +30,119 @@
       font-family: "SUIT", Arial, sans-serif;
       background: linear-gradient(180deg, #f8e6c3, #f7f3ec);
       color: var(--text);
-      padding: 24px;
-    }
-    .card {
-      max-width: 640px;
-      margin: 0 auto;
-      background: var(--card);
-      padding: 28px;
-      border: 1px solid var(--line);
-      border-radius: 24px;
-      box-shadow: 0 24px 60px rgba(77, 45, 13, 0.12);
-    }
-    .eyebrow { margin: 0 0 8px; color: #bc4d16; font-size: 13px; font-weight: 700; text-transform: uppercase; }
-    h1 { margin: 0; font-size: 36px; line-height: 1.1; }
-    .muted { color: var(--muted); line-height: 1.7; }
-    .summary {
-      margin-top: 22px;
-      padding: 18px;
-      border-radius: 18px;
-      background: #fff;
-      border: 1px solid var(--line);
-    }
-    .summary strong { display: block; margin-bottom: 8px; font-size: 18px; }
-    .line {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px 0;
-      border-bottom: 1px solid var(--line);
-      color: var(--muted);
-    }
-    .line:last-of-type { border-bottom: 0; }
-    button, .ghost {
-      width: 100%;
-      min-height: 54px;
-      border: 0;
-      border-radius: 14px;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button {
-      margin-top: 18px;
-      background: var(--brand);
-      color: #fff;
-      box-shadow: 0 16px 28px rgba(237, 107, 47, 0.24);
-    }
-    .ghost {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      margin-top: 10px;
-      background: #fff;
-      color: var(--muted);
-      border: 1px solid var(--line);
-      text-decoration: none;
+      padding: 20px 16px;
     }
     .topnav {
       max-width: 640px;
       margin: 0 auto 14px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
     }
     .topnav a {
-      flex: 1;
-      min-width: 120px;
-      min-height: 46px;
-      border-radius: 14px;
+      min-height: 44px;
+      border-radius: 12px;
       background: rgba(255, 250, 243, 0.92);
       border: 1px solid var(--line);
       color: var(--text);
       text-decoration: none;
       font-weight: 700;
+      font-size: 13px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
+      text-align: center;
+    }
+    .card {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--card);
+      padding: 24px 20px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 20px 48px rgba(77, 45, 13, 0.10);
+    }
+    .eyebrow { margin: 0 0 8px; color: #bc4d16; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+    h1 { margin: 0 0 10px; font-size: 26px; line-height: 1.25; }
+    .muted { margin: 0 0 4px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .summary {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+    .summary strong { display: block; margin-bottom: 10px; font-size: 15px; line-height: 1.5; word-break: keep-all; }
+    .line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .line:last-of-type { border-bottom: 0; }
+    .line .price-val { font-weight: 700; color: var(--text); font-size: 16px; }
+    .line.deposit-line { color: var(--text); }
+    .line.deposit-line .label { font-weight: 700; }
+    .line.deposit-line .price-val { color: var(--brand); font-size: 20px; }
+    .deposit-note {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(237,107,47,0.07);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .deposit-note b { color: var(--brand); }
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 54px;
+      margin-top: 16px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 14px;
+      font: inherit;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(237, 107, 47, 0.22);
+      text-decoration: none;
+    }
+    .btn-primary:disabled { opacity: .5; cursor: default; }
+    .ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+      margin-top: 10px;
+      padding: 0 16px;
+      background: #fff;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      text-decoration: none;
+      font: inherit;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    /* 토스 전체 결제 복원용 버튼 — 평소엔 숨김 */
+    #btnPayFull { display: none; }
+
+    @media (max-width: 480px) {
+      .topnav { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+      .topnav a { font-size: 12px; min-height: 40px; border-radius: 10px; padding: 0 2px; }
+      h1 { font-size: 22px; }
     }
   </style>
 </head>
@@ -119,16 +157,33 @@
   </nav>
   <div class="card">
     <p class="eyebrow">DANG-O PAYMENT</p>
-    <h1>전문가 대금을 안전하게<br />당고가 보관 후 지급해요.</h1>
-    <p class="muted">전문가 대금을 결제하시면 당고가 안전하게 금액을 보관 후, 서비스 완료 시 전문가에게 대금을 지급해요.</p>
+    <h1>예약금 20%로<br />일정을 확정하세요.</h1>
+    <p class="muted">예약금 입금 확인 후 전문가 배차가 시작돼요.</p>
+    <p class="muted">나머지 80%는 서비스 완료 후 전문가에게 직접 정산됩니다.</p>
 
     <div id="summaryCard" class="summary">
       <strong id="summary">불러오는 중...</strong>
-      <div class="line"><span>결제 금액</span><span id="totalPrice">-</span></div>
+      <div class="line">
+        <span>전체 금액</span>
+        <span class="price-val" id="totalPrice">-</span>
+      </div>
+      <div class="line deposit-line">
+        <span class="label">예약금 (20%)</span>
+        <span class="price-val" id="depositPrice">-</span>
+      </div>
     </div>
 
-    <button id="btnPay" disabled>결제 준비 중...</button>
+    <div class="deposit-note">
+      ✔ <b>예약금 20%</b> 입금 시 일정이 확정됩니다.<br />
+      ✔ 계좌번호와 입금자명은 아래 문자 버튼으로 안내받으세요.<br />
+      ✔ 입금 확인 후 전문가 정보와 연락처를 안내드립니다.
+    </div>
+
+    <button id="btnSms" class="btn-primary" disabled>문자로 예약금 안내받기</button>
     <a class="ghost" href="/">처음으로 돌아가기</a>
+
+    <!-- 토스 전체 결제 복원 시: #btnPayFull display:none 제거, #btnSms 숨김 -->
+    <button id="btnPayFull" disabled>토스로 전문가 대금 결제하기</button>
   </div>
 
   <script>
@@ -165,7 +220,6 @@
         if (!detailJson.success) throw new Error(detailJson.error || '주문을 찾을 수 없어요.');
         return detailJson.job;
       }
-
       const draft = getDraft();
       if (!draft) throw new Error('주문 정보가 없어요.');
       return draft;
@@ -188,48 +242,74 @@
         const dateText = job.move_date ? ` / ${job.move_date}` : '';
         const servicePrefix = serviceText ? `[${serviceText}] ` : '';
         document.getElementById('summary').textContent = `${servicePrefix}${job.customer_name || '-'} / ${addrText}${dateText}`;
-        document.getElementById('totalPrice').textContent = money(job.total_price || 0);
+
+        const total = Number(job.total_price || 0);
+        const deposit = Math.ceil(total * 0.2 / 100) * 100; // 20%, 100원 단위 올림
+        document.getElementById('totalPrice').textContent = money(total);
+        document.getElementById('depositPrice').textContent = money(deposit);
 
         try {
           const cfg = await fetch('/.netlify/functions/config').then((res) => res.json());
           clientKey = cfg?.tossClientKey || '';
         } catch {}
 
-        const button = document.getElementById('btnPay');
-        button.disabled = false;
-        button.textContent = clientKey ? '토스로 전문가 대금 결제하기' : '모의 승인으로 계속하기';
+        // SMS 버튼 활성화
+        const smsBtn = document.getElementById('btnSms');
+        smsBtn.disabled = false;
+        smsBtn.textContent = '문자로 예약금 안내받기';
+
+        // 토스 전체 결제 버튼 (숨김 상태이지만 데이터 준비)
+        const payFullBtn = document.getElementById('btnPayFull');
+        payFullBtn.disabled = false;
+
       } catch (error) {
         document.getElementById('summary').textContent = error.message || '주문 정보를 불러오지 못했어요.';
       }
     }
 
-    document.getElementById('btnPay').onclick = async () => {
+    // 문자 안내 버튼
+    document.getElementById('btnSms').onclick = () => {
       if (!job) return;
-      const btn = document.getElementById('btnPay');
+      const total = Number(job.total_price || 0);
+      const deposit = Math.ceil(total * 0.2 / 100) * 100;
+      const SERVICE_LABEL = {
+        move: '소형이사', clean: '입주청소', yd: '용달', waste: '폐기물',
+        install: '설치', errand: '심부름', organize: '정리수납', ac_clean: '에어컨청소',
+        appliance_clean: '가전청소', interior: '인테리어', interior_help: '인테리어 보조',
+        pt: 'PT', vocal: '보컬', golf: '골프', tutor: '과외', counseling: '심리상담',
+        marketing: '마케팅'
+      };
+      const svcLabel = SERVICE_LABEL[job.service_type] || job.service_type || '';
+      const body = [
+        `[당고] ${svcLabel} 예약 문의드립니다.`,
+        `이름: ${job.customer_name || '-'}`,
+        `날짜: ${job.move_date || '-'}`,
+        `주소: ${job.start_address || '-'}`,
+        `전체 금액: ${total.toLocaleString()}원`,
+        `예약금(20%): ${deposit.toLocaleString()}원`,
+        `계좌번호 안내 부탁드립니다.`
+      ].join('\n');
+
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const sep = isIOS ? '&' : '?';
+      location.href = `sms:01075416143${sep}body=${encodeURIComponent(body)}`;
+    };
+
+    // 토스 전체 결제 (복원용 — 현재 btnPayFull은 display:none)
+    document.getElementById('btnPayFull').onclick = async () => {
+      if (!job) return;
+      const btn = document.getElementById('btnPayFull');
       const originalText = btn.textContent;
       btn.disabled = true;
       btn.textContent = '결제창을 여는 중...';
-
       try {
         const successUrl = new URL(`${location.origin}/customer/success.html`);
         const failUrl = new URL(`${location.origin}/customer/fail.html`);
-
-        if (jobId) {
-          successUrl.searchParams.set('jobId', job.id);
-          failUrl.searchParams.set('jobId', job.id);
-        }
-        if (draftId) {
-          successUrl.searchParams.set('draftId', draftId);
-          failUrl.searchParams.set('draftId', draftId);
-        }
-
+        if (jobId) { successUrl.searchParams.set('jobId', job.id); failUrl.searchParams.set('jobId', job.id); }
+        if (draftId) { successUrl.searchParams.set('draftId', draftId); failUrl.searchParams.set('draftId', draftId); }
         successUrl.searchParams.set('amount', String(Number(job.total_price || 0)));
-
-        if (!clientKey) {
-          location.href = successUrl.toString();
-          return;
-        }
-
+        if (!clientKey) { location.href = successUrl.toString(); return; }
+        /* 복원 시 <script src="https://js.tosspayments.com/v1"></script> 주석 해제 필요 */
         const toss = TossPayments(clientKey);
         await toss.requestPayment('카드', {
           amount: Number(job.total_price || 0),
