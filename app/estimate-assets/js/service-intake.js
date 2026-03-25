@@ -558,19 +558,6 @@
         study: { label: "서재", desc: "책상, 책장, 문서 정리", price: 30000 }
       }
     },
-    ac_clean: {
-      title: "청소할 에어컨 종류와 대수를 골라주세요.",
-      summaryTitle: "에어컨 종류",
-      unit: "대",
-      items: {
-        wall: { label: "벽걸이", desc: "가정용 벽걸이 에어컨", price: 90000 },
-        stand: { label: "스탠드", desc: "스탠드형 에어컨", price: 120000 },
-        twoinone: { label: "2in1", desc: "벽걸이+스탠드 세트", price: 180000 },
-        system1: { label: "시스템 1way", desc: "천장형 1way", price: 130000 },
-        system2: { label: "시스템 2way", desc: "천장형 2way", price: 160000 },
-        system4: { label: "시스템 4way", desc: "천장형 4way", price: 220000 }
-      }
-    },
     appliance_clean: {
       title: "청소할 가전 종류와 수량을 골라주세요.",
       summaryTitle: "가전 종류",
