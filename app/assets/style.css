@@ -587,8 +587,8 @@ textarea {
 
 .service-hop-card__media--delivery {
   background:
-    linear-gradient(to top, rgba(18,28,48,0.52) 0%, rgba(18,28,48,0.08) 55%, transparent 100%),
-    url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=80') center/cover no-repeat;
+    linear-gradient(to top, rgba(30,40,60,0.38) 0%, rgba(30,40,60,0.04) 50%, transparent 100%),
+    url('https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&q=80') center/cover no-repeat;
 }
 
 /* 사진 카드에서 도형 숨김 */
