@@ -1243,29 +1243,6 @@
     };
   }
 
-  function sendEstimateSms() {
-    readState();
-    const pricing = calculatePrice();
-    const total = pricing.total;
-    const deposit = Math.ceil(total * 0.2 / 100) * 100;
-    const remaining = total - deposit;
-    const lines = [
-      `[당고] ${CONFIG[SERVICE].label} 견적 문의드립니다.`,
-      '',
-      ...getSummaryLines(),
-      state.memo ? `메모: ${state.memo}` : null,
-      '',
-      `예상 금액: ${total.toLocaleString()}원`,
-      `예약금 (20%): ${deposit.toLocaleString()}원`,
-      `잔금 (80%): ${remaining.toLocaleString()}원`,
-      '',
-      '계좌번호 안내 부탁드립니다.'
-    ].filter((l) => l !== null).join('\n');
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const sep = isIOS ? '&' : '?';
-    window.location.href = `sms:01075416143${sep}body=${encodeURIComponent(lines)}`;
-  }
-
   async function startCheckout() {
     const customerName = ($("#checkoutCustomerName")?.value || "").trim();
     const customerPhone = normalizePhone($("#checkoutCustomerPhone")?.value || "");
@@ -1550,7 +1527,6 @@
 
   function bindModals() {
     $$("[data-open-modal]").forEach((button) => {
-      if (button.id === 'startCheckoutCta') return; // SMS 전송으로 별도 처리
       button.addEventListener("click", () => {
         const modal = document.getElementById(button.dataset.openModal);
         if (modal) {
@@ -1624,15 +1600,6 @@
     document.addEventListener("input", renderPrice);
     document.addEventListener("change", renderPrice);
     $("#confirmCheckoutStart")?.addEventListener("click", startCheckout);
-    $("#startCheckoutCta")?.addEventListener("click", sendEstimateSms);
-    // 버튼 문구를 SMS 문의 흐름에 맞게 업데이트
-    const checkoutCta = $("#startCheckoutCta");
-    if (checkoutCta) {
-      const titleEl = checkoutCta.querySelector('.title');
-      const descEl = checkoutCta.querySelector('.desc');
-      if (titleEl) titleEl.textContent = '지금 견적으로 문자 상담 신청하기';
-      if (descEl) descEl.textContent = '예상 금액과 예약금 20% 안내를 바로 받으세요.';
-    }
     $("#stickyToggleBtn")?.addEventListener("click", () => {
       const bar = $("#stickyPriceBar");
       const expanded = bar?.classList.toggle("is-expanded");

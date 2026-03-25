@@ -485,31 +485,8 @@
       showToast('이동 날짜를 선택해주세요.', 'error');
       return;
     }
-    const total = totalFee();
-    const deposit = Math.ceil(total * 0.2 / 100) * 100;
-    const remaining = total - deposit;
-    const items = currentSelectedEntries();
-    const body = [
-      '[당고] 용달 견적 문의드립니다.',
-      '',
-      `출발지: ${state.startAddress}`,
-      `도착지: ${state.endAddress}`,
-      `이동 날짜: ${state.moveDate || '-'}`,
-      `이동 시간: ${state.moveTime || '-'}`,
-      `거리: ${state.distanceKm > 0 ? state.distanceKm.toFixed(1) + 'km' : '-'}`,
-      `선택 품목: ${items.length ? items.join(', ') : '없음'}`,
-      `기사 도움: ${[state.helperFrom ? '출발지' : null, state.helperTo ? '도착지' : null].filter(Boolean).join(', ') || '없음'}`,
-      `동승: ${state.riderSeat ? '1명' : '없음'}`,
-      '',
-      `예상 금액: ${formatWon(total)}`,
-      `예약금 (20%): ${formatWon(deposit)}`,
-      `잔금 (80%): ${formatWon(remaining)}`,
-      '',
-      '계좌번호 안내 부탁드립니다.'
-    ].join('\n');
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const sep = isIOS ? '&' : '?';
-    window.location.href = `sms:01075416143${sep}body=${encodeURIComponent(body)}`;
+    els.checkoutModal.hidden = false;
+    els.checkoutModal.setAttribute('aria-hidden', 'false');
   }
 
   function closeCheckout() {
@@ -647,11 +624,6 @@
   });
 
   els.checkoutBtn.addEventListener('click', openCheckout);
-  // 버튼 문구를 SMS 문의 흐름에 맞게 업데이트
-  const ydCtaTitle = els.checkoutBtn.querySelector('.title');
-  const ydCtaDesc = els.checkoutBtn.querySelector('.desc');
-  if (ydCtaTitle) ydCtaTitle.textContent = '지금 견적으로 문자 상담 신청하기';
-  if (ydCtaDesc) ydCtaDesc.textContent = '예상 금액과 예약금 20% 안내를 바로 받으세요.';
   els.confirmCheckoutBtn.addEventListener('click', submitCheckout);
   els.checkoutModal.addEventListener('click', (e) => {
     if (e.target.closest('[data-close-checkout-modal]')) closeCheckout();

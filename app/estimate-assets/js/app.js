@@ -963,7 +963,6 @@ function normalizeItemKey(k) {
     function bindDirectModalOpeners() {
       $$('[data-open-modal]').forEach((btn) => {
         if (btn.dataset.modalOpenBound === '1') return;
-        if (btn.id === 'startCheckoutCta') return; // SMS 전송으로 별도 처리
         btn.dataset.modalOpenBound = '1';
         btn.addEventListener('click', (e) => {
           const targetId = btn.getAttribute('data-open-modal');
@@ -3693,18 +3692,6 @@ const borderColors = comparison.labels.map((label) =>
     $("#confirmCheckoutStart")?.addEventListener("click", async () => {
       await startDirectCheckout();
     });
-    $("#startCheckoutCta")?.addEventListener("click", () => {
-      if (!validateMoveInquiryBeforeSend()) return;
-      openSmsAppWithPrefill(buildInquiryMessage());
-    });
-    // 버튼 문구를 SMS 문의 흐름에 맞게 업데이트
-    const ctaBtn = $("#startCheckoutCta");
-    if (ctaBtn) {
-      const titleEl = ctaBtn.querySelector('.title');
-      const descEl = ctaBtn.querySelector('.desc');
-      if (titleEl) titleEl.textContent = '지금 견적으로 문자 상담 신청하기';
-      if (descEl) descEl.textContent = '예상 금액과 예약금 20% 안내를 바로 받으세요.';
-    }
 
     $("#askClean")?.addEventListener("click", () => {
       closeModal("confirmInquiryModal");
