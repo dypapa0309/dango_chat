@@ -570,18 +570,32 @@ textarea {
   overflow: hidden;
   border-radius: 24px 24px 0 0;
   background: linear-gradient(135deg, rgba(248, 232, 214, 0.95), rgba(255, 250, 244, 0.95));
+  position: relative;
 }
 
 .service-hop-card__media--move {
-  background: linear-gradient(135deg, rgba(255, 246, 235, 0.96), rgba(255, 252, 247, 0.92));
+  background:
+    linear-gradient(to top, rgba(30,18,8,0.52) 0%, rgba(30,18,8,0.1) 55%, transparent 100%),
+    url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80') center/cover no-repeat;
 }
 
 .service-hop-card__media--clean {
-  background: linear-gradient(135deg, rgba(245, 252, 247, 0.96), rgba(255, 255, 255, 0.92));
+  background:
+    linear-gradient(to top, rgba(20,40,28,0.50) 0%, rgba(20,40,28,0.08) 55%, transparent 100%),
+    url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&q=80') center/cover no-repeat;
 }
 
 .service-hop-card__media--delivery {
-  background: linear-gradient(135deg, rgba(244, 247, 252, 0.96), rgba(255, 255, 255, 0.92));
+  background:
+    linear-gradient(to top, rgba(18,28,48,0.52) 0%, rgba(18,28,48,0.08) 55%, transparent 100%),
+    url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?w=600&q=80') center/cover no-repeat;
+}
+
+/* 사진 카드에서 도형 숨김 */
+.service-hop-card__media--move .service-hop-card__figure,
+.service-hop-card__media--clean .service-hop-card__figure,
+.service-hop-card__media--delivery .service-hop-card__figure {
+  display: none;
 }
 
 .service-hop-card__body {
