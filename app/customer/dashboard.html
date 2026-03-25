@@ -24,7 +24,7 @@
     .btn { display:inline-flex; align-items:center; justify-content:center; font-weight:700; cursor:pointer; text-decoration:none; }
     .btn.primary { background:var(--brand); color:#fff; border:0; }
     .btn.ghost { background:#fff; color:var(--muted); }
-    .btn.google { background:#fff; color:#3c4043; border:1px solid #dadce0; gap:8px; }
+    .btn.login { background:var(--brand); color:#fff; border:0; font-size:15px; }
     .btn.logout { background:transparent; color:var(--muted); border:1px solid var(--line); font-size:13px; min-height:36px; padding:0 14px; border-radius:999px; }
     .user-bar { display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px; padding:12px 16px; background:rgba(255,255,255,.7); border:1px solid var(--line); border-radius:14px; flex-wrap:wrap; }
     .user-bar .name { font-weight:700; font-size:15px; }
@@ -63,9 +63,8 @@
       <p id="cardDesc" class="muted">이름과 연락처로 접수한 주문을 한 번에 확인하고 진행 상태를 관리해요.</p>
 
       <div id="loginPrompt" style="margin-top:16px;">
-        <a class="btn google" href="/auth/login.html?next=/customer/dashboard.html" style="width:100%; max-width:320px;">
-          <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.3 33.1 29.7 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 16.2 4 9.5 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.3-1.9 14.1-5.1l-6.5-5.3C29.6 35.5 26.9 36.5 24 36.5c-5.7 0-10.4-3.8-11.8-9H4.5C7.6 36.6 15.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20H24v8h11.3c-.8 2.2-2.1 4.1-3.9 5.5l6.5 5.3C41.4 35.4 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
-          Google로 로그인해서 바로 확인하기
+        <a class="btn login" href="/auth/login.html?next=/customer/dashboard.html" style="width:100%; max-width:320px;">
+          로그인 / 회원가입
         </a>
         <p style="margin:12px 0 0; font-size:13px; color:var(--muted);">또는 이름과 연락처로 직접 조회하세요.</p>
       </div>
