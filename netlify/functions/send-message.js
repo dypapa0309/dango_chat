@@ -58,7 +58,7 @@ export async function handler(event) {
     .single();
 
   const CHAT_ALLOWED = new Set(['accepted', 'driver_departed', 'driver_arrived', 'in_progress', 'completion_requested']);
-  if (job && !CHAT_ALLOWED.has(job.dispatch_status) && job.status !== 'in_progress') {
+  if (!job || (!CHAT_ALLOWED.has(job.dispatch_status) && job.status !== 'in_progress')) {
     return fail('현재 상태에서는 메시지를 보낼 수 없어요. 전문가가 배정된 후에 채팅이 가능해요.');
   }
 

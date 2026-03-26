@@ -28,10 +28,10 @@ export default function MessageBubble({ message, onCardSubmit, user, onLogin }) 
       )}
 
       <div className="message-content">
-        {content && (
+        {content?.trim() && (
           <div className={`message-bubble message-bubble--${isUser ? 'user' : 'ai'}`}>
-            {content.split('\n').map((line, i) => (
-              <span key={i}>{line}{i < content.split('\n').length - 1 && <br />}</span>
+            {content.trim().split('\n').map((line, i, arr) => (
+              <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
             ))}
           </div>
         )}

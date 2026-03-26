@@ -2,6 +2,7 @@ import OpenAI from 'openai'
 import { handleOptions, ok, fail } from '../../shared/http.js'
 import { env } from '../../shared/env.js'
 import { adminClient } from '../../shared/db.js'
+import KNOWLEDGE_BASE from './_data/knowledge.js'
 
 const SYSTEM_PROMPT = `당신은 당고(DANG-O) AI 상담사입니다. 당고는 한국의 생활 서비스 플랫폼으로, 전문가를 연결해드립니다.
 
@@ -103,11 +104,16 @@ PT 종류: 체중감량 / 근력강화 / 체형교정 / 재활운동
 기사 도움(선택): 출발지 도움(+10,000원) / 도착지 도움(+10,000원) / 동승 1명(+20,000원)
 기사 도움 여부도 물어보기
 
+## 정보 수집 순서 (중요!)
+- **소형이사 / 용달**: 출발지 주소 → 도착지 주소 → 기타 세부사항(차량/짐 종류 등) → 날짜 (맨 마지막)
+- **그 외 모든 서비스**: 서비스 세부 선택(종류/규모/시간 등) → 날짜/시간 (항상 맨 마지막)
+- 날짜·시간은 무조건 마지막에 물어볼 것. 서비스 내용도 파악 안 됐는데 날짜부터 물어보지 않기
+
 ## 대화 규칙
 1. 친근하고 간결하게 한국어로 응답
 2. 한 번에 하나씩만 물어보기
 3. 서비스별 세부 항목은 메시지에서 보기 좋게 번호나 줄바꿈으로 나열해서 안내
-4. 날짜/시간이 필요할 때 → card: {type: "date_picker"}
+4. 날짜/시간이 필요할 때 → card: {type: "date_picker"} (항상 마지막에만 사용)
 5. 주소가 필요할 때 → card: {type: "address_picker", data: {label: "출발지"}}
 6. 서비스 파악 안 될 때 → card: {type: "service_select"}
 7. 모든 필수 정보 수집 완료 → card: {type: "estimate", data: {...}} 와 함께 견적 제시
@@ -184,7 +190,7 @@ export async function handler(event) {
       messages: [
         {
           role: 'system',
-          content: SYSTEM_PROMPT + `\n\n## 현재 대화 상태\n${JSON.stringify(state, null, 2)}`,
+          content: SYSTEM_PROMPT + KNOWLEDGE_BASE + `\n\n## 현재 대화 상태\n${JSON.stringify(state, null, 2)}`,
         },
         ...messages,
       ],

@@ -29,6 +29,7 @@ export default function ChatPage({ user }) {
   const [resetKey, setResetKey] = useState(0)
   const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0)
   const bottomRef = useRef(null)
+  const messagesRef = useRef(messages)
 
   function handleNewChat() {
     setMessages([])
@@ -51,6 +52,9 @@ export default function ChatPage({ user }) {
       setInitialized(true)
     }
   }, [conversationId, user])
+
+  // Keep messagesRef in sync so handleSend always sees latest messages
+  useEffect(() => { messagesRef.current = messages }, [messages])
 
   // Scroll to bottom on new messages or load
   useEffect(() => {
@@ -116,7 +120,6 @@ export default function ChatPage({ user }) {
         setShowLoginModal(true)
         return
       }
-      localStorage.setItem('dango_guest_count', String(count + 1))
     }
 
     setLoading(true)
@@ -140,7 +143,7 @@ export default function ChatPage({ user }) {
         setMessages((prev) => prev.map((m) => (m.id === tempUserMsg.id ? savedUser : m)))
       }
 
-      const allMsgs = [...messages.filter((m) => m.id !== tempUserMsg.id), savedUser]
+      const allMsgs = [...messagesRef.current.filter((m) => m.id !== tempUserMsg.id), savedUser]
       const aiMessages = allMsgs.slice(-20).map((m) => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content,
@@ -158,13 +161,16 @@ export default function ChatPage({ user }) {
       if (user) {
         const savedAI = await saveMessage(convId, 'assistant', result.message, result.card || null)
         setMessages((prev) => [...prev, savedAI])
-        const newTitle = messages.length === 0 ? userContent.slice(0, 30) : null
+        const newTitle = messagesRef.current.length <= 1 ? userContent.slice(0, 30) : null
         await updateConversationState(convId, newState, newTitle)
         if (newTitle) {
           setTitle(newTitle)
           setSidebarRefreshKey((k) => k + 1)
         }
       } else {
+        // Increment guest count only after a successful AI response
+        const count = parseInt(localStorage.getItem('dango_guest_count') || '0', 10)
+        localStorage.setItem('dango_guest_count', String(count + 1))
         setMessages((prev) => [...prev, {
           id: `ai-${Date.now()}`,
           role: 'assistant',
@@ -184,7 +190,7 @@ export default function ChatPage({ user }) {
     } finally {
       setLoading(false)
     }
-  }, [loading, messages, conversationId, conversationState, user])
+  }, [loading, conversationId, conversationState, user])
 
   // Card submit handler
   async function handleCardSubmit(type, data) {

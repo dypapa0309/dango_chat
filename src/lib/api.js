@@ -52,6 +52,18 @@ export async function createJob(payload) {
   return res.json()
 }
 
+export async function getRoutePrice({ start, end, floor = 0, helper = false }) {
+  const params = new URLSearchParams({
+    start,
+    end,
+    floor: String(floor || 0),
+    helper: helper ? '1' : '0',
+  })
+  const res = await fetch(`/.netlify/functions/get-route-price?${params}`)
+  if (!res.ok) throw new Error('거리 계산 실패')
+  return res.json()
+}
+
 export async function fetchConfig() {
   const res = await fetch('/.netlify/functions/config')
   if (!res.ok) throw new Error('config 로드 실패')

@@ -1,25 +1,53 @@
-import { useState } from 'react'
-import { createJob } from '../../lib/api.js'
+import { useState, useEffect } from 'react'
+import { createJob, getRoutePrice } from '../../lib/api.js'
 import { getServiceName } from '../../lib/services.js'
 
 function fmt(n) {
   return Number(n).toLocaleString('ko-KR') + '원'
 }
 
+const DISTANCE_SERVICES = ['move', 'yongdal']
+
 export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
   const [paying, setPaying] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
+  const [routePrice, setRoutePrice] = useState(null)
+  const [routeLoading, setRouteLoading] = useState(false)
 
   const {
     service_type,
-    total_price,
-    deposit_amount,
-    balance_amount,
-    breakdown = {},
+    total_price: aiTotalPrice,
+    deposit_amount: aiDepositAmount,
+    balance_amount: aiBalanceAmount,
+    breakdown: aiBreakdown = {},
     collected = {},
     price_snapshot,
   } = data
+
+  // For move/yongdal, fetch real road-distance-based pricing
+  useEffect(() => {
+    if (!DISTANCE_SERVICES.includes(service_type)) return
+    const start = collected.start_address
+    const end = collected.end_address
+    if (!start || !end) return
+
+    setRouteLoading(true)
+    getRoutePrice({
+      start,
+      end,
+      floor: collected.floor || 0,
+      helper: collected.category === '기사 도움' || false,
+    })
+      .then(setRoutePrice)
+      .catch(() => {}) // fall back to AI estimate silently
+      .finally(() => setRouteLoading(false))
+  }, [service_type, collected.start_address, collected.end_address, collected.floor])
+
+  const total_price = routePrice?.total_price ?? aiTotalPrice
+  const deposit_amount = routePrice?.deposit_amount ?? aiDepositAmount
+  const balance_amount = routePrice?.balance_amount ?? aiBalanceAmount
+  const breakdown = routePrice?.breakdown ?? aiBreakdown
 
   async function handlePayment() {
     if (!user) {
@@ -53,6 +81,7 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
         created_by: 'chat',
       })
       const jobId = result.job?.id || result.id
+      if (!jobId) throw new Error('접수 ID를 받지 못했어요. 다시 시도해주세요.')
       setSubmitted(true)
       onSubmit?.('payment', { jobId })
     } catch (e) {
@@ -78,6 +107,17 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
         <span className="estimate-card__badge">견적</span>
         <span className="estimate-card__service">{getServiceName(service_type)}</span>
       </div>
+
+      {routeLoading && (
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
+          실거리 계산 중...
+        </p>
+      )}
+      {routePrice?.distance_km > 0 && (
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
+          실도로 거리 약 {routePrice.distance_km}km
+        </p>
+      )}
 
       {/* Breakdown */}
       {Object.keys(breakdown).length > 0 && (
