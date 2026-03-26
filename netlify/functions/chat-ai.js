@@ -132,3 +132,9 @@ export async function handler(event) {
     return fail('AI 응답 실패', e.message, 500)
   }
 }
+
+console.log('[ENV CHECK]', {
+  openai: !!process.env.OPENAI_API_KEY,
+  supabaseUrl: !!process.env.SUPABASE_URL,
+  supabaseService: !!process.env.SUPABASE_SERVICE_ROLE_KEY
+})
