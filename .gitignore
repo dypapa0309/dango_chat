@@ -1,5 +1,11 @@
-.env
 node_modules
 
 # Local Netlify folder
 .netlify
+
+# Environment variables (contains secrets)
+.env
+.env.*
+
+# Test files with potential secrets
+test.py

@@ -26,8 +26,17 @@ export default function ChatPage({ user }) {
   const [title, setTitle] = useState('새 대화')
   const [initialized, setInitialized] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
+  const [resetKey, setResetKey] = useState(0)
   const bottomRef = useRef(null)
   const sidebarRef = useRef(null)
+
+  function handleNewChat() {
+    setMessages([])
+    setConversationState({ phase: 'greeting', collected: {} })
+    setTitle('새 대화')
+    setInitialized(true)
+    setResetKey((k) => k + 1)
+  }
 
   // Load conversation + messages when conversationId changes
   useEffect(() => {
@@ -214,7 +223,7 @@ export default function ChatPage({ user }) {
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
         onLogin={() => navigate('/login')}
-        ref={sidebarRef}
+        onNewChat={handleNewChat}
       />
 
       {/* Main chat area */}
@@ -246,7 +255,7 @@ export default function ChatPage({ user }) {
         )}
 
         {/* Messages */}
-        <div className="message-list">
+        <div className="message-list" key={resetKey}>
           {initialized && isNew && messages.length === 0 ? (
             <WelcomeScreen onChip={(text) => handleSend({ text })} user={user} onLogin={() => navigate('/login')} />
           ) : (
