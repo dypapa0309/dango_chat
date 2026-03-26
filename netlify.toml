@@ -1,12 +1,15 @@
 [build]
+  command = "npm run build"
   publish = "app"
   functions = "netlify/functions"
 
 [dev]
-  publish = "app"
-  framework = "#static"
+  command = "vite"
+  targetPort = 5173
+  port = 8888
   functions = "netlify/functions"
 
+# ── 정적 서브디렉토리 (React 라우터에 막히지 않게 먼저 선언) ──
 [[redirects]]
   from = "/admin"
   to = "/admin/"
@@ -22,11 +25,95 @@
   to = "/customer/pay.html"
   status = 301
 
+# ── 기존 서비스 페이지 → React 채팅으로 통합 ──
 [[redirects]]
-  from = "/yd"
-  to = "/yd/"
+  from = "/estimate"
+  to = "/"
   status = 301
 
+[[redirects]]
+  from = "/estimate/"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/ddclean"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/ddclean/"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/yd"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/yd/"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/errand"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/errand/"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/organize"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/organize/"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/golf"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/golf/"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/install"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/install/"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/services"
+  to = "/"
+  status = 301
+
+[[redirects]]
+  from = "/services/"
+  to = "/"
+  status = 301
+
+# ── React SPA: 위에서 처리 안 된 모든 경로 → index.html ──
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  force = false
+
+# ── Scheduled functions ──
 [functions."expire-assignment"]
   schedule = "*/5 * * * *"
 
