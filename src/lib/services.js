@@ -145,6 +145,18 @@ export const SERVICES = {
       category: '마케팅 종류',
     },
   },
+  yongdal: {
+    name: '용달',
+    emoji: '🚚',
+    desc: '짐 운반, 이삿짐 운반',
+    requiredFields: ['date', 'start_address', 'end_address', 'category'],
+    fieldLabels: {
+      date: '날짜',
+      start_address: '출발지',
+      end_address: '도착지',
+      category: '짐 종류',
+    },
+  },
 }
 
 export const SERVICE_LIST = Object.entries(SERVICES).map(([key, val]) => ({

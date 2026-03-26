@@ -1087,3 +1087,90 @@ html, body, #root {
   font-size: 14px;
 }
 .modal__btn--ghost:hover { color: var(--text); }
+
+/* ===================================================
+   Sidebar — Service Toggle & Links
+   =================================================== */
+.sidebar__service-toggle {
+  margin: 0 8px 4px;
+}
+.sidebar__service-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  padding: 8px 12px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--sb-muted);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.sidebar__service-toggle-btn:hover {
+  background: var(--sb-hover);
+  color: var(--sb-text);
+}
+.sidebar__service-toggle-arrow {
+  margin-left: auto;
+  transition: transform .2s;
+}
+.sidebar__service-toggle-arrow.open {
+  transform: rotate(180deg);
+}
+.sidebar__service-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding: 4px 4px 8px;
+}
+.sidebar__service-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  background: none;
+  border: 1px solid var(--sb-border);
+  border-radius: var(--radius-md);
+  color: var(--sb-text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .12s, border-color .12s;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.sidebar__service-item:hover {
+  background: var(--sb-hover);
+  border-color: rgba(217,120,70,.3);
+}
+
+.sidebar__links {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 8px 4px;
+  border-top: 1px solid var(--sb-border);
+}
+.sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  color: var(--sb-muted);
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: background .12s, color .12s;
+}
+.sidebar__link:hover {
+  background: var(--sb-hover);
+  color: var(--sb-text);
+}

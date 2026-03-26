@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getSupabase } from '../lib/supabase.js'
+import { SERVICE_LIST } from '../lib/services.js'
 
 function formatDate(iso) {
   const d = new Date(iso)
@@ -13,7 +14,64 @@ function formatDate(iso) {
   return now.getFullYear() === y ? `${m}/${day}` : `${y}/${m}/${day}`
 }
 
-export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refreshKey }) {
+function SidebarLinks() {
+  return (
+    <div className="sidebar__links">
+      <a className="sidebar__link" href="/customer/lookup.html">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" />
+        </svg>
+        내 주문
+      </a>
+      <a className="sidebar__link" href="/driver/join.html" target="_blank" rel="noopener noreferrer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6" />
+        </svg>
+        전문가 가입하기
+      </a>
+    </div>
+  )
+}
+
+function ServiceToggle({ onServiceClick }) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="sidebar__service-toggle">
+      <button
+        className="sidebar__service-toggle-btn"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+        서비스
+        <svg
+          className={`sidebar__service-toggle-arrow${open ? ' open' : ''}`}
+          width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div className="sidebar__service-list">
+          {SERVICE_LIST.map((svc) => (
+            <button
+              key={svc.key}
+              className="sidebar__service-item"
+              onClick={() => onServiceClick(svc)}
+            >
+              <span>{svc.emoji}</span>
+              <span>{svc.name}</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refreshKey, onServiceSelect }) {
   const navigate = useNavigate()
   const { id: activeId } = useParams()
   const [conversations, setConversations] = useState([])
@@ -42,9 +100,17 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refre
   }
 
   function handleNew() {
-    if (onNewChat) onNewChat()   // ChatPage에서 직접 초기화
+    if (onNewChat) onNewChat()
     navigate('/')
     if (onClose) onClose()
+  }
+
+  function handleServiceClick(svc) {
+    if (onNewChat) onNewChat()
+    navigate('/')
+    if (onClose) onClose()
+    // 약간의 딜레이 후 서비스 시작 메시지 전송
+    setTimeout(() => onServiceSelect?.(svc), 100)
   }
 
   async function handleDelete(e, id) {
@@ -75,12 +141,16 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refre
             </svg>
           </button>
         </div>
+
+        <ServiceToggle onServiceClick={handleServiceClick} />
+
         <div className="sidebar__list" style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <p style={{ fontSize: 13, color: 'var(--sb-muted)', textAlign: 'center', padding: '0 20px', lineHeight: 1.6 }}>
             로그인하면 대화 기록을<br />저장하고 이어볼 수 있어요.
           </p>
         </div>
         <div className="sidebar__footer">
+          <SidebarLinks />
           <button className="sidebar__new-btn" style={{ margin: '0 12px 12px' }} onClick={onLogin}>
             로그인 / 회원가입
           </button>
@@ -114,6 +184,9 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refre
         </svg>
         새 대화
       </button>
+
+      {/* Service Toggle */}
+      <ServiceToggle onServiceClick={handleServiceClick} />
 
       {/* Conversation List */}
       <div className="sidebar__list">
@@ -152,6 +225,7 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refre
 
       {/* Footer */}
       <div className="sidebar__footer">
+        <SidebarLinks />
         <div className="sidebar__user">
           <div className="sidebar__avatar">{initial}</div>
           <div className="sidebar__user-info">

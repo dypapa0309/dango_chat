@@ -233,6 +233,7 @@ export default function ChatPage({ user }) {
         onLogin={() => navigate('/login')}
         onNewChat={handleNewChat}
         refreshKey={sidebarRefreshKey}
+        onServiceSelect={(svc) => handleSend({ text: `${svc.name} ${svc.desc}` })}
       />
 
       {/* Main chat area */}
