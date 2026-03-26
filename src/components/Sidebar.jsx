@@ -14,6 +14,34 @@ function formatDate(iso) {
   return now.getFullYear() === y ? `${m}/${day}` : `${y}/${m}/${day}`
 }
 
+function BizInfoToggle() {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="sidebar__biz-toggle">
+      <button className="sidebar__biz-toggle-btn" onClick={() => setOpen((v) => !v)}>
+        사업자정보
+        <svg
+          className={`sidebar__service-toggle-arrow${open ? ' open' : ''}`}
+          width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
+        >
+          <path d="M6 9l6 6 6-6" />
+        </svg>
+      </button>
+      {open && (
+        <div className="sidebar__biz-info">
+          <p><b>상호</b> 이상한 회사 · <b>대표</b> 이상빈</p>
+          <p><b>사업자등록번호</b> 876-28-01550</p>
+          <p><b>주소</b> 경기도 부천시 상동로87 가나베스트타운쓰리, 803-102호</p>
+          <p><b>연락처</b> 010-4094-1666</p>
+          <p><b>이메일</b> dangzang.gogo@gmail.com</p>
+          <p className="sidebar__biz-copy">© DANG-O. All rights reserved.</p>
+        </div>
+      )}
+    </div>
+  )
+}
+
 function SidebarLinks() {
   return (
     <div className="sidebar__links">
@@ -28,6 +56,12 @@ function SidebarLinks() {
           <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM19 8v6M22 11h-6" />
         </svg>
         전문가 가입하기
+      </a>
+      <a className="sidebar__link" href="/privacy/" target="_blank" rel="noopener noreferrer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        개인정보처리방침
       </a>
     </div>
   )
@@ -151,6 +185,7 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refre
         </div>
         <div className="sidebar__footer">
           <SidebarLinks />
+          <BizInfoToggle />
           <button className="sidebar__new-btn" style={{ margin: '0 12px 12px' }} onClick={onLogin}>
             로그인 / 회원가입
           </button>
@@ -226,6 +261,7 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refre
       {/* Footer */}
       <div className="sidebar__footer">
         <SidebarLinks />
+        <BizInfoToggle />
         <div className="sidebar__user">
           <div className="sidebar__avatar">{initial}</div>
           <div className="sidebar__user-info">

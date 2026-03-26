@@ -97,7 +97,7 @@ export default function ChatInput({ onSend, disabled }) {
           <textarea
             ref={textareaRef}
             className="chat-input-textarea"
-            placeholder="무엇이 필요하세요? 자유롭게 말씀해주세요."
+            placeholder="무엇이 필요하세요?"
             value={text}
             onChange={handleChange}
             onKeyDown={handleKeyDown}

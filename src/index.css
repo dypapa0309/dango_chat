@@ -1200,3 +1200,35 @@ html, body, #root {
   background: var(--sb-hover);
   color: var(--sb-text);
 }
+.sidebar__biz-toggle {
+  padding: 4px 8px;
+}
+.sidebar__biz-toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  padding: 6px 12px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  color: var(--sb-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.sidebar__biz-toggle-btn:hover {
+  background: var(--sb-hover);
+  color: var(--sb-text);
+}
+.sidebar__biz-info {
+  padding: 8px 12px 4px;
+  font-size: 11px;
+  color: var(--sb-muted);
+  line-height: 1.7;
+}
+.sidebar__biz-info p { margin: 0; }
+.sidebar__biz-copy {
+  margin-top: 4px !important;
+  opacity: .6;
+}
