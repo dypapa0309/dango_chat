@@ -561,6 +561,7 @@ html, body, #root {
   max-height: 160px;
   overflow-y: auto;
   scrollbar-width: thin;
+  padding: 7px 0;
 }
 .chat-input-textarea::placeholder { color: var(--muted); }
 
