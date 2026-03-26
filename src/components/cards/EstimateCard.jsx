@@ -20,7 +20,8 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
     total_price: aiTotalPrice,
     deposit_amount: aiDepositAmount,
     balance_amount: aiBalanceAmount,
-    breakdown: aiBreakdown = {},
+    breakdown: aiBreakdown,
+    summary = [],
     collected = {},
     price_snapshot,
   } = data
@@ -47,7 +48,20 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
   const total_price = routePrice?.total_price ?? aiTotalPrice
   const deposit_amount = routePrice?.deposit_amount ?? aiDepositAmount
   const balance_amount = routePrice?.balance_amount ?? aiBalanceAmount
-  const breakdown = routePrice?.breakdown ?? aiBreakdown
+
+  // breakdown: routePrice uses object format, AI uses array format
+  const routeLines = routePrice?.breakdown
+    ? Object.entries({
+        '기본 요금': routePrice.breakdown.base,
+        '거리 요금': routePrice.breakdown.distanceFee,
+        '층수 요금': routePrice.breakdown.floorFee,
+        '헬퍼 요금': routePrice.breakdown.helperFee,
+        '옵션 요금': routePrice.breakdown.optionFee,
+      })
+        .filter(([, v]) => v > 0)
+        .map(([label, amount]) => ({ label, amount }))
+    : null
+  const breakdownLines = routeLines ?? (Array.isArray(aiBreakdown) ? aiBreakdown : null)
 
   async function handlePayment() {
     if (!user) {
@@ -108,50 +122,35 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
         <span className="estimate-card__service">{getServiceName(service_type)}</span>
       </div>
 
+      {/* Collected summary */}
+      {summary.length > 0 && (
+        <div className="estimate-card__summary">
+          {summary.map((line, i) => (
+            <p key={i} className="estimate-card__summary-line">{line}</p>
+          ))}
+        </div>
+      )}
+
       {routeLoading && (
         <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
           실거리 계산 중...
         </p>
       )}
       {routePrice?.distance_km > 0 && (
-        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 8 }}>
+        <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 4 }}>
           실도로 거리 약 {routePrice.distance_km}km
         </p>
       )}
 
-      {/* Breakdown */}
-      {Object.keys(breakdown).length > 0 && (
+      {/* Breakdown lines */}
+      {breakdownLines?.length > 0 && (
         <div className="estimate-card__rows">
-          {breakdown.base > 0 && (
-            <div className="estimate-card__row">
-              <span className="estimate-card__row-label">기본 요금</span>
-              <span className="estimate-card__row-value">{fmt(breakdown.base)}</span>
+          {breakdownLines.map((item, i) => (
+            <div key={i} className="estimate-card__row">
+              <span className="estimate-card__row-label">{item.label}</span>
+              <span className="estimate-card__row-value">{fmt(item.amount)}</span>
             </div>
-          )}
-          {breakdown.distanceFee > 0 && (
-            <div className="estimate-card__row">
-              <span className="estimate-card__row-label">거리 요금</span>
-              <span className="estimate-card__row-value">{fmt(breakdown.distanceFee)}</span>
-            </div>
-          )}
-          {breakdown.floorFee > 0 && (
-            <div className="estimate-card__row">
-              <span className="estimate-card__row-label">층수 요금</span>
-              <span className="estimate-card__row-value">{fmt(breakdown.floorFee)}</span>
-            </div>
-          )}
-          {breakdown.helperFee > 0 && (
-            <div className="estimate-card__row">
-              <span className="estimate-card__row-label">헬퍼 요금</span>
-              <span className="estimate-card__row-value">{fmt(breakdown.helperFee)}</span>
-            </div>
-          )}
-          {breakdown.optionFee > 0 && (
-            <div className="estimate-card__row">
-              <span className="estimate-card__row-label">옵션 요금</span>
-              <span className="estimate-card__row-value">{fmt(breakdown.optionFee)}</span>
-            </div>
-          )}
+          ))}
         </div>
       )}
 
