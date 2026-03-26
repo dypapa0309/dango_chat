@@ -23,6 +23,13 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refre
     loadConversations()
   }, [user, refreshKey])
 
+  // 모바일에서 대화 선택 시 사이드바 자동 닫기
+  useEffect(() => {
+    if (window.innerWidth <= 768) {
+      onClose?.()
+    }
+  }, [activeId])
+
   async function loadConversations() {
     const sb = getSupabase()
     const { data } = await sb
