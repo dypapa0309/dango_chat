@@ -43,14 +43,8 @@ export default function App() {
         path="/login"
         element={user ? <Navigate to="/" replace /> : <LoginPage />}
       />
-      <Route
-        path="/chat/:id"
-        element={user ? <ChatPage user={user} /> : <Navigate to="/login" replace />}
-      />
-      <Route
-        path="/"
-        element={user ? <ChatPage user={user} /> : <Navigate to="/login" replace />}
-      />
+      <Route path="/chat/:id" element={<ChatPage user={user} />} />
+      <Route path="/" element={<ChatPage user={user} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

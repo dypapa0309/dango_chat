@@ -14,6 +14,8 @@ const WELCOME_CHIPS = [
   '골프 레슨 받고 싶어요',
 ]
 
+const GUEST_LIMIT = 3
+
 export default function ChatPage({ user }) {
   const { id: conversationId } = useParams()
   const navigate = useNavigate()
@@ -23,6 +25,7 @@ export default function ChatPage({ user }) {
   const [loading, setLoading] = useState(false)
   const [title, setTitle] = useState('새 대화')
   const [initialized, setInitialized] = useState(false)
+  const [showLoginModal, setShowLoginModal] = useState(false)
   const bottomRef = useRef(null)
   const sidebarRef = useRef(null)
 
@@ -30,6 +33,7 @@ export default function ChatPage({ user }) {
   useEffect(() => {
     setInitialized(false)
     if (conversationId) {
+      if (!user) { navigate('/'); return }
       loadConversation(conversationId)
     } else {
       setMessages([])
@@ -37,7 +41,7 @@ export default function ChatPage({ user }) {
       setTitle('새 대화')
       setInitialized(true)
     }
-  }, [conversationId])
+  }, [conversationId, user])
 
   // Scroll to bottom on new messages
   useEffect(() => {
@@ -93,10 +97,19 @@ export default function ChatPage({ user }) {
   const handleSend = useCallback(async ({ text }) => {
     if (!text.trim() || loading) return
 
+    // Guest limit check
+    if (!user) {
+      const count = parseInt(localStorage.getItem('dango_guest_count') || '0', 10)
+      if (count >= GUEST_LIMIT) {
+        setShowLoginModal(true)
+        return
+      }
+      localStorage.setItem('dango_guest_count', String(count + 1))
+    }
+
     setLoading(true)
     const userContent = text.trim()
 
-    // Optimistic: add user message to UI immediately
     const tempUserMsg = {
       id: `tmp-${Date.now()}`,
       role: 'user',
@@ -106,50 +119,53 @@ export default function ChatPage({ user }) {
     setMessages((prev) => [...prev, tempUserMsg])
 
     try {
-      const convId = await ensureConversation(userContent)
+      let convId = null
+      let savedUser = tempUserMsg
 
-      // Save user message to DB
-      const savedUser = await saveMessage(convId, 'user', userContent)
-      setMessages((prev) =>
-        prev.map((m) => (m.id === tempUserMsg.id ? savedUser : m))
-      )
+      if (user) {
+        convId = await ensureConversation(userContent)
+        savedUser = await saveMessage(convId, 'user', userContent)
+        setMessages((prev) => prev.map((m) => (m.id === tempUserMsg.id ? savedUser : m)))
+      }
 
-      // Build messages array for AI (last 20 to avoid token limits)
       const allMsgs = [...messages.filter((m) => m.id !== tempUserMsg.id), savedUser]
       const aiMessages = allMsgs.slice(-20).map((m) => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content,
       }))
 
-      // Call AI
       const result = await sendChatMessage({
         messages: aiMessages,
         state: conversationState,
         conversationId: convId,
       })
 
-      // Save AI response to DB
-      const savedAI = await saveMessage(convId, 'assistant', result.message, result.card || null)
-      setMessages((prev) => [...prev, savedAI])
-
-      // Update conversation state
       const newState = result.state || conversationState
       setConversationState(newState)
 
-      // Update title after first real response
-      const newTitle = messages.length === 0 ? userContent.slice(0, 30) : null
-      await updateConversationState(convId, newState, newTitle)
-      if (newTitle) setTitle(newTitle)
-
+      if (user) {
+        const savedAI = await saveMessage(convId, 'assistant', result.message, result.card || null)
+        setMessages((prev) => [...prev, savedAI])
+        const newTitle = messages.length === 0 ? userContent.slice(0, 30) : null
+        await updateConversationState(convId, newState, newTitle)
+        if (newTitle) setTitle(newTitle)
+      } else {
+        setMessages((prev) => [...prev, {
+          id: `ai-${Date.now()}`,
+          role: 'assistant',
+          content: result.message,
+          card: result.card || null,
+          created_at: new Date().toISOString(),
+        }])
+      }
     } catch (err) {
       console.error('[chat]', err)
-      const errMsg = {
+      setMessages((prev) => [...prev, {
         id: `err-${Date.now()}`,
         role: 'assistant',
         content: '죄송해요, 잠깐 문제가 생겼어요. 다시 시도해주세요.',
         created_at: new Date().toISOString(),
-      }
-      setMessages((prev) => [...prev, errMsg])
+      }])
     } finally {
       setLoading(false)
     }
@@ -181,6 +197,8 @@ export default function ChatPage({ user }) {
   }
 
   const isNew = !conversationId
+  const guestCount = user ? null : parseInt(localStorage.getItem('dango_guest_count') || '0', 10)
+  const guestRemaining = user ? null : GUEST_LIMIT - guestCount
 
   return (
     <div className="chat-layout">
@@ -195,6 +213,7 @@ export default function ChatPage({ user }) {
         user={user}
         open={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onLogin={() => navigate('/login')}
         ref={sidebarRef}
       />
 
@@ -212,12 +231,24 @@ export default function ChatPage({ user }) {
             </svg>
           </button>
           <span className="chat-topbar__title">{title}</span>
+          {!user && (
+            <button className="chat-topbar__login-btn" onClick={() => navigate('/login')}>
+              로그인
+            </button>
+          )}
         </div>
+
+        {/* Guest remaining notice */}
+        {!user && guestCount > 0 && guestRemaining > 0 && (
+          <div className="guest-notice">
+            비회원은 {guestRemaining}번 더 이용 가능 · <button onClick={() => navigate('/login')}>로그인하면 무제한</button>
+          </div>
+        )}
 
         {/* Messages */}
         <div className="message-list">
           {initialized && isNew && messages.length === 0 ? (
-            <WelcomeScreen onChip={(text) => handleSend({ text })} />
+            <WelcomeScreen onChip={(text) => handleSend({ text })} user={user} onLogin={() => navigate('/login')} />
           ) : (
             <div className="message-list__inner">
               {messages.map((msg) => (
@@ -236,11 +267,30 @@ export default function ChatPage({ user }) {
         {/* Input */}
         <ChatInput onSend={handleSend} disabled={loading} />
       </div>
+
+      {/* Login modal */}
+      {showLoginModal && (
+        <div className="modal-overlay" onClick={() => setShowLoginModal(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <p className="modal__title">로그인이 필요해요</p>
+            <p className="modal__desc">
+              비회원은 3번까지 무료로 이용할 수 있어요.<br />
+              로그인하면 대화 기록 저장 및 무제한 이용이 가능해요.
+            </p>
+            <button className="modal__btn" onClick={() => navigate('/login')}>
+              로그인 / 회원가입
+            </button>
+            <button className="modal__btn modal__btn--ghost" onClick={() => setShowLoginModal(false)}>
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
 
-function WelcomeScreen({ onChip }) {
+function WelcomeScreen({ onChip, user, onLogin }) {
   return (
     <div className="welcome">
       <img className="welcome__logo" src="/assets/img/favicon.svg" alt="당고" />
@@ -256,6 +306,12 @@ function WelcomeScreen({ onChip }) {
           </button>
         ))}
       </div>
+      {!user && (
+        <p className="welcome__guest-note">
+          비회원으로 3번 무료 이용 가능 ·{' '}
+          <button className="welcome__guest-login" onClick={onLogin}>로그인</button>
+        </p>
+      )}
     </div>
   )
 }

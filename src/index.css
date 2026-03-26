@@ -982,3 +982,107 @@ html, body, #root {
   clip: rect(0 0 0 0);
   white-space: nowrap;
 }
+
+/* ===================================================
+   Guest Notice
+   =================================================== */
+.guest-notice {
+  background: var(--brand-light);
+  border-bottom: 1px solid rgba(217,120,70,.15);
+  padding: 8px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  text-align: center;
+}
+.guest-notice button {
+  background: none;
+  border: none;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.welcome__guest-note {
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.welcome__guest-login {
+  background: none;
+  border: none;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+/* Topbar login button */
+.chat-topbar__login-btn {
+  margin-left: auto;
+  padding: 6px 16px;
+  background: var(--brand);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.chat-topbar__login-btn:hover {
+  background: var(--brand-dark);
+}
+
+/* ===================================================
+   Modal
+   =================================================== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: var(--card-bg);
+  border-radius: var(--radius-lg);
+  padding: 28px 24px 20px;
+  width: min(360px, 90vw);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.18);
+}
+.modal__title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+}
+.modal__desc {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+.modal__btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  background: var(--brand);
+  color: #fff;
+}
+.modal__btn:hover { background: var(--brand-dark); }
+.modal__btn--ghost {
+  background: transparent;
+  color: var(--muted);
+  font-weight: 500;
+  font-size: 14px;
+}
+.modal__btn--ghost:hover { color: var(--text); }
