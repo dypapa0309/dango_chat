@@ -8,7 +8,7 @@ function formatTime(iso) {
   return d.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
 }
 
-export default function MessageBubble({ message, onCardSubmit }) {
+export default function MessageBubble({ message, onCardSubmit, user, onLogin }) {
   const { role, content, card, created_at } = message
   const isUser = role === 'user'
   const isSystem = role === 'system'
@@ -30,12 +30,14 @@ export default function MessageBubble({ message, onCardSubmit }) {
       <div className="message-content">
         {content && (
           <div className={`message-bubble message-bubble--${isUser ? 'user' : 'ai'}`}>
-            {content}
+            {content.split('\n').map((line, i) => (
+              <span key={i}>{line}{i < content.split('\n').length - 1 && <br />}</span>
+            ))}
           </div>
         )}
 
         {card && (
-          <CardRenderer card={card} onSubmit={onCardSubmit} />
+          <CardRenderer card={card} onSubmit={onCardSubmit} user={user} onLogin={onLogin} />
         )}
 
         {created_at && (
@@ -50,14 +52,14 @@ export default function MessageBubble({ message, onCardSubmit }) {
   )
 }
 
-function CardRenderer({ card, onSubmit }) {
+function CardRenderer({ card, onSubmit, user, onLogin }) {
   switch (card.type) {
     case 'date_picker':
       return <DatePickerCard data={card.data} onSubmit={onSubmit} />
     case 'address_picker':
       return <AddressCard data={card.data} onSubmit={onSubmit} />
     case 'estimate':
-      return <EstimateCard data={card.data} onSubmit={onSubmit} />
+      return <EstimateCard data={card.data} onSubmit={onSubmit} user={user} onLogin={onLogin} />
     case 'service_select':
       return <ServiceSelectCard data={card.data} onSubmit={onSubmit} />
     default:

@@ -1,6 +1,16 @@
 /**
  * API helpers — all calls go through Netlify functions
  */
+import { getSupabase } from './supabase.js'
+
+async function getAccessToken() {
+  try {
+    const { data } = await getSupabase().auth.getSession()
+    return data.session?.access_token || null
+  } catch {
+    return null
+  }
+}
 
 export async function sendChatMessage({ messages, state, conversationId }) {
   const res = await fetch('/.netlify/functions/chat-ai', {
@@ -26,9 +36,13 @@ export async function calculatePrice(params) {
 }
 
 export async function createJob(payload) {
+  const token = await getAccessToken()
+  const headers = { 'Content-Type': 'application/json' }
+  if (token) headers['Authorization'] = `Bearer ${token}`
+
   const res = await fetch('/.netlify/functions/create-job', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(payload),
   })
   if (!res.ok) {

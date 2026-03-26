@@ -13,7 +13,7 @@ function formatDate(iso) {
   return now.getFullYear() === y ? `${m}/${day}` : `${y}/${m}/${day}`
 }
 
-export default function Sidebar({ user, open, onClose, onLogin, onNewChat }) {
+export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refreshKey }) {
   const navigate = useNavigate()
   const { id: activeId } = useParams()
   const [conversations, setConversations] = useState([])
@@ -21,7 +21,7 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat }) {
   useEffect(() => {
     if (!user) return
     loadConversations()
-  }, [user])
+  }, [user, refreshKey])
 
   async function loadConversations() {
     const sb = getSupabase()

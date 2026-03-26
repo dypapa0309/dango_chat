@@ -4,20 +4,19 @@ export default function AddressCard({ data = {}, onSubmit }) {
   const [address, setAddress] = useState(data.defaultAddress || '')
   const [detail, setDetail] = useState('')
   const [submitted, setSubmitted] = useState(false)
+  const [kakaoReady, setKakaoReady] = useState(!!window.daum?.Postcode)
 
   // Load Kakao Postcode API
   useEffect(() => {
-    if (window.daum?.Postcode) return
+    if (window.daum?.Postcode) { setKakaoReady(true); return }
     const script = document.createElement('script')
     script.src = 'https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
+    script.onload = () => setKakaoReady(true)
     document.head.appendChild(script)
   }, [])
 
   function openSearch() {
-    if (!window.daum?.Postcode) {
-      alert('주소 검색을 불러오는 중이에요. 잠시 후 다시 눌러주세요.')
-      return
-    }
+    if (!window.daum?.Postcode) return
     new window.daum.Postcode({
       oncomplete(result) {
         setAddress(result.roadAddress || result.jibunAddress)
@@ -55,8 +54,8 @@ export default function AddressCard({ data = {}, onSubmit }) {
           value={address}
           onChange={(e) => setAddress(e.target.value)}
           placeholder="주소를 검색하거나 직접 입력"
-          readOnly={!!window.daum?.Postcode}
-          onClick={window.daum?.Postcode ? openSearch : undefined}
+          onClick={kakaoReady ? openSearch : undefined}
+          readOnly={kakaoReady}
         />
         <button className="address-card__search-btn" onClick={openSearch} type="button">
           검색

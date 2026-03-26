@@ -27,8 +27,8 @@ export default function ChatPage({ user }) {
   const [initialized, setInitialized] = useState(false)
   const [showLoginModal, setShowLoginModal] = useState(false)
   const [resetKey, setResetKey] = useState(0)
+  const [sidebarRefreshKey, setSidebarRefreshKey] = useState(0)
   const bottomRef = useRef(null)
-  const sidebarRef = useRef(null)
 
   function handleNewChat() {
     setMessages([])
@@ -52,10 +52,12 @@ export default function ChatPage({ user }) {
     }
   }, [conversationId, user])
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom on new messages or load
   useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages, loading])
+    if (initialized) {
+      bottomRef.current?.scrollIntoView({ behavior: messages.length > 1 ? 'smooth' : 'instant' })
+    }
+  }, [messages, loading, initialized])
 
   async function loadConversation(id) {
     const sb = getSupabase()
@@ -83,6 +85,7 @@ export default function ChatPage({ user }) {
 
     if (error) throw new Error('대화 생성 실패')
     navigate(`/chat/${data.id}`, { replace: true })
+    setSidebarRefreshKey((k) => k + 1)  // 사이드바 목록 갱신
     return data.id
   }
 
@@ -157,7 +160,10 @@ export default function ChatPage({ user }) {
         setMessages((prev) => [...prev, savedAI])
         const newTitle = messages.length === 0 ? userContent.slice(0, 30) : null
         await updateConversationState(convId, newState, newTitle)
-        if (newTitle) setTitle(newTitle)
+        if (newTitle) {
+          setTitle(newTitle)
+          setSidebarRefreshKey((k) => k + 1)
+        }
       } else {
         setMessages((prev) => [...prev, {
           id: `ai-${Date.now()}`,
@@ -180,7 +186,7 @@ export default function ChatPage({ user }) {
     }
   }, [loading, messages, conversationId, conversationState, user])
 
-  // Card submit handler (date, address, estimate confirmed)
+  // Card submit handler
   async function handleCardSubmit(type, data) {
     let text = ''
     switch (type) {
@@ -193,8 +199,10 @@ export default function ChatPage({ user }) {
       case 'service':
         text = `${data.name} 서비스로 진행할게요`
         break
+      case 'estimate_cancel':
+        text = '견적을 다시 받고 싶어요'
+        break
       case 'payment':
-        // redirect to payment
         if (data.jobId) {
           window.location.href = `/customer/pay.html?job_id=${data.jobId}`
         }
@@ -224,6 +232,7 @@ export default function ChatPage({ user }) {
         onClose={() => setSidebarOpen(false)}
         onLogin={() => navigate('/login')}
         onNewChat={handleNewChat}
+        refreshKey={sidebarRefreshKey}
       />
 
       {/* Main chat area */}
@@ -265,6 +274,8 @@ export default function ChatPage({ user }) {
                   key={msg.id}
                   message={msg}
                   onCardSubmit={handleCardSubmit}
+                  user={user}
+                  onLogin={() => setShowLoginModal(true)}
                 />
               ))}
               {loading && <TypingIndicator />}
