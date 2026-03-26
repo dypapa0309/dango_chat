@@ -901,6 +901,28 @@ html, body, #root {
 }
 .login-btn:hover { box-shadow: 0 4px 16px rgba(90,63,34,.1); }
 .login-btn--kakao { background: #FEE500; border-color: #FEE500; color: #191919; }
+.login-btn--ghost { background: transparent; color: var(--muted); font-size: 14px; text-decoration: none; }
+.login-tabs {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.login-tab {
+  flex: 1;
+  padding: 12px;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  transition: background .15s, color .15s;
+}
+.login-tab.active { background: var(--brand); color: #fff; }
 .login-divider {
   display: flex;
   align-items: center;
@@ -933,10 +955,12 @@ html, body, #root {
   background: rgba(0,0,0,.45);
   z-index: 9;
   opacity: 0;
+  pointer-events: none;
   transition: opacity .25s;
 }
 .sidebar-overlay.visible {
   opacity: 1;
+  pointer-events: auto;
 }
 
 @media (max-width: 768px) {

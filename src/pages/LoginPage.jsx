@@ -3,15 +3,17 @@ import { getSupabase } from '../lib/supabase.js'
 
 export default function LoginPage() {
   const [status, setStatus] = useState('')
+  const [role, setRole] = useState('customer')
 
   async function oauthLogin(provider, label) {
     setStatus(`${label} 로그인 창을 여는 중...`)
     try {
       const sb = getSupabase()
+      const next = role === 'driver' ? '/driver/index.html' : '/'
       const { error } = await sb.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: `${location.origin}/auth/callback.html?next=${encodeURIComponent('/')}&role=customer`,
+          redirectTo: `${location.origin}/auth/callback.html?next=${encodeURIComponent(next)}&role=${role}`,
         },
       })
       if (error) {
@@ -22,6 +24,8 @@ export default function LoginPage() {
     }
   }
 
+  const isDriver = role === 'driver'
+
   return (
     <div className="login-page">
       <div className="login-card">
@@ -30,11 +34,38 @@ export default function LoginPage() {
           <span>당고</span>
         </a>
 
-        <h1 className="login-title">간편하게 시작하세요</h1>
-        <p className="login-sub">
-          로그인하면 전문가 매칭, 주문 내역,<br />
-          재주문을 한 곳에서 편하게 할 수 있어요.
-        </p>
+        <div className="login-tabs">
+          <button
+            className={`login-tab${!isDriver ? ' active' : ''}`}
+            onClick={() => { setRole('customer'); setStatus('') }}
+          >
+            고객
+          </button>
+          <button
+            className={`login-tab${isDriver ? ' active' : ''}`}
+            onClick={() => { setRole('driver'); setStatus('') }}
+          >
+            전문가
+          </button>
+        </div>
+
+        {isDriver ? (
+          <>
+            <h1 className="login-title">전문가로 시작하세요</h1>
+            <p className="login-sub">
+              로그인하면 배차 내역, 정산, 프로필을<br />
+              한 곳에서 관리할 수 있어요.
+            </p>
+          </>
+        ) : (
+          <>
+            <h1 className="login-title">간편하게 시작하세요</h1>
+            <p className="login-sub">
+              로그인하면 전문가 매칭, 주문 내역,<br />
+              재주문을 한 곳에서 편하게 할 수 있어요.
+            </p>
+          </>
+        )}
 
         <button
           className="login-btn login-btn--kakao"
@@ -60,6 +91,15 @@ export default function LoginPage() {
           </svg>
           Google로 시작하기
         </button>
+
+        {isDriver && (
+          <>
+            <div className="login-divider">또는</div>
+            <a className="login-btn login-btn--ghost" href="/driver/apply.html">
+              전문가 회원가입 하러 가기
+            </a>
+          </>
+        )}
 
         <p className="login-status">{status}</p>
       </div>

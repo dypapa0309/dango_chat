@@ -129,7 +129,7 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refre
   // Guest sidebar
   if (!user) {
     return (
-      <aside className={`sidebar${open ? ' open' : ''}`}>
+      <aside className={`sidebar${open ? ' open' : ' collapsed'}`}>
         <div className="sidebar__header">
           <img className="sidebar__logo" src="/assets/img/favicon.svg" alt="당고" />
           <span style={{ color: 'var(--sb-text)', fontWeight: 700, fontSize: 16, letterSpacing: '.04em' }}>
@@ -163,7 +163,7 @@ export default function Sidebar({ user, open, onClose, onLogin, onNewChat, refre
   const initial = displayName[0]?.toUpperCase() || 'U'
 
   return (
-    <aside className={`sidebar${open ? ' open' : ''}`}>
+    <aside className={`sidebar${open ? ' open' : ' collapsed'}`}>
       {/* Header */}
       <div className="sidebar__header">
         <img className="sidebar__logo" src="/assets/img/favicon.svg" alt="당고" />
