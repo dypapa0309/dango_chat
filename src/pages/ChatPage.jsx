@@ -211,6 +211,10 @@ export default function ChatPage({ user }) {
         text = data.text
         cardEvent = data.field ? { type: 'choice', field: data.field, value: data.text } : null
         break
+      case 'multi_select':
+        text = data.value
+        cardEvent = { type: 'multi_select', field: data.field, value: data.value }
+        break
       case 'estimate_cancel':
         text = '견적을 다시 받고 싶어요'
         break
