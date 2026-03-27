@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { createJob, getRoutePrice } from '../../lib/api.js'
 import { getServiceName } from '../../lib/services.js'
+import PhoneVerifyModal from '../PhoneVerifyModal.jsx'
 
 function fmt(n) {
   return Number(n).toLocaleString('ko-KR') + '원'
@@ -14,6 +15,8 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
   const [error, setError] = useState('')
   const [routePrice, setRoutePrice] = useState(null)
   const [routeLoading, setRouteLoading] = useState(false)
+  const [showVerifyModal, setShowVerifyModal] = useState(false)
+  const [verifiedInfo, setVerifiedInfo] = useState(null)
 
   const {
     service_type,
@@ -63,15 +66,10 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
     : null
   const breakdownLines = routeLines ?? (Array.isArray(aiBreakdown) ? aiBreakdown : null)
 
-  async function handlePayment() {
-    if (!user) {
-      onLogin?.()
-      return
-    }
+  async function executePayment(customerName, customerPhone) {
     setPaying(true)
     setError('')
     try {
-      // date → move_date 필드명 매핑 + 서버 가격 재계산 방지를 위해 price_override 전달
       const result = await createJob({
         service_type,
         price_override: {
@@ -84,8 +82,8 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
         start_address_detail: collected.start_address_detail,
         end_address: collected.end_address,
         end_address_detail: collected.end_address_detail,
-        customer_name: collected.customer_name,
-        customer_phone: collected.customer_phone,
+        customer_name: customerName,
+        customer_phone: customerPhone,
         category: collected.category,
         qty: collected.qty,
         size: collected.size,
@@ -103,6 +101,26 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
     } finally {
       setPaying(false)
     }
+  }
+
+  function handlePayment() {
+    if (!user) { onLogin?.(); return }
+
+    const isVerified = user?.user_metadata?.phone_verified || verifiedInfo
+    if (!isVerified) {
+      setShowVerifyModal(true)
+      return
+    }
+
+    const name = verifiedInfo?.name || user?.user_metadata?.full_name || ''
+    const phone = verifiedInfo?.phone || user?.user_metadata?.phone || ''
+    executePayment(name, phone)
+  }
+
+  function handleVerified(info) {
+    setVerifiedInfo(info)
+    setShowVerifyModal(false)
+    executePayment(info.name, info.phone)
   }
 
   if (submitted) {
@@ -180,6 +198,13 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
       <button className="card-btn card-btn--ghost" onClick={() => onSubmit?.('estimate_cancel', {})}>
         다시 견적 받기
       </button>
+
+      {showVerifyModal && (
+        <PhoneVerifyModal
+          onVerified={handleVerified}
+          onClose={() => setShowVerifyModal(false)}
+        />
+      )}
     </div>
   )
 }

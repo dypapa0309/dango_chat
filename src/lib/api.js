@@ -69,3 +69,26 @@ export async function fetchConfig() {
   if (!res.ok) throw new Error('config 로드 실패')
   return res.json()
 }
+
+async function authPost(path, body) {
+  const token = await getAccessToken()
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
+    body: JSON.stringify(body),
+  })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(json.error || '요청 실패')
+  return json
+}
+
+export async function sendPhoneOtp({ name, phone }) {
+  return authPost('/.netlify/functions/send-phone-otp', { name, phone })
+}
+
+export async function verifyPhoneOtp({ otp }) {
+  return authPost('/.netlify/functions/verify-phone-otp', { otp })
+}
