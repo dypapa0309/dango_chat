@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getSupabase } from '../lib/supabase.js'
 import { SERVICE_LIST } from '../lib/services.js'
+import useInstallPrompt from '../hooks/useInstallPrompt.js'
 
 function formatDate(iso) {
   const d = new Date(iso)
@@ -42,9 +43,24 @@ function BizInfoToggle() {
   )
 }
 
+function InstallAppButton() {
+  const { canInstall, triggerInstall } = useInstallPrompt()
+  if (!canInstall) return null
+  return (
+    <button className="sidebar__install-btn" onClick={triggerInstall}>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+        <path d="M12 16l-4-4h3V4h2v8h3l-4 4z" />
+        <path d="M4 20h16" />
+      </svg>
+      앱 설치하기
+    </button>
+  )
+}
+
 function SidebarLinks() {
   return (
     <div className="sidebar__links">
+      <InstallAppButton />
       <a className="sidebar__link" href="/customer/lookup.html">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" />

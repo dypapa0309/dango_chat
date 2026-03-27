@@ -1250,6 +1250,24 @@ html, body, #root {
   background: var(--sb-hover);
   color: var(--sb-text);
 }
+.sidebar__install-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--brand-light);
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: background .12s;
+}
+.sidebar__install-btn:hover {
+  background: rgba(217,120,70,.22);
+}
 .sidebar__biz-toggle {
   padding: 4px 8px;
 }
