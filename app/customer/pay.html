@@ -136,6 +136,39 @@
       font-size: 15px;
       cursor: pointer;
     }
+    .refund-policy {
+      margin-top: 20px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .refund-policy strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .refund-policy ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .refund-policy li { margin-bottom: 4px; }
+    .err-banner {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #fff0f0;
+      border: 1px solid #fccaca;
+      color: #c0392b;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+    }
 
     @media (max-width: 480px) {
       .topnav { grid-template-columns: repeat(5, 1fr); gap: 6px; }
@@ -172,8 +205,25 @@
       ✔ 서비스 완료 후 전문가에게 직접 정산됩니다.
     </div>
 
+    <div id="errBanner" class="err-banner"></div>
     <button id="btnPayFull" class="btn-primary" disabled>카드로 결제하기</button>
     <a class="ghost" href="/">처음으로 돌아가기</a>
+
+    <div class="refund-policy">
+      <strong>취소 및 환불 규정</strong>
+      <ul>
+        <li>서비스 시작 <b>24시간 전</b>까지: 전액 환불</li>
+        <li>서비스 시작 <b>24시간 이내 ~ 2시간 전</b>: 50% 환불</li>
+        <li>서비스 시작 <b>2시간 이내</b> 또는 당일 취소: 환불 불가</li>
+        <li>전문가 배정 후 고객 사정으로 인한 취소 시 위약금이 발생할 수 있습니다.</li>
+        <li>환불 문의: <a href="mailto:help@dang-o.com" style="color:var(--brand);">help@dang-o.com</a></li>
+      </ul>
+      <p style="margin-top:10px; margin-bottom:0;">
+        <a href="/terms/" style="color:var(--brand); font-size:12px;">서비스 이용약관</a>
+        &nbsp;·&nbsp;
+        <a href="/privacy/" style="color:var(--brand); font-size:12px;">개인정보 처리방침</a>
+      </p>
+    </div>
   </div>
 
   <script>
@@ -183,8 +233,15 @@
     const qs = new URLSearchParams(location.search);
     const jobId = qs.get('jobId');
     const draftId = qs.get('draftId');
+    const isDemo = qs.get('demo') === '1';
 
     const money = (value) => `${Number(value || 0).toLocaleString()}원`;
+
+    function showError(msg) {
+      const el = document.getElementById('errBanner');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
 
     function getDraft() {
       if (!draftId) return null;
@@ -204,6 +261,17 @@
     }
 
     async function loadJob() {
+      if (isDemo) {
+        return {
+          id: 'DEMO-ORDER-001',
+          service_type: 'move',
+          customer_name: '홍길동',
+          start_address: '서울시 강남구 테헤란로 123',
+          end_address: '서울시 마포구 합정동 456',
+          move_date: '2026-04-01',
+          total_price: 150000,
+        };
+      }
       if (jobId) {
         const detailRes = await fetch(`/.netlify/functions/get-job-public?jobId=${encodeURIComponent(jobId)}`);
         const detailJson = await detailRes.json();
@@ -241,8 +309,12 @@
           clientKey = cfg?.tossClientKey || '';
         } catch {}
 
-        const payFullBtn = document.getElementById('btnPayFull');
-        payFullBtn.disabled = false;
+        if (!clientKey) {
+          showError('결제 설정을 불러오지 못했어요. 잠시 후 다시 시도하거나 고객센터로 문의해주세요.');
+          return;
+        }
+
+        document.getElementById('btnPayFull').disabled = false;
 
       } catch (error) {
         document.getElementById('summary').textContent = error.message || '주문 정보를 불러오지 못했어요.';
@@ -250,7 +322,7 @@
     }
 
     document.getElementById('btnPayFull').onclick = async () => {
-      if (!job) return;
+      if (!job || !clientKey) return;
       const btn = document.getElementById('btnPayFull');
       const originalText = btn.textContent;
       btn.disabled = true;
@@ -260,8 +332,8 @@
         const failUrl = new URL(`${location.origin}/customer/fail.html`);
         if (jobId) { successUrl.searchParams.set('jobId', job.id); failUrl.searchParams.set('jobId', job.id); }
         if (draftId) { successUrl.searchParams.set('draftId', draftId); failUrl.searchParams.set('draftId', draftId); }
+        if (isDemo) { successUrl.searchParams.set('demo', '1'); failUrl.searchParams.set('demo', '1'); }
         successUrl.searchParams.set('amount', String(Number(job.total_price || 0)));
-        if (!clientKey) { location.href = successUrl.toString(); return; }
         const toss = TossPayments(clientKey);
         await toss.requestPayment('카드', {
           amount: Number(job.total_price || 0),
@@ -271,6 +343,8 @@
           successUrl: successUrl.toString(),
           failUrl: failUrl.toString()
         });
+      } catch (err) {
+        showError(err.message || '결제 중 오류가 발생했어요.');
       } finally {
         btn.disabled = false;
         btn.textContent = originalText;

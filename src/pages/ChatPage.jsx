@@ -211,7 +211,7 @@ export default function ChatPage({ user }) {
         break
       case 'payment':
         if (data.jobId) {
-          window.location.href = `/customer/pay.html?job_id=${data.jobId}`
+          window.location.href = `/customer/pay.html?jobId=${data.jobId}`
         }
         return
       default:
