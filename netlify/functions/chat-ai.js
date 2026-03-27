@@ -2,9 +2,48 @@ import OpenAI from 'openai'
 import { handleOptions, ok, fail } from '../../shared/http.js'
 import { env } from '../../shared/env.js'
 import { adminClient } from '../../shared/db.js'
-import BASE_PROMPT from './_data/base.js'
-import KNOWLEDGE_BASE from './_data/knowledge.js'
 import { SERVICES, SERVICE_SUMMARY } from './_data/services/index.js'
+
+const BASE_PROMPT = `당신은 당고(DANG-O) AI 상담사입니다.
+
+## 핵심 규칙
+1. 친근하고 간결하게 한국어로 응답
+2. 한 번에 하나씩만 물어보기
+3. state.collected에 이미 있는 정보는 절대 다시 묻지 않기
+4. 선택지 → choices 카드 | 주소 → address_picker | 날짜 → date_picker
+5. 수집 완료 신호가 오면 즉시 estimate 카드 제시
+
+## 응답 형식 (항상 JSON)
+{"message":"사용자에게 보낼 메시지","card":null,"state":{"service_type":null,"phase":"greeting","collected":{}}}`
+
+const KNOWLEDGE_BASE = `
+## 운영 정보
+- 상담·예약: 24시간 AI 채팅
+- 전문가 서비스 가능 시간: 오전 8시 ~ 오후 9시 (공휴일 포함)
+- 고객센터: 010-4094-1666 / dangzang.gogo@gmail.com
+- 서비스 지역: 수도권(서울·경기·인천) 중심, 지방 일부 가능 (문의)
+
+## 결제
+- 예약금(계약금): 전체 금액의 20% 선결제
+- 잔금: 서비스 완료 후 80% 결제
+- 결제 수단: 신용카드, 체크카드
+
+## 환불 정책
+- 서비스 24시간 전 취소: 전액 환불
+- 서비스 24시간 이내 ~ 2시간 전: 50% 환불
+- 서비스 2시간 이내 또는 당일 취소: 환불 불가
+- 전문가 과실: 100% 환불 또는 재서비스
+
+## 자주 묻는 질문
+Q: 전문가는 언제 배정되나요?
+A: 예약금 결제 완료 후 30분~2시간 내 인근 전문가가 배정됩니다.
+
+Q: 전문가를 직접 선택할 수 있나요?
+A: 현재는 시스템 자동 배정입니다. 특정 전문가 요청은 고객센터로 문의해주세요.
+
+Q: 서비스 후 불만족 시 어떻게 하나요?
+A: 완료 후 24시간 내 고객센터 연락 시 재서비스 또는 환불 처리해드립니다.
+`
 import { calculateServicePrice } from '../../shared/service-pricing.js'
 
 // ── 유틸 ─────────────────────────────────────────────────────
