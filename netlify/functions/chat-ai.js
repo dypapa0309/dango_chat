@@ -301,6 +301,15 @@ export async function handler(event) {
       } catch { /* geocoding 실패 시 AI estimate 유지 */ }
     }
 
+    // 4. 수집 중이면 다음 step의 카드를 강제로 삽입 (GPT가 카드를 빠뜨리는 경우 대비)
+    if (!parsed.card && parsed.state?.service_type && !isCollectionComplete(parsed.state)) {
+      const svc = SERVICES[parsed.state.service_type]
+      if (svc) {
+        const nextStep = svc.steps.find(s => !parsed.state.collected?.[s.field])
+        if (nextStep?.card) parsed.card = nextStep.card
+      }
+    }
+
     if (conversationId) {
       adminClient().from('ai_usage_logs').insert({
         conversation_id: conversationId,
