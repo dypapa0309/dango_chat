@@ -1,4 +1,4 @@
-const CACHE = 'dango-v1'
+const CACHE = 'dango-v2'
 const STATIC = [
   '/',
   '/index.html',

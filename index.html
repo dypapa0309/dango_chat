@@ -24,7 +24,17 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        navigator.serviceWorker.register('/sw.js').then((reg) => {
+          // 새 SW가 설치되면 즉시 페이지 새로고침 (앱 업데이트 자동 반영)
+          reg.addEventListener('updatefound', () => {
+            const newSW = reg.installing
+            newSW.addEventListener('statechange', () => {
+              if (newSW.state === 'activated' && navigator.serviceWorker.controller) {
+                window.location.reload()
+              }
+            })
+          })
+        })
       })
     }
   </script>
