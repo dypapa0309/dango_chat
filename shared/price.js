@@ -5,10 +5,12 @@ export function calculatePrice(input = {}) {
   const weightKg = Math.max(0, Number(input.weightKg || 0));
   const options = input.options || {};
   const hasVia = Boolean(input.hasVia);
+  const hasElevator = Boolean(input.hasElevator);
 
   const base = 30000;
   const distanceFee = Math.round(distanceKm) * 1500;
-  const floorFee = floor * 5000;
+  // 엘리베이터 없는 경우에만 층수 요금 적용
+  const floorFee = hasElevator ? 0 : floor * 5000;
   const weightFee = Math.floor(weightKg / 20) * 3000;
   const viaFee = hasVia ? 15000 : 0;
   const helperFee = options.helper ? 20000 : 0;

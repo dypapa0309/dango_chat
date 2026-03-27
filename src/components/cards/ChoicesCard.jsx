@@ -20,7 +20,7 @@ export default function ChoicesCard({ data = {}, onSubmit }) {
           className="choices-card__btn"
           onClick={() => {
             setSelected(opt)
-            onSubmit?.('choice', { text: opt })
+            onSubmit?.('choice', { text: opt, field: data.field })
           }}
         >
           {opt}

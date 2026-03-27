@@ -157,6 +157,34 @@ export const SERVICES = {
       category: '짐 종류',
     },
   },
+  vocal: {
+    name: '보컬 레슨',
+    emoji: '🎤',
+    desc: '취미·오디션·축가·녹음',
+    requiredFields: ['date', 'start_address', 'category', 'duration'],
+    fieldLabels: { date: '날짜', start_address: '장소', category: '레슨 종류', duration: '시간' },
+  },
+  tutor: {
+    name: '과외',
+    emoji: '📚',
+    desc: '영어·수학·입시 1:1 과외',
+    requiredFields: ['date', 'start_address', 'category', 'duration'],
+    fieldLabels: { date: '날짜', start_address: '장소', category: '과목', duration: '시간' },
+  },
+  interior: {
+    name: '인테리어',
+    emoji: '🏠',
+    desc: '도배·장판·부분 공사',
+    requiredFields: ['date', 'start_address', 'category'],
+    fieldLabels: { date: '날짜', start_address: '주소', category: '공사 종류' },
+  },
+  interior_help: {
+    name: '인테리어 보조',
+    emoji: '🔨',
+    desc: '자재 운반·현장 보조',
+    requiredFields: ['date', 'start_address', 'category'],
+    fieldLabels: { date: '날짜', start_address: '현장 주소', category: '작업 종류' },
+  },
 }
 
 export const SERVICE_LIST = Object.entries(SERVICES).map(([key, val]) => ({

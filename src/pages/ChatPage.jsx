@@ -110,7 +110,7 @@ export default function ChatPage({ user }) {
     await sb.from('conversations').update(update).eq('id', convId)
   }
 
-  const handleSend = useCallback(async ({ text }) => {
+  const handleSend = useCallback(async ({ text, cardEvent }) => {
     if (!text.trim() || loading) return
 
     // Guest limit check — increment before AI call to prevent race across tabs
@@ -145,7 +145,7 @@ export default function ChatPage({ user }) {
       }
 
       const allMsgs = [...messagesRef.current.filter((m) => m.id !== tempUserMsg.id), savedUser]
-      const aiMessages = allMsgs.slice(-20).map((m) => ({
+      const aiMessages = allMsgs.slice(-6).map((m) => ({
         role: m.role === 'user' ? 'user' : 'assistant',
         content: m.content,
       }))
@@ -154,6 +154,7 @@ export default function ChatPage({ user }) {
         messages: aiMessages,
         state: conversationState,
         conversationId: convId,
+        cardEvent: cardEvent || undefined,
       })
 
       const newState = result.state || conversationState
@@ -193,18 +194,22 @@ export default function ChatPage({ user }) {
   // Card submit handler
   async function handleCardSubmit(type, data) {
     let text = ''
+    let cardEvent = null
     switch (type) {
       case 'date':
         text = `날짜: ${data.date}${data.time ? ` ${data.time}` : ''}`
+        cardEvent = { type: 'date', date: data.date, time: data.time || '' }
         break
       case 'address':
         text = `주소: ${data.address}${data.detail ? ` ${data.detail}` : ''}`
+        cardEvent = { type: 'address', address: data.address, detail: data.detail || '', label: data.label || '' }
         break
       case 'service':
         text = `${data.name} 서비스로 진행할게요`
         break
       case 'choice':
         text = data.text
+        cardEvent = data.field ? { type: 'choice', field: data.field, value: data.text } : null
         break
       case 'estimate_cancel':
         text = '견적을 다시 받고 싶어요'
@@ -217,7 +222,7 @@ export default function ChatPage({ user }) {
       default:
         text = JSON.stringify(data)
     }
-    handleSend({ text })
+    handleSend({ text, cardEvent })
   }
 
   const isNew = !conversationId
