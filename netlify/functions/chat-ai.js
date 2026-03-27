@@ -64,19 +64,23 @@ function buildSystemPrompt(state) {
   const svc = SERVICES[service_type]
   const missingSteps = svc.steps.filter(s => !collected[s.field])
   const missing = missingSteps.map(s => s.field)
-
-  // 각 미수집 step의 card 정의를 GPT에게 주입 → GPT가 카드를 정확히 반환
-  const stepDefs = missingSteps.map(s =>
-    `- field="${s.field}": card=${JSON.stringify(s.card)}`
-  ).join('\n')
+  const nextStep = missingSteps[0]
 
   const ctx = `## 현재 서비스: ${svc.name}
-## 아직 수집 안 된 항목: ${missing.length ? missing.join(', ') : '없음 → 즉시 estimate 카드 제시'}
-## 각 field별 카드 정의 (해당 field를 물어볼 때 아래 card JSON을 그대로 사용):
-${stepDefs}
-⚠️ 중요: card가 null인 field는 자유 텍스트 입력이므로 card:null 반환. 나머지 field는 반드시 위 card 정의를 그대로 response의 card 필드에 넣어야 함.
+## 지금 물어볼 항목: ${nextStep ? `${nextStep.field} — "${nextStep.q}"` : '없음 → 수집 완료'}
+## 아직 수집 안 된 항목: ${missing.length ? missing.join(', ') : '없음'}
+⚠️ 카드 UI는 서버가 자동으로 붙입니다. 당신은 message 텍스트만 자연스럽게 작성하세요. card 필드는 항상 null로 반환하세요.
 ${svc.knowledge || ''}`
   return BASE_PROMPT + '\n\n' + ctx + '\n\n' + KNOWLEDGE_BASE
+}
+
+// ── 다음 카드 결정 (서버가 직접) ──────────────────────────────
+function getNextCard(state) {
+  const { service_type, collected = {} } = state || {}
+  if (!service_type || !SERVICES[service_type]) return null
+  const svc = SERVICES[service_type]
+  const nextStep = svc.steps.find(s => !collected[s.field])
+  return nextStep?.card || null
 }
 
 // ── 수집 완료 여부 체크 ───────────────────────────────────────
@@ -128,25 +132,45 @@ async function calcMoveYongdal(serviceType, collected, kakaoKey) {
   const helperFee = serviceType === 'move'
     ? (helperStr.includes('+1인') ? 50000 : 0)
     : (helperStr.includes('동승') ? 20000 : (helperStr.includes('출발지') ? 10000 : (helperStr.includes('도착지') ? 10000 : 0)))
-  const sizeBase = serviceType === 'yongdal'
-    ? (String(collected.size || '').includes('중형') ? 30000 : String(collected.size || '').includes('대형') ? 50000 : 0)
+
+  // 용달: 차량 크기 추가 요금
+  const vehicleStr = String(collected.vehicle_size || '')
+  const vehicleFee = serviceType === 'yongdal'
+    ? (vehicleStr.includes('2.5톤') ? 50000 : vehicleStr.includes('1.4톤') ? 20000 : 0)
     : 0
+
+  // 소형이사: 포장 서비스
+  const packingStr = String(collected.packing || '')
+  const packingMultiplier = packingStr.includes('포장이사') ? 1.5 : packingStr.includes('반포장') ? 1.3 : 1.0
+
+  // 소형이사: 특수 품목
+  const specialStr = String(collected.special_items || '')
+  let specialFee = 0
+  if (specialStr.includes('피아노')) specialFee += 80000
+  if (specialStr.includes('금고')) specialFee += 50000
+  if (specialStr.includes('에어컨')) specialFee += 50000
+
   const base = 30000
   const distFee = Math.round(distKm) * 1500
-  const total = money(base + distFee + floorFee + sizeBase + helperFee)
+  const subtotal = money((base + distFee + floorFee + vehicleFee) * packingMultiplier)
+  const total = money(subtotal + helperFee + specialFee)
+
   const breakdown = [
     { label: '기본 운임', amount: base },
     { label: `거리 (${distKm}km)`, amount: distFee },
   ]
   if (floorFee) breakdown.push({ label: `계단 이용 (${floorStart + floorEnd}층)`, amount: floorFee })
-  if (sizeBase) breakdown.push({ label: `짐 규모 추가 (${collected.size})`, amount: sizeBase })
+  if (vehicleFee) breakdown.push({ label: `차량 추가 (${vehicleStr})`, amount: vehicleFee })
+  if (packingMultiplier > 1) breakdown.push({ label: `포장 서비스 (×${packingMultiplier})`, amount: subtotal - money((base + distFee + floorFee + vehicleFee)) })
   if (helperFee) breakdown.push({ label: '보조/도움 옵션', amount: helperFee })
+  if (specialFee) breakdown.push({ label: '특수 품목', amount: specialFee })
+
   const summary = [
     `출발지: ${collected.start_address}`,
     `도착지: ${collected.end_address}`,
     `거리: 약 ${distKm}km`,
-    `이삿짐: ${collected.items || '-'}`,
-    serviceType === 'move' ? `차량: ${collected.category || '-'}` : `짐 규모: ${collected.size || '-'}`,
+    serviceType === 'move' ? `이사 방식: ${collected.packing || '일반이사'}` : `차량: ${vehicleStr || '-'}`,
+    serviceType === 'move' ? `차량: ${collected.category || '-'}` : `품목: ${collected.items || '-'}`,
   ]
   return { total, breakdown, summary }
 }
@@ -196,6 +220,8 @@ async function handleCardEvent(cardEvent, state, kakaoKey) {
   } else if (type === 'date') {
     updateField = 'date'
     updateValue = date || value || ''
+  } else if (type === 'multi_select') {
+    // field and value already set from destructuring
   }
 
   if (!updateField) return null
@@ -294,7 +320,7 @@ export async function handler(event) {
     if (!parsed.message) parsed.message = '죄송해요, 다시 시도해주세요.'
     if (!parsed.state) parsed.state = effectiveState
 
-    // 3. GPT 응답 후에도 수집 완료면 서버 estimate로 덮어쓰기
+    // 3. 수집 완료면 estimate, 아니면 서버가 다음 카드 직접 결정
     if (isCollectionComplete(parsed.state) && parsed.state.service_type) {
       try {
         const priceResult = await calcPrice(parsed.state.service_type, parsed.state.collected, kakaoKey)
@@ -304,6 +330,9 @@ export async function handler(event) {
           parsed.message = `모든 정보가 준비됐어요! 예상 견적은 **${priceResult.total.toLocaleString()}원**입니다.`
         }
       } catch { /* geocoding 실패 시 GPT estimate 유지 */ }
+    } else {
+      // GPT가 카드를 잘못 반환하더라도 서버가 올바른 카드로 보장
+      parsed.card = getNextCard(parsed.state)
     }
 
     if (conversationId) {

@@ -856,6 +856,34 @@ html, body, #root {
   color: var(--muted);
 }
 
+/* Multi-select card */
+.multi-select-card__options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.multi-select-card__btn {
+  padding: 10px 16px;
+  min-height: 44px;
+  border: 1.5px solid var(--brand);
+  border-radius: 20px;
+  background: #fff;
+  color: var(--brand);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.multi-select-card__btn--on {
+  background: var(--brand);
+  color: #fff;
+}
+.multi-select-card__btn:hover {
+  background: var(--brand);
+  color: #fff;
+}
+
 /* Generic card button */
 .card-btn {
   width: 100%;

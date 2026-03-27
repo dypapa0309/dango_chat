@@ -3,6 +3,7 @@ import AddressCard from './cards/AddressCard.jsx'
 import EstimateCard from './cards/EstimateCard.jsx'
 import ServiceSelectCard from './cards/ServiceSelectCard.jsx'
 import ChoicesCard from './cards/ChoicesCard.jsx'
+import MultiSelectCard from './cards/MultiSelectCard.jsx'
 
 function formatTime(iso) {
   const d = new Date(iso)
@@ -65,6 +66,8 @@ function CardRenderer({ card, onSubmit, user, onLogin }) {
       return <ServiceSelectCard data={card.data} onSubmit={onSubmit} />
     case 'choices':
       return <ChoicesCard data={card.data} onSubmit={onSubmit} />
+    case 'multi_select':
+      return <MultiSelectCard data={card.data} onSubmit={onSubmit} />
     default:
       return null
   }
