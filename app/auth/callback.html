@@ -51,8 +51,14 @@
           location.replace('/driver/');
         }
       } else {
-        // 고객 로그인
-        location.replace(next);
+        // 고객 로그인 — 프로필 미완성이면 회원가입 완성 페이지로
+        const meta = data.session.user?.user_metadata || {};
+        const needsProfile = !meta.profile_complete && !meta.phone;
+        if (needsProfile) {
+          location.replace(`/auth/signup.html?next=${encodeURIComponent(next)}`);
+        } else {
+          location.replace(next);
+        }
       }
     });
 

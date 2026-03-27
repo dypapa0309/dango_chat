@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 회원가입</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --brand: #d97846; --line: rgba(83,62,40,.12); --text: #2a211b; --muted: #706257; }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: 'SUIT', sans-serif;
+      background: linear-gradient(180deg,#f5ead8,#f8f4ee);
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 24px; color: var(--text);
+    }
+    .card {
+      width: 100%; max-width: 440px;
+      background: rgba(255,250,244,.97);
+      border: 1px solid var(--line); border-radius: 28px;
+      padding: 40px 36px;
+      box-shadow: 0 24px 60px rgba(90,63,34,.12);
+    }
+    .brand { font-size: 1.3rem; font-weight: 800; letter-spacing: .08em; display: block; margin-bottom: 28px; color: var(--text); text-decoration: none; }
+    h1 { margin: 0 0 6px; font-size: 22px; }
+    .sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 28px; }
+
+    .section-label {
+      font-size: 12px; font-weight: 700; letter-spacing: .06em;
+      color: #fff; background: var(--text);
+      padding: 6px 14px; border-radius: 8px;
+      display: inline-block; margin-bottom: 14px;
+    }
+    .section-label.optional { background: var(--muted); }
+
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block; font-size: 13px; font-weight: 700;
+      color: var(--text); margin-bottom: 6px;
+    }
+    .field label .req { color: var(--brand); margin-left: 2px; }
+    .field label .opt { color: var(--muted); font-weight: 400; margin-left: 4px; font-size: 12px; }
+    .field input, .field select {
+      width: 100%; min-height: 48px; padding: 0 14px;
+      border: 1px solid var(--line); border-radius: 12px;
+      font: inherit; font-size: 15px; color: var(--text);
+      background: #fff; outline: none;
+      transition: border-color .15s;
+    }
+    .field input:focus, .field select:focus { border-color: var(--brand); }
+    .field select { color: var(--muted); }
+    .field select.selected { color: var(--text); }
+
+    .phone-row { display: flex; gap: 8px; }
+    .phone-row select { flex: 0 0 100px; }
+    .phone-row input { flex: 1; }
+
+    .divider-section { height: 1px; background: var(--line); margin: 20px 0; }
+
+    .btn-primary {
+      display: flex; align-items: center; justify-content: center;
+      width: 100%; min-height: 52px; margin-top: 24px;
+      border: 0; border-radius: 14px; font: inherit; font-weight: 700; font-size: 16px;
+      cursor: pointer; background: var(--brand); color: #fff;
+      box-shadow: 0 12px 24px rgba(217,120,70,.22);
+    }
+    .btn-primary:disabled { opacity: .5; cursor: default; }
+    .terms-note {
+      font-size: 12px; color: var(--muted); text-align: center;
+      margin-top: 14px; line-height: 1.7;
+    }
+    .terms-note a { color: var(--brand); text-decoration: none; }
+    #errMsg { font-size: 13px; color: #c0392b; margin-top: 10px; min-height: 18px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <a class="brand" href="/">DANG-O</a>
+
+    <h1>회원정보를 입력해주세요</h1>
+    <p class="sub">서비스 예약 및 전문가 연결에 사용됩니다.</p>
+
+    <form id="signupForm" novalidate>
+
+      <!-- 필수 회원정보 -->
+      <span class="section-label">필수 회원정보</span>
+
+      <div class="field">
+        <label for="fullName">이름 <span class="req">*</span></label>
+        <input id="fullName" type="text" placeholder="홍길동" autocomplete="name" />
+      </div>
+
+      <div class="field">
+        <label for="phone">연락처 <span class="req">*</span></label>
+        <div class="phone-row">
+          <select id="phonePrefix">
+            <option value="010" selected>010</option>
+            <option value="011">011</option>
+            <option value="016">016</option>
+            <option value="017">017</option>
+            <option value="018">018</option>
+            <option value="019">019</option>
+          </select>
+          <input id="phone" type="tel" placeholder="0000-0000" inputmode="numeric" maxlength="9" />
+        </div>
+      </div>
+
+      <div class="divider-section"></div>
+
+      <!-- 선택 회원정보 -->
+      <span class="section-label optional">선택 회원정보</span>
+
+      <div class="field">
+        <label for="gender">성별 <span class="opt">(선택)</span></label>
+        <select id="gender">
+          <option value="" disabled selected>선택 안 함</option>
+          <option value="male">남성</option>
+          <option value="female">여성</option>
+          <option value="other">기타</option>
+        </select>
+      </div>
+
+      <div class="field">
+        <label for="birthday">생년월일 <span class="opt">(선택)</span></label>
+        <input id="birthday" type="date" placeholder="YYYY-MM-DD" />
+      </div>
+
+      <p id="errMsg"></p>
+
+      <button class="btn-primary" type="submit" id="btnSubmit">가입 완료</button>
+    </form>
+
+    <p class="terms-note">
+      가입 시 <a href="/terms/">서비스 이용약관</a> 및
+      <a href="/privacy/">개인정보 처리방침</a>에 동의하는 것으로 간주합니다.
+    </p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const next = qs.get('next') || '/customer/dashboard.html';
+    const errMsg = document.getElementById('errMsg');
+
+    function formatPhone(prefix, val) {
+      const digits = val.replace(/\D/g, '');
+      return `${prefix}-${digits.slice(0,4)}-${digits.slice(4,8)}`;
+    }
+
+    document.getElementById('phone').addEventListener('input', (e) => {
+      e.target.value = e.target.value.replace(/\D/g, '').slice(0, 8);
+    });
+
+    document.getElementById('signupForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      errMsg.textContent = '';
+
+      const name = document.getElementById('fullName').value.trim();
+      const prefix = document.getElementById('phonePrefix').value;
+      const phoneRaw = document.getElementById('phone').value.trim();
+      const gender = document.getElementById('gender').value || null;
+      const birthday = document.getElementById('birthday').value || null;
+
+      if (!name) { errMsg.textContent = '이름을 입력해주세요.'; return; }
+      if (phoneRaw.length < 7) { errMsg.textContent = '연락처를 올바르게 입력해주세요.'; return; }
+
+      const phone = formatPhone(prefix, phoneRaw);
+      const btn = document.getElementById('btnSubmit');
+      btn.disabled = true;
+      btn.textContent = '저장 중...';
+
+      try {
+        window.dd.onSupabaseReady(async (sb) => {
+          const updates = {
+            data: {
+              full_name: name,
+              phone,
+              ...(gender ? { gender } : {}),
+              ...(birthday ? { birthday } : {}),
+              profile_complete: true,
+            }
+          };
+          const { error } = await sb.auth.updateUser(updates);
+          if (error) throw error;
+          location.href = next;
+        });
+      } catch (err) {
+        errMsg.textContent = err.message || '저장 중 오류가 발생했어요.';
+        btn.disabled = false;
+        btn.textContent = '가입 완료';
+      }
+    });
+  </script>
+</body>
+</html>
