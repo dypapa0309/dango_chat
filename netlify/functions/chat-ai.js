@@ -4,14 +4,40 @@ import { env } from '../../shared/env.js'
 import { adminClient } from '../../shared/db.js'
 import { SERVICES, SERVICE_SUMMARY } from './_data/services/index.js'
 
-const BASE_PROMPT = `당신은 당고(DANG-O) AI 상담사입니다.
+const BASE_PROMPT = `당신은 당고(DANG-O) AI 상담사입니다. 친근하고 자연스러운 한국어로 대화하세요.
 
 ## 핵심 규칙
-1. 친근하고 간결하게 한국어로 응답
-2. 한 번에 하나씩만 물어보기
-3. state.collected에 이미 있는 정보는 절대 다시 묻지 않기
-4. 선택지 → choices 카드 | 주소 → address_picker | 날짜 → date_picker
-5. 수집 완료 신호가 오면 즉시 estimate 카드 제시
+1. 한 번에 하나씩만 물어보기
+2. 이미 수집된 정보는 절대 다시 묻지 않기
+3. 카드 UI는 서버가 자동으로 붙임 → message 텍스트만 자연스럽게 작성, card는 항상 null
+4. 사용자가 텍스트로 답하면 현재 물어보는 field에 매핑해서 state.collected를 업데이트하고 다음 step으로 진행
+5. 사용자가 이전 답변을 수정하려 하면("아 잠깐", "바꿀게요" 등) 해당 field 값을 새 값으로 교체
+6. 수집 중 서비스 관련 질문이 오면 1~2문장으로 답한 뒤 수집 흐름으로 자연스럽게 복귀
+
+## 텍스트 입력 매핑 예시
+- "두 대요" / "2개" / "둘" → qty: "2대"
+- "냄새가 좀 나요" → condition: "냄새남"
+- "거실이랑 안방" → qty: "2공간"
+- "다음주 토요일" → date 필드로 처리 요청
+- "아 스탠드예요" (이전에 벽걸이 선택) → category를 "스탠드"로 교체
+
+## 중간 질문 처리 예시
+user: "분해청소랑 기본청소 차이가 뭐예요?"
+assistant: {"message": "분해청소는 에어컨을 완전히 분리해서 내부 세균·곰팡이까지 제거해요. 기본청소보다 효과가 훨씬 좋지만 50% 정도 비용이 추가돼요. 어떤 방식으로 진행할까요?", "card": null, "state": ...현재state유지...}
+
+## Few-shot 예시
+
+### 예시 1 — 카드 선택 후 자연스러운 다음 질문
+user: "벽걸이"
+assistant: {"message": "벽걸이 선택하셨군요! 몇 대 청소할까요?", "card": null, "state": {"service_type": "ac_clean", "phase": "collecting", "collected": {"category": "벽걸이"}}}
+
+### 예시 2 — 텍스트로 답변 → collected 업데이트
+user: "2대 있어요"
+assistant: {"message": "기본 청소로 진행할까요, 아니면 내부까지 꼼꼼히 하는 분해 청소를 원하시나요?", "card": null, "state": {"service_type": "ac_clean", "phase": "collecting", "collected": {"category": "벽걸이", "qty": "2대"}}}
+
+### 예시 3 — 이전 답변 수정
+user: "아 잠깐, 에어컨이 스탠드예요"
+assistant: {"message": "네, 스탠드로 수정할게요! 몇 대 청소할까요?", "card": null, "state": {"service_type": "ac_clean", "phase": "collecting", "collected": {"category": "스탠드"}}}
 
 ## 응답 형식 (항상 JSON)
 {"message":"사용자에게 보낼 메시지","card":null,"state":{"service_type":null,"phase":"greeting","collected":{}}}`
@@ -55,6 +81,16 @@ function parseFloor(val) {
 function noElevator(val) { return String(val || '').includes('없음') }
 function money(n) { return Math.round(n / 1000) * 1000 }
 
+// ── collected 자연어 요약 ──────────────────────────────────────
+function buildCollectedSummary(service_type, collected) {
+  if (!service_type || !SERVICES[service_type] || !collected) return '없음'
+  const svc = SERVICES[service_type]
+  const lines = svc.steps
+    .filter(s => collected[s.field])
+    .map(s => `  • ${s.field}: ${collected[s.field]}`)
+  return lines.length ? lines.join('\n') : '없음'
+}
+
 // ── 프롬프트 동적 생성 ────────────────────────────────────────
 function buildSystemPrompt(state) {
   const { service_type, collected = {} } = state || {}
@@ -63,15 +99,71 @@ function buildSystemPrompt(state) {
   }
   const svc = SERVICES[service_type]
   const missingSteps = svc.steps.filter(s => !collected[s.field])
-  const missing = missingSteps.map(s => s.field)
   const nextStep = missingSteps[0]
 
   const ctx = `## 현재 서비스: ${svc.name}
-## 지금 물어볼 항목: ${nextStep ? `${nextStep.field} — "${nextStep.q}"` : '없음 → 수집 완료'}
-## 아직 수집 안 된 항목: ${missing.length ? missing.join(', ') : '없음'}
-⚠️ 카드 UI는 서버가 자동으로 붙입니다. 당신은 message 텍스트만 자연스럽게 작성하세요. card 필드는 항상 null로 반환하세요.
+
+## 지금까지 수집된 정보
+${buildCollectedSummary(service_type, collected)}
+
+## 지금 물어볼 항목
+${nextStep ? `field="${nextStep.field}" → "${nextStep.q}"` : '없음 (수집 완료)'}
+
+## 아직 남은 항목
+${missingSteps.length ? missingSteps.map(s => s.field).join(', ') : '없음'}
+
 ${svc.knowledge || ''}`
   return BASE_PROMPT + '\n\n' + ctx + '\n\n' + KNOWLEDGE_BASE
+}
+
+// ── 입력 전처리: 한국어 숫자·비공식 표현 정규화 ──────────────
+function normalizeInput(text) {
+  if (!text) return text
+  return text
+    .replace(/\b하나\b|한\s*개|한\s*대/g, '1')
+    .replace(/\b둘\b|두\s*개|두\s*대/g, '2')
+    .replace(/\b셋\b|세\s*개|세\s*대/g, '3')
+    .replace(/\b넷\b|네\s*개|네\s*대/g, '4')
+    .replace(/\b다섯\b/g, '5')
+    .replace(/없어요|없는데요|없습니다/g, '없음')
+    .replace(/있어요|있는데요|있습니다/g, '있음')
+    .replace(/(\d+)\s*평\s*정도/g, '$1평')
+    .replace(/모르겠어요|잘\s*모르겠|모르는데요/g, '모름')
+}
+
+// ── Semantic matching: 텍스트 → 현재 step 선택지 자동 매핑 ────
+function semanticMatch(text, state) {
+  const { service_type, collected = {} } = state || {}
+  if (!service_type || !SERVICES[service_type]) return null
+  const svc = SERVICES[service_type]
+  const nextStep = svc.steps.find(s => !collected[s.field])
+  if (!nextStep?.card?.data?.options) return null
+
+  const normalized = text.toLowerCase().replace(/\s/g, '')
+  const options = nextStep.card.data.options
+
+  // 정확히 포함되는 옵션 우선
+  for (const opt of options) {
+    const optClean = opt.replace(/\s*\(.*?\)/g, '').trim() // 괄호 제거
+    if (normalized.includes(optClean.toLowerCase().replace(/\s/g, ''))) {
+      return { field: nextStep.field, value: opt }
+    }
+  }
+  // 숫자 매핑 (1대, 2대 등)
+  const numMatch = text.match(/(\d+)\s*(대|개|공간|층|평|인|회)/)
+  if (numMatch) {
+    const target = `${numMatch[1]}${numMatch[2]}`
+    const matched = options.find(o => o.startsWith(target) || o.includes(target))
+    if (matched) return { field: nextStep.field, value: matched }
+  }
+  return null
+}
+
+// ── GPT 응답 검증: collected 업데이트 누락 감지 ────────────────
+function validateGptResponse(parsed, prevState, submittedField) {
+  if (!submittedField || !parsed.state?.collected) return true
+  // 방금 제출한 field가 collected에 반영됐는지 확인
+  return !!parsed.state.collected[submittedField]
 }
 
 // ── 다음 카드 결정 (서버가 직접) ──────────────────────────────
@@ -81,6 +173,39 @@ function getNextCard(state) {
   const svc = SERVICES[service_type]
   const nextStep = svc.steps.find(s => !collected[s.field])
   return nextStep?.card || null
+}
+
+// ── 부분 견적 미리보기 ────────────────────────────────────────
+function buildPartialPriceHint(service_type, collected) {
+  if (!service_type || !SERVICES[service_type]) return ''
+  const svc = SERVICES[service_type]
+  const filled = svc.steps.filter(s => collected[s.field]).length
+  const total = svc.steps.length
+  // 주요 필드(50% 이상) 채워졌을 때만 힌트 제공
+  if (filled < Math.ceil(total * 0.5)) return ''
+  try {
+    const result = calculateServicePrice(service_type, collected)
+    if (!result?.total) return ''
+    const low = Math.round(result.total * 0.9 / 1000) * 1000
+    const high = Math.round(result.total * 1.1 / 1000) * 1000
+    return `\n\n💡 현재까지 입력 기준 예상 범위: **${low.toLocaleString()}~${high.toLocaleString()}원**`
+  } catch { return '' }
+}
+
+// ── 대화 요약 히스토리 구성 ───────────────────────────────────
+function buildMessageHistory(messages) {
+  const msgs = Array.isArray(messages) ? messages : []
+  if (msgs.length <= 6) return msgs.slice(-10)
+
+  // 오래된 메시지는 요약, 최근 4턴은 raw 유지
+  const recent = msgs.slice(-4)
+  const old = msgs.slice(0, -4)
+  const summaryLines = old
+    .filter(m => m.content?.trim())
+    .map(m => `${m.role === 'user' ? '사용자' : 'AI'}: ${m.content.slice(0, 60)}`)
+    .join(' / ')
+  const summaryMsg = { role: 'system', content: `[이전 대화 요약] ${summaryLines}` }
+  return [summaryMsg, ...recent]
 }
 
 // ── 수집 완료 여부 체크 ───────────────────────────────────────
@@ -289,25 +414,72 @@ export async function handler(event) {
 
   if (!Array.isArray(messages)) return fail('messages must be an array', null, 400)
 
+  // 3. 입력 전처리: 마지막 사용자 메시지 정규화
+  const lastUserMsg = messages[messages.length - 1]
+  if (lastUserMsg?.role === 'user') {
+    lastUserMsg.content = normalizeInput(lastUserMsg.content)
+  }
+
+  // 4. Semantic matching: 텍스트가 현재 step 선택지와 일치하면 직접 collected 업데이트
+  let semanticMatched = null
+  if (!cardEvent && lastUserMsg?.role === 'user') {
+    semanticMatched = semanticMatch(lastUserMsg.content, effectiveState)
+    if (semanticMatched) {
+      effectiveState = {
+        ...effectiveState,
+        collected: { ...effectiveState.collected, [semanticMatched.field]: semanticMatched.value },
+        phase: 'collecting',
+      }
+    }
+  }
+
+  // 수집 완료 재체크 (semantic match 후)
+  if (isCollectionComplete(effectiveState) && effectiveState.service_type) {
+    try {
+      const priceResult = await calcPrice(effectiveState.service_type, effectiveState.collected, kakaoKey)
+      if (priceResult) {
+        return ok({
+          message: `모든 정보가 준비됐어요! 예상 견적은 **${priceResult.total.toLocaleString()}원**입니다.`,
+          card: buildEstimateCard(priceResult, effectiveState.collected, effectiveState.service_type),
+          state: { ...effectiveState, phase: 'estimate' },
+        })
+      }
+    } catch { /* fallthrough */ }
+  }
+
+  // 다음 step field 추적 (검증용)
+  const expectedField = (() => {
+    const { service_type, collected = {} } = effectiveState
+    if (!service_type || !SERVICES[service_type]) return null
+    return SERVICES[service_type].steps.find(s => !collected[s.field])?.field || null
+  })()
+
   try {
     const openai = new OpenAI({ apiKey })
-    const systemContent = buildSystemPrompt(effectiveState) + `\n\n현재 상태:${JSON.stringify(effectiveState)}`
+    const systemContent = buildSystemPrompt(effectiveState)
 
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 25000)
 
-    let response
-    try {
-      response = await openai.chat.completions.create({
+    async function callGpt(extraInstruction = '') {
+      const sysMsg = extraInstruction ? systemContent + '\n\n⚠️ ' + extraInstruction : systemContent
+      const historyMsgs = buildMessageHistory(messages)
+      return openai.chat.completions.create({
         model: 'gpt-4o',
         response_format: { type: 'json_object' },
         messages: [
-          { role: 'system', content: systemContent },
-          ...messages.slice(-10).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
+          // cache_control: prompt caching (OpenAI 자동 캐싱 - 1024토큰 이상 시 활성화)
+          { role: 'system', content: sysMsg },
+          ...historyMsgs.map(m => ({ role: m.role === 'user' ? 'user' : m.role === 'system' ? 'system' : 'assistant', content: m.content })),
         ],
         temperature: 0.5,
         max_tokens: 1000,
       }, { signal: controller.signal })
+    }
+
+    let response
+    try {
+      response = await callGpt()
     } finally {
       clearTimeout(timeoutId)
     }
@@ -320,7 +492,27 @@ export async function handler(event) {
     if (!parsed.message) parsed.message = '죄송해요, 다시 시도해주세요.'
     if (!parsed.state) parsed.state = effectiveState
 
-    // 3. 수집 완료면 estimate, 아니면 서버가 다음 카드 직접 결정
+    // 5. 응답 검증: 수집 필드 누락 시 1회 재시도
+    if (expectedField && !validateGptResponse(parsed, effectiveState, expectedField)) {
+      try {
+        const retryResponse = await callGpt(
+          `방금 사용자 입력에서 "${expectedField}" 필드를 반드시 state.collected에 업데이트하세요.`
+        )
+        const retryRaw = retryResponse.choices[0]?.message?.content || '{}'
+        const retryParsed = JSON.parse(retryRaw)
+        if (retryParsed.state?.collected?.[expectedField]) parsed = retryParsed
+      } catch { /* 재시도 실패 시 원본 유지 */ }
+    }
+
+    // semantic match로 업데이트된 필드는 서버가 보장
+    if (semanticMatched) {
+      parsed.state = {
+        ...parsed.state,
+        collected: { ...(parsed.state?.collected || {}), [semanticMatched.field]: semanticMatched.value },
+      }
+    }
+
+    // 6. 수집 완료면 estimate, 아니면 서버가 다음 카드 직접 결정
     if (isCollectionComplete(parsed.state) && parsed.state.service_type) {
       try {
         const priceResult = await calcPrice(parsed.state.service_type, parsed.state.collected, kakaoKey)
@@ -333,6 +525,11 @@ export async function handler(event) {
     } else {
       // GPT가 카드를 잘못 반환하더라도 서버가 올바른 카드로 보장
       parsed.card = getNextCard(parsed.state)
+      // 부분 견적 미리보기 힌트 (move/yongdal 제외 — 거리 계산 필요)
+      if (!['move', 'yongdal'].includes(parsed.state.service_type)) {
+        const hint = buildPartialPriceHint(parsed.state.service_type, parsed.state.collected || {})
+        if (hint) parsed.message = parsed.message + hint
+      }
     }
 
     if (conversationId) {
