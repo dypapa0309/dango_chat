@@ -1,0 +1,31 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(NETLIFY_SITE_ID=43efa990-7d18-42e0-bb2d-39bd9024eefd npx netlify api listSiteDeploys --data '{\"\"\"\"site_id\"\"\"\":\"\"\"\"43efa990-7d18-42e0-bb2d-39bd9024eefd\"\"\"\",\"\"\"\"per_page\"\"\"\":3}')",
+      "Bash(python3 -c \"import sys,json; deploys=json.load\\(sys.stdin\\); [print\\(d[''''id''''][:8], d[''''state''''], d[''''created_at''''], d.get\\(''''title'''',''''''''\\)\\) for d in deploys]\")",
+      "Bash(NETLIFY_SITE_ID=43efa990-7d18-42e0-bb2d-39bd9024eefd npx netlify api getSite --data '{\"\"\"\"site_id\"\"\"\":\"\"\"\"43efa990-7d18-42e0-bb2d-39bd9024eefd\"\"\"\"}')",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(''''repo:'''', d.get\\(''''build_settings'''',{}\\).get\\(''''repo_url'''',''''없음''''\\)\\); print\\(''''branch:'''', d.get\\(''''build_settings'''',{}\\).get\\(''''branch'''',''''없음''''\\)\\); print\\(''''cmd:'''', d.get\\(''''build_settings'''',{}\\).get\\(''''cmd'''',''''없음''''\\)\\)\")",
+      "Bash(NETLIFY_SITE_ID=43efa990-7d18-42e0-bb2d-39bd9024eefd npx netlify functions:list)",
+      "Bash(find /Users/sangbinsmacbook/Desktop/Projects/dango_chat -maxdepth 2 -not -path */node_modules/* -not -path */.git/* -type d)",
+      "Bash(wc -l /Users/sangbinsmacbook/Desktop/Projects/dango_chat/netlify/functions/*.js)",
+      "Bash(find /Users/sangbinsmacbook/Desktop/Projects/dango_chat/app -name privacy* -o -name *privacy*)",
+      "Bash(grep -r \"사업자\\\\|대표\\\\|등록번호\\\\|주식회사\\\\|유한회사\" /Users/sangbinsmacbook/Desktop/Projects/dango_chat/app --include=*.html -l)",
+      "Bash(grep -n \"chip\\\\|button\\\\|interactive\" /Users/sangbinsmacbook/Desktop/Projects/dango_chat/src/components/cards/*.jsx)",
+      "Bash(grep -n \"class=\"\"card-btn\\\\|class=\"\".*btn\\\\|min-height\\\\|padding.*px\" /Users/sangbinsmacbook/Desktop/Projects/dango_chat/src/components/cards/*.jsx)",
+      "Bash(grep -rn \"button.*disabled\\\\|input.*disabled\" /Users/sangbinsmacbook/Desktop/Projects/dango_chat/src/components/cards/*.jsx)",
+      "Bash(find /Users/sangbinsmacbook/Desktop/Projects/dango_chat -type f -name *.js -path */estimate/*)",
+      "Bash(xargs ls:*)",
+      "Bash(grep -r \"마케팅\\\\|marketing\" /Users/sangbinsmacbook/Desktop/Projects/dango_chat/netlify/functions --include=*.js)",
+      "Read(//app/**)",
+      "Read(//tmp/**)",
+      "Read(//Users/sangbinsmacbook/Downloads/**)",
+      "Bash(node --input-type=module:*)",
+      "Bash(npx esbuild:*)",
+      "Bash(curl -s -X POST https://dang-o.com/.netlify/functions/chat-ai -H \"Content-Type: application/json\" -d '{\"\"\"\"messages\"\"\"\":[{\"\"\"\"role\"\"\"\":\"\"\"\"user\"\"\"\",\"\"\"\"content\"\"\"\":\"\"\"\"에어컨 청소 받고 싶어요\"\"\"\"}],\"\"\"\"state\"\"\"\":{\"\"\"\"service_type\"\"\"\":\"\"\"\"ac_clean\"\"\"\",\"\"\"\"phase\"\"\"\":\"\"\"\"collecting\"\"\"\",\"\"\"\"collected\"\"\"\":{}}}')",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s -X POST https://dang-o.com/.netlify/functions/chat-ai -H \"Content-Type: application/json\" -d '{\"\"\"\"messages\"\"\"\":[{\"\"\"\"role\"\"\"\":\"\"\"\"user\"\"\"\",\"\"\"\"content\"\"\"\":\"\"\"\"test\"\"\"\"}],\"\"\"\"state\"\"\"\":{\"\"\"\"service_type\"\"\"\":\"\"\"\"ac_clean\"\"\"\",\"\"\"\"phase\"\"\"\":\"\"\"\"collecting\"\"\"\",\"\"\"\"collected\"\"\"\":{\"\"\"\"category\"\"\"\":\"\"\"\"벽걸이\"\"\"\",\"\"\"\"qty\"\"\"\":\"\"\"\"1\"\"\"\",\"\"\"\"last_clean\"\"\"\":\"\"\"\"1년 미만\"\"\"\",\"\"\"\"condition\"\"\"\":\"\"\"\"냄새남\"\"\"\",\"\"\"\"start_address\"\"\"\":\"\"\"\"서울 강남구\"\"\"\",\"\"\"\"date\"\"\"\":\"\"\"\"2026-04-01\"\"\"\"}}}')",
+      "Bash(curl -s -X POST https://dang-o.com/.netlify/functions/chat-ai -H \"Content-Type: application/json\" -d '{\"\"\"\"messages\"\"\"\":[{\"\"\"\"role\"\"\"\":\"\"\"\"user\"\"\"\",\"\"\"\"content\"\"\"\":\"\"\"\"안녕\"\"\"\"}],\"\"\"\"state\"\"\"\":{\"\"\"\"phase\"\"\"\":\"\"\"\"greeting\"\"\"\",\"\"\"\"collected\"\"\"\":{}}}')",
+      "Bash(curl -s -X POST https://dang-o.com/.netlify/functions/chat-ai -H \"Content-Type: application/json\" -d '{\"\"\"\"messages\"\"\"\":[{\"\"\"\"role\"\"\"\":\"\"\"\"user\"\"\"\",\"\"\"\"content\"\"\"\":\"\"\"\"에어컨 청소\"\"\"\"}],\"\"\"\"state\"\"\"\":{\"\"\"\"service_type\"\"\"\":\"\"\"\"ac_clean\"\"\"\",\"\"\"\"phase\"\"\"\":\"\"\"\"collecting\"\"\"\",\"\"\"\"collected\"\"\"\":{}}}')"
+    ]
+  }
+}
