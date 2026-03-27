@@ -590,6 +590,8 @@ html, body, #root {
   color: var(--muted);
   margin-top: 8px;
 }
+.chat-input-hint--loc { color: var(--brand); }
+.chat-input-hint--err { color: #e05c3a; }
 
 /* Attachment preview */
 .chat-input-attachments {

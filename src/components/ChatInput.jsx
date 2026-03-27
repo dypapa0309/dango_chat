@@ -5,6 +5,7 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
   const [attachment, setAttachment] = useState(null) // { name, base64, previewUrl }
   const [showMenu, setShowMenu] = useState(false)
   const [locLoading, setLocLoading] = useState(false)
+  const [locStatus, setLocStatus] = useState('') // '' | 'loading' | 'error'
   const textareaRef = useRef(null)
   const fileInputRef = useRef(null)
   const menuRef = useRef(null)
@@ -65,20 +66,39 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
   }
 
   async function handleLocation() {
-    if (!navigator.geolocation) return
+    if (!navigator.geolocation) {
+      setLocStatus('error')
+      setTimeout(() => setLocStatus(''), 4000)
+      return
+    }
     setLocLoading(true)
+    setLocStatus('loading')
     setShowMenu(false)
     navigator.geolocation.getCurrentPosition(
       async ({ coords: { latitude: lat, longitude: lng } }) => {
         try {
           const res = await fetch(`/.netlify/functions/reverse-geocode?lat=${lat}&lng=${lng}`)
-          const { address } = await res.json()
-          if (address) onLocation?.(address)
-        } catch {}
+          const data = await res.json()
+          if (data.address) {
+            onLocation?.(data.address)
+            setLocStatus('')
+          } else {
+            setLocStatus('error')
+            setTimeout(() => setLocStatus(''), 4000)
+          }
+        } catch {
+          setLocStatus('error')
+          setTimeout(() => setLocStatus(''), 4000)
+        }
         setLocLoading(false)
       },
-      () => setLocLoading(false),
-      { timeout: 8000 }
+      (err) => {
+        console.warn('[geolocation]', err.code, err.message)
+        setLocLoading(false)
+        setLocStatus(err.code === 1 ? 'denied' : 'error')
+        setTimeout(() => setLocStatus(''), 5000)
+      },
+      { timeout: 8000, enableHighAccuracy: false }
     )
   }
 
@@ -179,7 +199,16 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
           </button>
         </div>
 
-        <p className="chat-input-hint">Enter로 전송 · Shift+Enter로 줄바꿈</p>
+        {locStatus === 'loading' && (
+          <p className="chat-input-hint chat-input-hint--loc">📍 현재 위치를 가져오는 중...</p>
+        )}
+        {locStatus === 'denied' && (
+          <p className="chat-input-hint chat-input-hint--err">위치 권한이 차단되어 있어요. 브라우저 주소창의 자물쇠 아이콘을 눌러 허용해주세요.</p>
+        )}
+        {locStatus === 'error' && (
+          <p className="chat-input-hint chat-input-hint--err">위치를 가져오지 못했어요. 잠시 후 다시 시도해주세요.</p>
+        )}
+        {!locStatus && <p className="chat-input-hint">Enter로 전송 · Shift+Enter로 줄바꿈</p>}
       </div>
     </div>
   )
