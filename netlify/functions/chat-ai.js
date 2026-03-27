@@ -69,6 +69,28 @@ ${svc.knowledge || ''}`
   return BASE_PROMPT + '\n\n' + ctx + '\n\n' + KNOWLEDGE_BASE
 }
 
+// ── 서비스 타입 정규화 (GPT가 키를 잘못 쓰는 경우 보정) ────────
+const SERVICE_TYPE_ALIASES = {
+  // ac_clean
+  'aircon': 'ac_clean', 'air_clean': 'ac_clean', 'ac': 'ac_clean',
+  'airconditioner': 'ac_clean', 'airconditioner_clean': 'ac_clean',
+  'air_conditioner': 'ac_clean', 'air_conditioner_clean': 'ac_clean',
+  '에어컨': 'ac_clean', '에어컨청소': 'ac_clean',
+  // appliance_clean
+  'appliance': 'appliance_clean', 'home_appliance': 'appliance_clean',
+  '가전': 'appliance_clean', '가전청소': 'appliance_clean',
+  // interior_help
+  'interior_assistant': 'interior_help', 'interiorhelp': 'interior_help',
+  // yongdal
+  'yong_dal': 'yongdal', '용달': 'yongdal',
+}
+
+function normalizeServiceType(raw) {
+  if (!raw) return raw
+  if (SERVICES[raw]) return raw
+  return SERVICE_TYPE_ALIASES[raw] || raw
+}
+
 // ── 수집 완료 여부 체크 ───────────────────────────────────────
 function isCollectionComplete(state) {
   const { service_type, collected = {} } = state || {}
@@ -288,6 +310,9 @@ export async function handler(event) {
 
     if (!parsed.message) parsed.message = '죄송해요, 다시 시도해주세요.'
     if (!parsed.state) parsed.state = state
+    if (parsed.state?.service_type) {
+      parsed.state.service_type = normalizeServiceType(parsed.state.service_type)
+    }
 
     // 3. GPT 응답 후에도 수집 완료면 서버 estimate로 덮어쓰기
     if (isCollectionComplete(parsed.state) && parsed.state.service_type) {
