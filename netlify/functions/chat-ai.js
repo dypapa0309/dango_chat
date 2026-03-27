@@ -208,12 +208,17 @@ function semanticMatch(text, state) {
 }
 
 // ── 다음 카드 결정 (서버가 직접) ──────────────────────────────
-function getNextCard(state) {
+function getNextCard(state, savedAddresses = []) {
   const { service_type, collected = {} } = state || {}
   if (!service_type || !SERVICES[service_type]) return null
   const svc = SERVICES[service_type]
   const nextStep = svc.steps.find(s => !collected[s.field])
-  return nextStep?.card || null
+  if (!nextStep?.card) return null
+  // 주소 카드에 저장된 주소 주입
+  if (nextStep.card.type === 'address_picker' && savedAddresses.length > 0) {
+    return { ...nextStep.card, data: { ...nextStep.card.data, savedAddresses } }
+  }
+  return nextStep.card
 }
 
 // ── 부분 견적 미리보기 ────────────────────────────────────────
@@ -247,6 +252,33 @@ function buildMessageHistory(messages) {
     .join(' / ')
   const summaryMsg = { role: 'system', content: `[이전 대화 요약] ${summaryLines}` }
   return [summaryMsg, ...recent]
+}
+
+// ── 유저 메모리: 저장된 주소 로드/저장 ───────────────────────
+async function loadSavedAddresses(userId) {
+  if (!userId) return []
+  try {
+    const { data } = await adminClient()
+      .from('user_preferences')
+      .select('saved_addresses')
+      .eq('user_id', userId)
+      .single()
+    return Array.isArray(data?.saved_addresses) ? data.saved_addresses : []
+  } catch { return [] }
+}
+
+async function saveAddress(userId, address, detail = '') {
+  if (!userId || !address?.trim()) return
+  try {
+    const existing = await loadSavedAddresses(userId)
+    const entry = { address: address.trim(), detail: detail.trim() }
+    // 중복 제거 (같은 주소 이미 있으면 맨 앞으로 이동)
+    const filtered = existing.filter(a => a.address !== entry.address)
+    const updated = [entry, ...filtered].slice(0, 5) // 최대 5개 보관
+    await adminClient()
+      .from('user_preferences')
+      .upsert({ user_id: userId, saved_addresses: updated, updated_at: new Date().toISOString() })
+  } catch { /* 저장 실패는 조용히 무시 */ }
 }
 
 // ── 수집 완료 여부 체크 ───────────────────────────────────────
@@ -426,14 +458,24 @@ export async function handler(event) {
   try { body = JSON.parse(event.body || '{}') }
   catch { return fail('Invalid JSON', null, 400) }
 
-  const { messages = [], state = {}, conversationId, cardEvent } = body
+  const { messages = [], state = {}, conversationId, cardEvent, userId } = body
   const apiKey = env('OPENAI_API_KEY', '')
   if (!apiKey) return fail('OpenAI API key not configured', null, 500)
   const kakaoKey = process.env.KAKAO_MOBILITY_REST_KEY || ''
 
+  // 0. 유저 메모리: 저장된 주소 로드 (비동기, 주소 카드가 필요한 서비스일 때만)
+  const addressServices = ['move', 'yongdal']
+  const savedAddresses = (userId && addressServices.includes(state.service_type))
+    ? await loadSavedAddresses(userId)
+    : []
+
   // 1. 카드 이벤트: state 업데이트 후 GPT로 넘김
   let effectiveState = state
   if (cardEvent) {
+    // 주소 이벤트면 백그라운드로 저장
+    if (cardEvent.type === 'address' && userId && cardEvent.address) {
+      saveAddress(userId, cardEvent.address, cardEvent.detail || '')
+    }
     const result = await handleCardEvent(cardEvent, state, kakaoKey)
     if (result?.__updatedState) effectiveState = result.__updatedState
     else if (result) return result  // estimate 카드 직접 반환
@@ -594,7 +636,7 @@ export async function handler(event) {
         }
       } catch { /* geocoding 실패 시 메시지만 반환 */ }
     } else {
-      parsed.card = getNextCard(effectiveState)
+      parsed.card = getNextCard(effectiveState, savedAddresses)
       // 부분 견적 미리보기 힌트 (move/yongdal 제외 — 거리 계산 필요)
       if (!['move', 'yongdal'].includes(effectiveState.service_type)) {
         const hint = buildPartialPriceHint(effectiveState.service_type, effectiveState.collected || {})

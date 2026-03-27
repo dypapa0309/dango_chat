@@ -155,6 +155,7 @@ export default function ChatPage({ user }) {
         state: conversationState,
         conversationId: convId,
         cardEvent: cardEvent || undefined,
+        userId: user?.id || undefined,
       })
 
       const newState = result.state || conversationState

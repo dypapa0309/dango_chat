@@ -12,11 +12,17 @@ async function getAccessToken() {
   }
 }
 
-export async function sendChatMessage({ messages, state, conversationId, cardEvent }) {
+export async function sendChatMessage({ messages, state, conversationId, cardEvent, userId }) {
   const res = await fetch('/.netlify/functions/chat-ai', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ messages, state, conversationId, ...(cardEvent ? { cardEvent } : {}) }),
+    body: JSON.stringify({
+      messages,
+      state,
+      conversationId,
+      ...(cardEvent ? { cardEvent } : {}),
+      ...(userId ? { userId } : {}),
+    }),
   })
   if (!res.ok) {
     const err = await res.json().catch(() => ({}))

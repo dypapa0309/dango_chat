@@ -7,6 +7,7 @@ export default function AddressCard({ data = {}, onSubmit }) {
   const [kakaoReady, setKakaoReady] = useState(!!window.daum?.Postcode)
   const [showEmbed, setShowEmbed] = useState(false)
   const embedRef = useRef(null)
+  const savedAddresses = data.savedAddresses || []
 
   // Load Kakao Postcode API
   useEffect(() => {
@@ -72,6 +73,28 @@ export default function AddressCard({ data = {}, onSubmit }) {
         </div>
       ) : (
         <>
+          {savedAddresses.length > 0 && (
+            <div className="address-card__saved">
+              <p className="address-card__saved-label">최근 주소</p>
+              {savedAddresses.slice(0, 3).map((saved, i) => (
+                <button
+                  key={i}
+                  className="address-card__saved-btn"
+                  type="button"
+                  onClick={() => {
+                    setSubmitted(true)
+                    onSubmit?.('address', {
+                      address: saved.address,
+                      detail: saved.detail || '',
+                      label: data.label || '주소',
+                    })
+                  }}
+                >
+                  📍 {saved.address}{saved.detail ? ` ${saved.detail}` : ''}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="address-card__input-wrap">
             <input
               type="text"
