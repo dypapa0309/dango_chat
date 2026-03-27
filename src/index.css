@@ -752,6 +752,10 @@ html, body, #root {
 .address-card__saved-label { font-size: 12px; color: var(--muted); margin-bottom: 6px; }
 .address-card__saved-btn { display: block; width: 100%; text-align: left; background: var(--surface); border: 1.5px solid var(--input-border); border-radius: var(--radius-md); padding: 8px 12px; font-size: 13px; cursor: pointer; margin-bottom: 6px; color: var(--text); transition: border-color 0.15s; }
 .address-card__saved-btn:hover { border-color: var(--brand); }
+.address-card__location-btn { display: block; width: 100%; text-align: center; background: var(--surface); border: 1.5px solid var(--brand); border-radius: var(--radius-md); padding: 9px 12px; font-size: 13px; font-weight: 600; color: var(--brand); cursor: pointer; margin-bottom: 10px; transition: background .12s, color .12s; }
+.address-card__location-btn:hover:not(:disabled) { background: var(--brand); color: #fff; }
+.address-card__location-btn:disabled { opacity: 0.6; cursor: default; }
+.address-card__loc-err { font-size: 12px; color: var(--error, #e53e3e); margin-bottom: 8px; }
 
 /* Estimate Card */
 .estimate-card {

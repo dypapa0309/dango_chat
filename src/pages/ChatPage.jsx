@@ -111,7 +111,7 @@ export default function ChatPage({ user }) {
   }
 
   const handleSend = useCallback(async ({ text, cardEvent, imageBase64 }) => {
-    if (!text.trim() || loading) return
+    if ((!text.trim() && !imageBase64) || loading) return
 
     // Guest limit check — increment before AI call to prevent race across tabs
     if (!user) {

@@ -83,7 +83,7 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
             onLocation?.(data.address)
             setLocStatus('')
           } else {
-            setLocStatus('error')
+            setLocStatus(res.status === 404 ? 'notfound' : 'error')
             setTimeout(() => setLocStatus(''), 4000)
           }
         } catch {
@@ -204,6 +204,9 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
         )}
         {locStatus === 'denied' && (
           <p className="chat-input-hint chat-input-hint--err">위치 권한이 차단되어 있어요. 브라우저 주소창의 자물쇠 아이콘을 눌러 허용해주세요.</p>
+        )}
+        {locStatus === 'notfound' && (
+          <p className="chat-input-hint chat-input-hint--err">현재 위치 주소를 찾지 못했어요. 주소를 직접 입력해주세요.</p>
         )}
         {locStatus === 'error' && (
           <p className="chat-input-hint chat-input-hint--err">위치를 가져오지 못했어요. 잠시 후 다시 시도해주세요.</p>

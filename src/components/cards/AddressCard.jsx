@@ -6,6 +6,7 @@ export default function AddressCard({ data = {}, onSubmit }) {
   const [submitted, setSubmitted] = useState(false)
   const [kakaoReady, setKakaoReady] = useState(!!window.daum?.Postcode)
   const [showEmbed, setShowEmbed] = useState(false)
+  const [locStatus, setLocStatus] = useState('') // '' | 'loading' | 'notfound' | 'error' | 'denied'
   const embedRef = useRef(null)
   const savedAddresses = data.savedAddresses || []
 
@@ -34,6 +35,38 @@ export default function AddressCard({ data = {}, onSubmit }) {
       height: '100%',
     }).embed(embedRef.current, { autoClose: true })
   }, [showEmbed, kakaoReady])
+
+  async function handleCurrentLocation() {
+    if (!navigator.geolocation) {
+      setLocStatus('error')
+      setTimeout(() => setLocStatus(''), 4000)
+      return
+    }
+    setLocStatus('loading')
+    navigator.geolocation.getCurrentPosition(
+      async ({ coords: { latitude: lat, longitude: lng } }) => {
+        try {
+          const res = await fetch(`/.netlify/functions/reverse-geocode?lat=${lat}&lng=${lng}`)
+          const data = await res.json()
+          if (data.address) {
+            setAddress(data.address)
+            setLocStatus('')
+          } else {
+            setLocStatus(res.status === 404 ? 'notfound' : 'error')
+            setTimeout(() => setLocStatus(''), 4000)
+          }
+        } catch {
+          setLocStatus('error')
+          setTimeout(() => setLocStatus(''), 4000)
+        }
+      },
+      (err) => {
+        setLocStatus(err.code === 1 ? 'denied' : 'error')
+        setTimeout(() => setLocStatus(''), 5000)
+      },
+      { timeout: 8000, enableHighAccuracy: false }
+    )
+  }
 
   function handleConfirm() {
     if (!address.trim()) return
@@ -94,6 +127,23 @@ export default function AddressCard({ data = {}, onSubmit }) {
                 </button>
               ))}
             </div>
+          )}
+          <button
+            className="address-card__location-btn"
+            type="button"
+            onClick={handleCurrentLocation}
+            disabled={locStatus === 'loading'}
+          >
+            {locStatus === 'loading' ? '📍 위치 찾는 중...' : '📍 현재 위치 사용'}
+          </button>
+          {locStatus === 'denied' && (
+            <p className="address-card__loc-err">위치 권한이 차단되어 있어요. 브라우저 주소창의 자물쇠 아이콘을 눌러 허용해주세요.</p>
+          )}
+          {locStatus === 'notfound' && (
+            <p className="address-card__loc-err">현재 위치 주소를 찾지 못했어요. 직접 검색해주세요.</p>
+          )}
+          {locStatus === 'error' && (
+            <p className="address-card__loc-err">위치를 가져오지 못했어요. 잠시 후 다시 시도해주세요.</p>
           )}
           <div className="address-card__input-wrap">
             <input

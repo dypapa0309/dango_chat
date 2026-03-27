@@ -17,6 +17,7 @@ export async function handler(event) {
     const data = await res.json()
     const doc = data?.documents?.[0]
     const address = doc?.road_address?.address_name || doc?.address?.address_name || ''
+    if (!address) return fail('주소를 찾지 못했어요', null, 404)
     return ok({ address })
   } catch (e) {
     return fail('역지오코딩 실패', e.message, 500)
