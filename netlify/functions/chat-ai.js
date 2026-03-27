@@ -62,9 +62,19 @@ function buildSystemPrompt(state) {
     return BASE_PROMPT + '\n\n' + SERVICE_SUMMARY + '\n\n' + KNOWLEDGE_BASE
   }
   const svc = SERVICES[service_type]
-  const missing = svc.steps.filter(s => !collected[s.field]).map(s => s.field)
+  const missingSteps = svc.steps.filter(s => !collected[s.field])
+  const missing = missingSteps.map(s => s.field)
+
+  // 각 미수집 step의 card 정의를 GPT에게 주입 → GPT가 카드를 정확히 반환
+  const stepDefs = missingSteps.map(s =>
+    `- field="${s.field}": card=${JSON.stringify(s.card)}`
+  ).join('\n')
+
   const ctx = `## 현재 서비스: ${svc.name}
 ## 아직 수집 안 된 항목: ${missing.length ? missing.join(', ') : '없음 → 즉시 estimate 카드 제시'}
+## 각 field별 카드 정의 (해당 field를 물어볼 때 아래 card JSON을 그대로 사용):
+${stepDefs}
+⚠️ 중요: card가 null인 field는 자유 텍스트 입력이므로 card:null 반환. 나머지 field는 반드시 위 card 정의를 그대로 response의 card 필드에 넣어야 함.
 ${svc.knowledge || ''}`
   return BASE_PROMPT + '\n\n' + ctx + '\n\n' + KNOWLEDGE_BASE
 }
@@ -263,14 +273,14 @@ export async function handler(event) {
     let response
     try {
       response = await openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: 'gpt-4o',
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemContent },
-          ...messages.slice(-6).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
+          ...messages.slice(-10).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.content })),
         ],
-        temperature: 0.7,
-        max_tokens: 600,
+        temperature: 0.5,
+        max_tokens: 1000,
       }, { signal: controller.signal })
     } finally {
       clearTimeout(timeoutId)
