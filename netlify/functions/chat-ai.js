@@ -69,28 +69,6 @@ ${svc.knowledge || ''}`
   return BASE_PROMPT + '\n\n' + ctx + '\n\n' + KNOWLEDGE_BASE
 }
 
-// ── 서비스 타입 정규화 (GPT가 키를 잘못 쓰는 경우 보정) ────────
-const SERVICE_TYPE_ALIASES = {
-  // ac_clean
-  'aircon': 'ac_clean', 'air_clean': 'ac_clean', 'ac': 'ac_clean',
-  'airconditioner': 'ac_clean', 'airconditioner_clean': 'ac_clean',
-  'air_conditioner': 'ac_clean', 'air_conditioner_clean': 'ac_clean',
-  '에어컨': 'ac_clean', '에어컨청소': 'ac_clean',
-  // appliance_clean
-  'appliance': 'appliance_clean', 'home_appliance': 'appliance_clean',
-  '가전': 'appliance_clean', '가전청소': 'appliance_clean',
-  // interior_help
-  'interior_assistant': 'interior_help', 'interiorhelp': 'interior_help',
-  // yongdal
-  'yong_dal': 'yongdal', '용달': 'yongdal',
-}
-
-function normalizeServiceType(raw) {
-  if (!raw) return raw
-  if (SERVICES[raw]) return raw
-  return SERVICE_TYPE_ALIASES[raw] || raw
-}
-
 // ── 수집 완료 여부 체크 ───────────────────────────────────────
 function isCollectionComplete(state) {
   const { service_type, collected = {} } = state || {}
@@ -132,6 +110,7 @@ async function getDistanceKm(startAddr, endAddr, kakaoKey) {
 
 async function calcMoveYongdal(serviceType, collected, kakaoKey) {
   const distKm = await getDistanceKm(collected.start_address, collected.end_address, kakaoKey)
+  if (!Number.isFinite(distKm) || distKm < 0) throw new Error('거리 계산 실패')
   const floorStart = noElevator(collected.elevator_start) ? parseFloor(collected.floor) : 0
   const floorEnd = noElevator(collected.elevator_end) ? parseFloor(collected.floor_end) : 0
   const floorFee = (floorStart + floorEnd) * 5000
@@ -187,7 +166,7 @@ function buildEstimateCard(priceResult, collected, serviceType) {
   }
 }
 
-// ── 카드 이벤트 처리 (GPT 없이) ──────────────────────────────
+// ── 카드 이벤트 처리: state 업데이트 후 GPT로 넘김 ──────────
 async function handleCardEvent(cardEvent, state, kakaoKey) {
   const svc = state.service_type ? SERVICES[state.service_type] : null
   if (!svc) return null
@@ -217,7 +196,7 @@ async function handleCardEvent(cardEvent, state, kakaoKey) {
 
   const newState = { ...state, collected: newCollected, phase: 'collecting' }
 
-  // 수집 완료 체크
+  // 수집 완료 시에만 서버가 직접 estimate 반환
   if (svc.steps.every(s => newCollected[s.field])) {
     try {
       const priceResult = await calcPrice(state.service_type, newCollected, kakaoKey)
@@ -231,15 +210,8 @@ async function handleCardEvent(cardEvent, state, kakaoKey) {
     } catch { /* geocoding 실패 시 GPT fallback */ }
   }
 
-  // 다음 수집 항목
-  const nextStep = svc.steps.find(s => !newCollected[s.field])
-  if (!nextStep) return null
-
-  return ok({
-    message: nextStep.q,
-    card: nextStep.card || null,
-    state: newState,
-  })
+  // 미완료: 업데이트된 state를 body에 반영해 GPT로 넘김
+  return { __updatedState: newState }
 }
 
 // ── 핸들러 ───────────────────────────────────────────────────
@@ -257,32 +229,33 @@ export async function handler(event) {
   if (!apiKey) return fail('OpenAI API key not configured', null, 500)
   const kakaoKey = process.env.KAKAO_MOBILITY_REST_KEY || ''
 
-  // 1. 카드 이벤트: GPT 없이 처리
+  // 1. 카드 이벤트: state 업데이트 후 GPT로 넘김
+  let effectiveState = state
   if (cardEvent) {
     const result = await handleCardEvent(cardEvent, state, kakaoKey)
-    if (result) return result
-    // fallthrough → GPT
+    if (result?.__updatedState) effectiveState = result.__updatedState
+    else if (result) return result  // estimate 카드 직접 반환
   }
 
-  // 2. 이미 수집 완료 상태면 서버가 즉시 estimate 반환
-  if (isCollectionComplete(state) && state.service_type) {
+  // 2. 수집 완료 상태면 서버가 즉시 estimate 반환
+  if (isCollectionComplete(effectiveState) && effectiveState.service_type) {
     try {
-      const priceResult = await calcPrice(state.service_type, state.collected, kakaoKey)
+      const priceResult = await calcPrice(effectiveState.service_type, effectiveState.collected, kakaoKey)
       if (priceResult) {
         return ok({
           message: `예상 견적은 **${priceResult.total.toLocaleString()}원**입니다.`,
-          card: buildEstimateCard(priceResult, state.collected, state.service_type),
-          state: { ...state, phase: 'estimate' },
+          card: buildEstimateCard(priceResult, effectiveState.collected, effectiveState.service_type),
+          state: { ...effectiveState, phase: 'estimate' },
         })
       }
-    } catch { /* fallthrough */ }
+    } catch { /* fallthrough → GPT */ }
   }
 
   if (!Array.isArray(messages)) return fail('messages must be an array', null, 400)
 
   try {
     const openai = new OpenAI({ apiKey })
-    const systemContent = buildSystemPrompt(state) + `\n\n현재 상태:${JSON.stringify(state)}`
+    const systemContent = buildSystemPrompt(effectiveState) + `\n\n현재 상태:${JSON.stringify(effectiveState)}`
 
     const controller = new AbortController()
     const timeoutId = setTimeout(() => controller.abort(), 25000)
@@ -306,13 +279,10 @@ export async function handler(event) {
     const raw = response.choices[0]?.message?.content || '{}'
     let parsed
     try { parsed = JSON.parse(raw) }
-    catch { parsed = { message: raw, card: null, state } }
+    catch { parsed = { message: raw, card: null, state: effectiveState } }
 
     if (!parsed.message) parsed.message = '죄송해요, 다시 시도해주세요.'
-    if (!parsed.state) parsed.state = state
-    if (parsed.state?.service_type) {
-      parsed.state.service_type = normalizeServiceType(parsed.state.service_type)
-    }
+    if (!parsed.state) parsed.state = effectiveState
 
     // 3. GPT 응답 후에도 수집 완료면 서버 estimate로 덮어쓰기
     if (isCollectionComplete(parsed.state) && parsed.state.service_type) {
@@ -323,16 +293,7 @@ export async function handler(event) {
           parsed.state.phase = 'estimate'
           parsed.message = `모든 정보가 준비됐어요! 예상 견적은 **${priceResult.total.toLocaleString()}원**입니다.`
         }
-      } catch { /* geocoding 실패 시 AI estimate 유지 */ }
-    }
-
-    // 4. 수집 중이면 다음 step의 카드를 강제로 삽입 (GPT가 카드를 빠뜨리는 경우 대비)
-    if (!parsed.card && parsed.state?.service_type && !isCollectionComplete(parsed.state)) {
-      const svc = SERVICES[parsed.state.service_type]
-      if (svc) {
-        const nextStep = svc.steps.find(s => !parsed.state.collected?.[s.field])
-        if (nextStep?.card) parsed.card = nextStep.card
-      }
+      } catch { /* geocoding 실패 시 GPT estimate 유지 */ }
     }
 
     if (conversationId) {
