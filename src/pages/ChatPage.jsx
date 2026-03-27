@@ -113,13 +113,14 @@ export default function ChatPage({ user }) {
   const handleSend = useCallback(async ({ text }) => {
     if (!text.trim() || loading) return
 
-    // Guest limit check
+    // Guest limit check — increment before AI call to prevent race across tabs
     if (!user) {
       const count = parseInt(localStorage.getItem('dango_guest_count') || '0', 10)
       if (count >= GUEST_LIMIT) {
         setShowLoginModal(true)
         return
       }
+      localStorage.setItem('dango_guest_count', String(count + 1))
     }
 
     setLoading(true)
@@ -168,9 +169,6 @@ export default function ChatPage({ user }) {
           setSidebarRefreshKey((k) => k + 1)
         }
       } else {
-        // Increment guest count only after a successful AI response
-        const count = parseInt(localStorage.getItem('dango_guest_count') || '0', 10)
-        localStorage.setItem('dango_guest_count', String(count + 1))
         setMessages((prev) => [...prev, {
           id: `ai-${Date.now()}`,
           role: 'assistant',
@@ -204,6 +202,9 @@ export default function ChatPage({ user }) {
         break
       case 'service':
         text = `${data.name} 서비스로 진행할게요`
+        break
+      case 'choice':
+        text = data.text
         break
       case 'estimate_cancel':
         text = '견적을 다시 받고 싶어요'

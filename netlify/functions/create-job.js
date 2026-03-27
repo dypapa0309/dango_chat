@@ -101,17 +101,12 @@ export async function handler(event) {
     let insertPayload = payload;
     let { data, error } = await supabase.from('jobs').insert(insertPayload).select('*').single();
 
-    if (error && /customer_(complete|cancel)_token/i.test(error.message || '')) {
-      const {
-        customer_complete_token,
-        customer_cancel_token,
-        customer_completed_at,
-        customer_completion_note,
-        customer_canceled_at,
-        customer_cancel_note,
-        ...fallbackPayload
-      } = payload;
-      insertPayload = fallbackPayload;
+    if (error && /duplicate|unique|customer_(complete|cancel)_token/i.test(error.message || '')) {
+      insertPayload = {
+        ...payload,
+        customer_complete_token: crypto.randomUUID(),
+        customer_cancel_token: crypto.randomUUID(),
+      };
       ({ data, error } = await supabase.from('jobs').insert(insertPayload).select('*').single());
     }
 

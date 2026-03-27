@@ -474,6 +474,16 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
   border-color:rgba(217,120,70,0.34);
   box-shadow:0 0 0 4px rgba(217,120,70,0.10);
 }
+.is-invalid{
+  border-color:#dc2626 !important;
+  box-shadow:0 0 0 3px rgba(220,38,38,0.12) !important;
+}
+.field-error-msg{
+  display:block;
+  color:#dc2626;
+  font-size:12px;
+  margin-top:5px;
+}
 
 .distance-result{
   margin-top:12px;
@@ -573,7 +583,10 @@ body.wizard-active .dango-estimate-intro .dango-estimate-pills{
 }
 .time-chip{
   position:relative;
-  display:block;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height:44px;
   padding:12px 10px;
   border-radius:16px;
   border:1px solid rgba(17,24,39,0.08);

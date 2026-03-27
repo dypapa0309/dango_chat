@@ -7,12 +7,22 @@
     const wrap = document.querySelector(".date-wrap");
     const input = document.querySelector("#moveDate");
 
+    function triggerDatePicker(inp) {
+      if (!inp) return;
+      inp.focus();
+      if (inp.showPicker) { try { inp.showPicker(); } catch (_) { inp.click(); } }
+      else inp.click();
+    }
+
     if (wrap && input) {
-      wrap.addEventListener("click", () => {
-        input.focus();
-        if (input.showPicker) input.showPicker();
-        else input.click();
-      });
+      wrap.addEventListener("click", () => triggerDatePicker(input));
+      const dateCard = wrap.closest('.card');
+      if (dateCard) {
+        dateCard.addEventListener("click", (e) => {
+          if (e.target.closest('.time-grid, .time-chip, input, label, button, a, select, [data-open-modal]')) return;
+          triggerDatePicker(input);
+        });
+      }
     }
 
     /* =========================================================
@@ -663,10 +673,36 @@ function normalizeItemKey(k) {
       return true;
     }
 
+    function markFieldError(selector, msg) {
+      const el = $(selector);
+      if (!el) return;
+      el.classList.add('is-invalid');
+      if (!el.nextElementSibling?.classList.contains('field-error-msg')) {
+        const span = document.createElement('span');
+        span.className = 'field-error-msg';
+        span.textContent = msg;
+        el.parentNode.insertBefore(span, el.nextSibling);
+      }
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function clearFieldErrors() {
+      $$('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
+      $$('.field-error-msg').forEach((el) => el.remove());
+    }
+
+    document.addEventListener("input", (e) => {
+      if (e.target.classList?.contains('is-invalid')) {
+        e.target.classList.remove('is-invalid');
+        e.target.nextElementSibling?.classList.contains('field-error-msg') && e.target.nextElementSibling.remove();
+      }
+    });
+
     function flashRequiredHint(sec) {
       if (!sec) return;
       sec.classList.add("shake");
       setTimeout(() => sec.classList.remove("shake"), 350);
+      clearFieldErrors();
 
       const token = getStepToken(sec);
       if (token === "service" && !state.activeService) {
@@ -675,13 +711,45 @@ function normalizeItemKey(k) {
       }
       if (state.activeService === SERVICE.MOVE) {
         if (token === 1 && !state.vehicle) showToast("차량을 선택해주세요.", "error");
-        if (token === 2 && (state.distanceKm <= 0 || state.lastDistanceRouteKey !== currentRouteKey())) showToast("주소를 바꿨다면 거리 계산을 다시 눌러주세요.", "error");
-        if (token === 3 && (!state.moveDate || !state.timeSlot)) showToast("날짜와 시간을 선택해주세요.", "error");
+        if (token === 2 && (state.distanceKm <= 0 || state.lastDistanceRouteKey !== currentRouteKey())) {
+          showToast("주소를 바꿨다면 거리 계산을 다시 눌러주세요.", "error");
+          markFieldError('#startAddress', '출발지 주소 확인 후 거리 계산을 눌러주세요.');
+        }
+        if (token === 3 && (!state.moveDate || !state.timeSlot)) {
+          showToast("날짜와 시간을 선택해주세요.", "error");
+          if (!state.moveDate) markFieldError('#moveDate', '날짜를 선택해주세요.');
+          if (!state.timeSlot) {
+            const tg = $('.time-grid');
+            if (tg) {
+              tg.classList.add('is-invalid');
+              if (!tg.nextElementSibling?.classList.contains('field-error-msg')) {
+                const s = document.createElement('span'); s.className = 'field-error-msg'; s.textContent = '시간을 선택해주세요.';
+                tg.parentNode.insertBefore(s, tg.nextSibling);
+              }
+            }
+          }
+        }
         if (token === 6 && state.loadLevel === null) showToast("짐양(박스 기준)을 선택해주세요.", "error");
       }
       if (state.activeService === SERVICE.CLEAN) {
-        if (token === 2 && !state.cleanAddress) showToast("청소 주소를 입력해주세요.", "error");
-        if (token === 3 && (!state.moveDate || !state.timeSlot)) showToast("날짜와 시간을 선택해주세요.", "error");
+        if (token === 2 && !state.cleanAddress) {
+          showToast("청소 주소를 입력해주세요.", "error");
+          markFieldError('#cleanAddress', '청소 주소를 입력해주세요.');
+        }
+        if (token === 3 && (!state.moveDate || !state.timeSlot)) {
+          showToast("날짜와 시간을 선택해주세요.", "error");
+          if (!state.moveDate) markFieldError('#moveDate', '날짜를 선택해주세요.');
+          if (!state.timeSlot) {
+            const tg = $('.time-grid');
+            if (tg) {
+              tg.classList.add('is-invalid');
+              if (!tg.nextElementSibling?.classList.contains('field-error-msg')) {
+                const s = document.createElement('span'); s.className = 'field-error-msg'; s.textContent = '시간을 선택해주세요.';
+                tg.parentNode.insertBefore(s, tg.nextSibling);
+              }
+            }
+          }
+        }
       }
     }
 

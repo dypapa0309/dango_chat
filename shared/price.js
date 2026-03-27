@@ -1,8 +1,8 @@
 export function calculatePrice(input = {}) {
-  const pricingMultiplier = Number(input.pricingMultiplier || 1);
-  const distanceKm = Number(input.distanceKm || 0);
-  const floor = Number(input.floor || 0);
-  const weightKg = Number(input.weightKg || 0);
+  const pricingMultiplier = Math.max(0, Number(input.pricingMultiplier || 1));
+  const distanceKm = Math.max(0, Number(input.distanceKm || 0));
+  const floor = Math.max(0, Number(input.floor || 0));
+  const weightKg = Math.max(0, Number(input.weightKg || 0));
   const options = input.options || {};
   const hasVia = Boolean(input.hasVia);
 

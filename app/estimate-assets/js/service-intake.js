@@ -927,6 +927,47 @@
     };
   }
 
+  function markFieldError(selector, msg) {
+    const el = $(selector);
+    if (!el) return;
+    el.classList.add('is-invalid');
+    if (!el.nextElementSibling?.classList.contains('field-error-msg')) {
+      const span = document.createElement('span');
+      span.className = 'field-error-msg';
+      span.textContent = msg;
+      el.parentNode.insertBefore(span, el.nextSibling);
+    }
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function clearFieldErrors() {
+    $$('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
+    $$('.field-error-msg').forEach((el) => el.remove());
+  }
+
+  function showStepErrors(step) {
+    clearFieldErrors();
+    if (step === 3) {
+      if (!state.moveDate) markFieldError('#moveDate', '날짜를 선택해주세요.');
+      if (!state.timeSlot) {
+        const timeGrid = $('.time-grid');
+        if (timeGrid) {
+          timeGrid.classList.add('is-invalid');
+          if (!timeGrid.nextElementSibling?.classList.contains('field-error-msg')) {
+            const span = document.createElement('span');
+            span.className = 'field-error-msg';
+            span.textContent = '시간을 선택해주세요.';
+            timeGrid.parentNode.insertBefore(span, timeGrid.nextSibling);
+          }
+        }
+      }
+    }
+    if (step === 4) {
+      const addrSel = SERVICE === 'errand' ? '#serviceAddressFrom' : '#serviceAddress';
+      if (!state.address || state.address.length < 5) markFieldError(addrSel, '주소를 입력해주세요.');
+    }
+  }
+
   function validateStep(step) {
     readState();
     if (step === 1) return Boolean(state.category);
@@ -1470,18 +1511,29 @@
     });
   }
 
+  function triggerDatePicker(input) {
+    if (!input) return;
+    input.focus();
+    if (typeof input.showPicker === "function") {
+      try { input.showPicker(); } catch (_) { input.click(); }
+    } else {
+      input.click();
+    }
+  }
+
   function bindDateAndTimeCards() {
     $$(".date-wrap").forEach((wrap) => {
       wrap.addEventListener("click", () => {
-        const input = wrap.querySelector('input[type="date"]');
-        if (!input) return;
-        input.focus();
-        if (typeof input.showPicker === "function") {
-          try { input.showPicker(); } catch (_) { input.click(); }
-        } else {
-          input.click();
-        }
+        triggerDatePicker(wrap.querySelector('input[type="date"]'));
       });
+      // Expand click area to parent card — exclude time chips and other controls
+      const dateCard = wrap.closest('.card');
+      if (dateCard) {
+        dateCard.addEventListener("click", (e) => {
+          if (e.target.closest('.time-grid, .time-chip, input, label, button, a, select, [data-open-modal]')) return;
+          triggerDatePicker(wrap.querySelector('input[type="date"]'));
+        });
+      }
     });
 
     $$(".time-chip").forEach((chip) => {
@@ -1588,17 +1640,31 @@
     $("#wizardPrev")?.addEventListener("click", () => showStep(state.currentStep - 1));
     $("#wizardNext")?.addEventListener("click", () => {
       if (!validateStep(state.currentStep)) {
+        showStepErrors(state.currentStep);
         showToast("현재 단계 입력을 먼저 확인해주세요.", "error");
         return;
       }
+      clearFieldErrors();
       if (state.currentStep === 5) {
         $("#startCheckoutCta")?.click();
         return;
       }
       showStep(state.currentStep + 1);
     });
-    document.addEventListener("input", renderPrice);
-    document.addEventListener("change", renderPrice);
+    document.addEventListener("input", (e) => {
+      if (e.target.classList.contains('is-invalid')) {
+        e.target.classList.remove('is-invalid');
+        e.target.nextElementSibling?.classList.contains('field-error-msg') && e.target.nextElementSibling.remove();
+      }
+      renderPrice();
+    });
+    document.addEventListener("change", (e) => {
+      if (e.target.classList.contains('is-invalid')) {
+        e.target.classList.remove('is-invalid');
+        e.target.nextElementSibling?.classList.contains('field-error-msg') && e.target.nextElementSibling.remove();
+      }
+      renderPrice();
+    });
     $("#confirmCheckoutStart")?.addEventListener("click", startCheckout);
     $("#stickyToggleBtn")?.addEventListener("click", () => {
       const bar = $("#stickyPriceBar");

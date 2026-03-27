@@ -824,6 +824,38 @@ html, body, #root {
   color: var(--muted);
 }
 
+/* Choices card */
+.choices-card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+.choices-card__btn {
+  padding: 10px 16px;
+  min-height: 44px;
+  border: 1.5px solid var(--brand);
+  border-radius: 20px;
+  background: var(--card-bg);
+  color: var(--brand);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background .12s, color .12s;
+}
+.choices-card__btn:hover {
+  background: var(--brand);
+  color: #fff;
+}
+.choices-card--done {
+  display: block;
+}
+.choices-card__selected {
+  font-size: 13px;
+  color: var(--muted);
+}
+
 /* Generic card button */
 .card-btn {
   width: 100%;
