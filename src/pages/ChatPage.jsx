@@ -110,7 +110,7 @@ export default function ChatPage({ user }) {
     await sb.from('conversations').update(update).eq('id', convId)
   }
 
-  const handleSend = useCallback(async ({ text, cardEvent }) => {
+  const handleSend = useCallback(async ({ text, cardEvent, imageBase64 }) => {
     if (!text.trim() || loading) return
 
     // Guest limit check — increment before AI call to prevent race across tabs
@@ -156,6 +156,7 @@ export default function ChatPage({ user }) {
         conversationId: convId,
         cardEvent: cardEvent || undefined,
         userId: user?.id || undefined,
+        imageBase64: imageBase64 || undefined,
       })
 
       const newState = result.state || conversationState
@@ -303,7 +304,11 @@ export default function ChatPage({ user }) {
         </div>
 
         {/* Input */}
-        <ChatInput onSend={handleSend} disabled={loading} />
+        <ChatInput
+          onSend={handleSend}
+          onLocation={(address) => handleCardSubmit('address', { address, label: '현재 위치' })}
+          disabled={loading}
+        />
       </div>
 
       {/* Login modal */}

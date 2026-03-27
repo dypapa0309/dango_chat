@@ -40,7 +40,13 @@ user: "아 잠깐, 에어컨이 스탠드예요"
 
 ### 예시 4 — 서비스 파악
 user: "에어컨 청소하고 싶어요"
-→ collect_info(message="에어컨 청소 도와드릴게요! 어떤 종류의 에어컨인가요?", service_type="ac_clean", updates={})`
+→ collect_info(message="에어컨 청소 도와드릴게요! 어떤 종류의 에어컨인가요?", service_type="ac_clean", updates={})
+
+## 이미지 분석
+사용자가 이미지를 첨부한 경우 이미지에서 서비스 관련 정보를 파악해 updates에 포함하세요.
+- 에어컨 사진 → updates: {"category": "벽걸이"} (벽걸이/스탠드/천장형/창문형 중 판별)
+- 폐기물 사진 → updates: {"items": "식별된 품목"}
+- 이사 짐 사진 → 규모 파악 후 message로 안내`
 
 const KNOWLEDGE_BASE = `
 ## 운영 정보
@@ -458,7 +464,7 @@ export async function handler(event) {
   try { body = JSON.parse(event.body || '{}') }
   catch { return fail('Invalid JSON', null, 400) }
 
-  const { messages = [], state = {}, conversationId, cardEvent, userId } = body
+  const { messages = [], state = {}, conversationId, cardEvent, userId, imageBase64 } = body
   const apiKey = env('OPENAI_API_KEY', '')
   if (!apiKey) return fail('OpenAI API key not configured', null, 500)
   const kakaoKey = process.env.KAKAO_MOBILITY_REST_KEY || ''
@@ -547,14 +553,30 @@ export async function handler(event) {
     async function callGpt(extraInstruction = '') {
       const sysMsg = extraInstruction ? systemContent + '\n\n⚠️ ' + extraInstruction : systemContent
       const historyMsgs = buildMessageHistory(messages)
+
+      // 이미지 첨부 시 마지막 사용자 메시지를 Vision 포맷으로 변환
+      const gptMessages = historyMsgs.map(m => ({
+        role: m.role === 'user' ? 'user' : m.role === 'system' ? 'system' : 'assistant',
+        content: m.content,
+      }))
+      if (imageBase64 && gptMessages.length > 0) {
+        const last = gptMessages[gptMessages.length - 1]
+        if (last.role === 'user') {
+          gptMessages[gptMessages.length - 1] = {
+            role: 'user',
+            content: [
+              { type: 'text', text: last.content || '이 이미지를 분석해주세요' },
+              { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${imageBase64}`, detail: 'low' } },
+            ],
+          }
+        }
+      }
+
       return openai.chat.completions.create({
         model: 'gpt-4o',
         tools: [{ type: 'function', function: COLLECT_FUNCTION }],
         tool_choice: { type: 'function', function: { name: 'collect_info' } },
-        messages: [
-          { role: 'system', content: sysMsg },
-          ...historyMsgs.map(m => ({ role: m.role === 'user' ? 'user' : m.role === 'system' ? 'system' : 'assistant', content: m.content })),
-        ],
+        messages: [{ role: 'system', content: sysMsg }, ...gptMessages],
         temperature: 0.5,
         max_tokens: 500,
       }, { signal: controller.signal })
