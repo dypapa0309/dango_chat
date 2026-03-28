@@ -99,3 +99,36 @@ export async function sendPhoneOtp({ name, phone }) {
 export async function verifyPhoneOtp({ otp }) {
   return authPost('/.netlify/functions/verify-phone-otp', { otp })
 }
+
+export async function createConsultationRoom({ estimate_snapshot }) {
+  return authPost('/.netlify/functions/consultation-create', { estimate_snapshot })
+}
+
+export async function fetchConsultationMessages(roomId) {
+  const token = await getAccessToken()
+  const res = await fetch(`/.netlify/functions/consultation-messages?room_id=${roomId}`, {
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(json.error || '조회 실패')
+  return json
+}
+
+export async function sendConsultationMessage({ roomId, content }) {
+  return authPost('/.netlify/functions/consultation-send', { room_id: roomId, content })
+}
+
+export async function fetchAdminConsultationList(status) {
+  const token = await getAccessToken()
+  const qs = status ? `?status=${status}` : ''
+  const res = await fetch(`/.netlify/functions/consultation-list${qs}`, {
+    headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+  })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) throw new Error(json.error || '조회 실패')
+  return json
+}
+
+export async function updateConsultationStatus({ roomId, status }) {
+  return authPost('/.netlify/functions/consultation-status', { room_id: roomId, status })
+}

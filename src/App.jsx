@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { initSupabase, getSupabase } from './lib/supabase.js'
 import LoginPage from './pages/LoginPage.jsx'
 import ChatPage from './pages/ChatPage.jsx'
+import ConsultationPage from './pages/ConsultationPage.jsx'
+import AdminPage from './pages/AdminPage.jsx'
 
 export default function App() {
   const [ready, setReady] = useState(false)
@@ -64,6 +66,8 @@ export default function App() {
         element={user ? <Navigate to="/" replace /> : <LoginPage />}
       />
       <Route path="/chat/:id" element={<ChatPage user={user} />} />
+      <Route path="/consultation/:roomId" element={<ConsultationPage user={user} />} />
+      <Route path="/admin" element={<AdminPage user={user} />} />
       <Route path="/" element={<ChatPage user={user} />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

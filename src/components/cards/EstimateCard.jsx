@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
-import { createJob, getRoutePrice } from '../../lib/api.js'
+import { useNavigate } from 'react-router-dom'
+import { createJob, getRoutePrice, createConsultationRoom } from '../../lib/api.js'
 import { getServiceName } from '../../lib/services.js'
 import PhoneVerifyModal from '../PhoneVerifyModal.jsx'
 
@@ -10,6 +11,7 @@ function fmt(n) {
 const DISTANCE_SERVICES = ['move', 'yongdal']
 
 export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
+  const navigate = useNavigate()
   const [paying, setPaying] = useState(false)
   const [submitted, setSubmitted] = useState(false)
   const [error, setError] = useState('')
@@ -17,6 +19,7 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
   const [routeLoading, setRouteLoading] = useState(false)
   const [showVerifyModal, setShowVerifyModal] = useState(false)
   const [verifiedInfo, setVerifiedInfo] = useState(null)
+  const [consultLoading, setConsultLoading] = useState(false)
 
   const {
     service_type,
@@ -197,6 +200,25 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
       </button>
       <button className="card-btn card-btn--ghost" onClick={() => onSubmit?.('estimate_cancel', {})}>
         다시 견적 받기
+      </button>
+
+      <button
+        className="card-btn card-btn--consult"
+        disabled={consultLoading}
+        onClick={async () => {
+          if (!user) { onLogin?.(); return }
+          setConsultLoading(true)
+          try {
+            const { room } = await createConsultationRoom({ estimate_snapshot: data })
+            navigate(`/consultation/${room.id}`)
+          } catch (e) {
+            setError(e.message || '상담 요청 실패')
+          } finally {
+            setConsultLoading(false)
+          }
+        }}
+      >
+        {consultLoading ? '연결 중...' : '위 견적으로 상담원과 상담하기'}
       </button>
 
       {showVerifyModal && (
