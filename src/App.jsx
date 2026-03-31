@@ -19,14 +19,14 @@ export default function App() {
 
         if (!cfg) {
           // 캐시 없음 → config 직접 fetch
-          const res = await fetch('/.netlify/functions/config')
+          const res = await fetch('https://dang-o.com/.netlify/functions/config')
           const json = await res.json()
           if (!json.supabaseUrl) throw new Error('Supabase config unavailable')
           cfg = json
           localStorage.setItem('dango_cfg', JSON.stringify({ supabaseUrl: cfg.supabaseUrl, supabaseAnonKey: cfg.supabaseAnonKey }))
         } else {
           // 캐시 있음 → 백그라운드에서 갱신
-          fetch('/.netlify/functions/config')
+          fetch('https://dang-o.com/.netlify/functions/config')
             .then(r => r.json())
             .then(json => {
               if (json.supabaseUrl) localStorage.setItem('dango_cfg', JSON.stringify({ supabaseUrl: json.supabaseUrl, supabaseAnonKey: json.supabaseAnonKey }))

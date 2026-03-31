@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 결제 실패</title>
+  <meta name="description" content="당고 결제가 완료되지 않았을 때 다시 확인하는 페이지입니다." />
+  <meta name="robots" content="noindex, nofollow" />
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PZCBT88P');
+  </script>
+  <style>
+    body {
+      margin: 0;
+      font-family: "SUIT", Arial, sans-serif;
+      padding: 24px;
+      background: linear-gradient(180deg, #f8e6c3, #f7f3ec);
+      color: #20170f;
+    }
+    .card {
+      max-width: 640px;
+      margin: 0 auto;
+      background: #fffaf3;
+      padding: 28px;
+      border-radius: 24px;
+      box-shadow: 0 24px 60px rgba(77, 45, 13, 0.12);
+      border: 1px solid rgba(70, 50, 31, 0.12);
+    }
+    code {
+      background: #fff;
+      padding: 2px 6px;
+      border-radius: 6px;
+    }
+    a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 48px;
+      padding: 0 18px;
+      border-radius: 14px;
+      background: #ed6b2f;
+      color: #fff;
+      text-decoration: none;
+      font-weight: 700;
+      margin-top: 18px;
+    }
+    .topnav {
+      max-width: 640px;
+      margin: 0 auto 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .topnav a {
+      flex: 1;
+      min-width: 120px;
+      min-height: 46px;
+      border-radius: 14px;
+      background: rgba(255, 250, 243, 0.92);
+      border: 1px solid rgba(70, 50, 31, 0.12);
+      color: #20170f;
+      text-decoration: none;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 0;
+    }
+  </style>
+</head>
+<body data-analytics-page="customer_fail">
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PZCBT88P" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <nav class="topnav" aria-label="고객 이동 메뉴">
+    <a href="/">홈화면</a>
+    <a href="/estimate/">소형이사</a>
+    <a href="/ddclean/">입주청소</a>
+    <a href="/yd/">용달</a>
+    <a href="/customer/lookup.html">주문조회</a>
+  </nav>
+<div class="card">
+  <h1>결제가 끝나지 않았어요.</h1>
+  <p id="msg">다시 시도해주세요.</p>
+  <a href="/">당고로 돌아가기</a>
+</div>
+<script>
+const TOSS_ERROR_MSG = {
+  PAY_PROCESS_CANCELED: '결제를 취소했어요.',
+  CARD_DECLINED: '카드사에서 결제를 거절했어요. 카드 잔액이나 한도를 확인해주세요.',
+  INSUFFICIENT_BALANCE: '카드 잔액이 부족해요.',
+  EXCEED_MAX_DAILY_PAYMENT_COUNT: '일일 결제 한도를 초과했어요.',
+  EXCEED_MAX_AMOUNT: '결제 한도 금액을 초과했어요.',
+  CARD_EXPIRED: '카드 유효기간이 만료됐어요. 다른 카드로 시도해주세요.',
+  CARD_PASSWORD_WRONG: '카드 비밀번호가 틀렸어요.',
+  CARD_NUMBER_WRONG: '카드 번호를 확인해주세요.',
+  INVALID_CVC: 'CVC 번호가 맞지 않아요.',
+  NOT_SUPPORTED_CARD_TYPE: '지원하지 않는 카드예요.',
+  REJECT_ACCOUNT_PAYMENT: '계좌 결제가 거절됐어요.',
+  REJECT_CARD_COMPANY: '카드사에서 거절했어요. 카드사로 문의해주세요.',
+  FORBIDDEN_CONSECUTIVE_FAIL: '연속 결제 실패로 잠시 잠겼어요. 잠시 후 다시 시도해주세요.',
+  INVALID_PASSWORD: '비밀번호가 틀렸어요.',
+  UNAPPROVED_ORDER_ID: '처리할 수 없는 주문이에요.',
+  ALREADY_PROCESSED_PAYMENT: '이미 처리된 결제예요.',
+  NO_SUCH_BILLING_KEY: '결제 정보를 찾을 수 없어요.',
+  UNAUTHORIZED_KEY: '결제 처리에 문제가 발생했어요. 고객센터(010-4094-1666)로 연락해주세요.',
+};
+const qs = new URLSearchParams(location.search);
+const code = qs.get('code');
+const message = qs.get('message');
+if (code || message) {
+  const friendly = TOSS_ERROR_MSG[code];
+  const msgEl = document.getElementById('msg');
+  if (friendly) {
+    msgEl.textContent = friendly;
+  } else {
+    msgEl.textContent = message || '결제 중 문제가 생겼어요. 잠시 후 다시 시도해주세요.';
+  }
+}
+</script>
+<script src="../assets/js/contact-fab.js"></script>
+<script src="../assets/js/meta-pixel.js"></script>
+<script src="../assets/js/site-analytics.js"></script>
+</body>
+</html>

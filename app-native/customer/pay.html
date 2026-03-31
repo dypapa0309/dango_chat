@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 결제</title>
+  <meta name="description" content="당고 결제 페이지입니다. 견적 금액을 카드로 결제하고 일정을 확정하세요." />
+  <meta name="robots" content="noindex, nofollow" />
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PZCBT88P');
+  </script>
+  <script src="https://js.tosspayments.com/v1"></script>
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --card: #fffaf3;
+      --line: rgba(70, 50, 31, 0.12);
+      --text: #20170f;
+      --muted: #6e6255;
+      --brand: #ed6b2f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SUIT", Arial, sans-serif;
+      background: linear-gradient(180deg, #f8e6c3, #f7f3ec);
+      color: var(--text);
+      padding: 20px 16px;
+    }
+    .topnav {
+      max-width: 640px;
+      margin: 0 auto 14px;
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .topnav a {
+      min-height: 44px;
+      border-radius: 12px;
+      background: rgba(255, 250, 243, 0.92);
+      border: 1px solid var(--line);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .card {
+      max-width: 640px;
+      margin: 0 auto;
+      background: var(--card);
+      padding: 24px 20px;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      box-shadow: 0 20px 48px rgba(77, 45, 13, 0.10);
+    }
+    .eyebrow { margin: 0 0 8px; color: #bc4d16; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+    h1 { margin: 0 0 10px; font-size: 26px; line-height: 1.25; }
+    .muted { margin: 0 0 4px; color: var(--muted); font-size: 14px; line-height: 1.7; }
+    .summary {
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+    .summary strong { display: block; margin-bottom: 10px; font-size: 15px; line-height: 1.5; word-break: keep-all; }
+    .line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--line);
+      font-size: 14px;
+      color: var(--muted);
+    }
+    .line:last-of-type { border-bottom: 0; }
+    .line .price-val { font-weight: 700; color: var(--text); font-size: 16px; }
+    .line.total-line { color: var(--text); }
+    .line.total-line .label { font-weight: 700; }
+    .line.total-line .price-val { color: var(--brand); font-size: 20px; }
+    .pay-note {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(237,107,47,0.07);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .pay-note b { color: var(--brand); }
+    .btn-primary {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 54px;
+      margin-top: 16px;
+      padding: 0 16px;
+      border: 0;
+      border-radius: 14px;
+      font: inherit;
+      font-weight: 700;
+      font-size: 16px;
+      cursor: pointer;
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(237, 107, 47, 0.22);
+      text-decoration: none;
+    }
+    .btn-primary:disabled { opacity: .5; cursor: default; }
+    .ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      min-height: 48px;
+      margin-top: 10px;
+      padding: 0 16px;
+      background: #fff;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      text-decoration: none;
+      font: inherit;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    .refund-policy {
+      margin-top: 20px;
+      padding: 16px 18px;
+      border-radius: 14px;
+      background: #fff;
+      border: 1px solid var(--line);
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.8;
+    }
+    .refund-policy strong {
+      display: block;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .refund-policy ul {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .refund-policy li { margin-bottom: 4px; }
+    .err-banner {
+      margin-top: 16px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: #fff0f0;
+      border: 1px solid #fccaca;
+      color: #c0392b;
+      font-size: 14px;
+      font-weight: 600;
+      display: none;
+    }
+
+    @media (max-width: 480px) {
+      .topnav { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+      .topnav a { font-size: 12px; min-height: 40px; border-radius: 10px; padding: 0 2px; }
+      h1 { font-size: 22px; }
+    }
+  </style>
+</head>
+<body data-analytics-page="customer_pay">
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PZCBT88P" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <nav class="topnav" aria-label="고객 이동 메뉴">
+    <a href="/">홈화면</a>
+    <a href="/estimate/">소형이사</a>
+    <a href="/ddclean/">입주청소</a>
+    <a href="/yd/">용달</a>
+    <a href="/customer/lookup.html">주문조회</a>
+  </nav>
+  <div class="card">
+    <p class="eyebrow">DANG-O PAYMENT</p>
+    <h1>카드 결제로<br />일정을 확정하세요.</h1>
+    <p class="muted">결제 완료 후 전문가 배차가 시작돼요.</p>
+
+    <div id="summaryCard" class="summary">
+      <strong id="summary">불러오는 중...</strong>
+      <div class="line total-line">
+        <span class="label">결제 금액</span>
+        <span class="price-val" id="totalPrice">-</span>
+      </div>
+    </div>
+
+    <div class="pay-note">
+      ✔ <b>카드 결제</b> 완료 시 일정이 확정됩니다.<br />
+      ✔ 결제 확인 후 전문가 정보와 연락처를 안내드립니다.<br />
+      ✔ 서비스 완료 후 전문가에게 직접 정산됩니다.
+    </div>
+
+    <div id="errBanner" class="err-banner"></div>
+    <button id="btnPayFull" class="btn-primary" disabled>카드로 결제하기</button>
+    <a class="ghost" href="/">처음으로 돌아가기</a>
+
+    <div class="refund-policy">
+      <strong>취소 및 환불 규정</strong>
+      <ul>
+        <li>서비스 시작 <b>24시간 전</b>까지: 전액 환불</li>
+        <li>서비스 시작 <b>24시간 이내 ~ 2시간 전</b>: 50% 환불</li>
+        <li>서비스 시작 <b>2시간 이내</b> 또는 당일 취소: 환불 불가</li>
+        <li>전문가 배정 후 고객 사정으로 인한 취소 시 위약금이 발생할 수 있습니다.</li>
+        <li>환불 문의: <a href="mailto:help@dang-o.com" style="color:var(--brand);">help@dang-o.com</a></li>
+      </ul>
+      <p style="margin-top:10px; margin-bottom:0;">
+        <a href="/terms/" style="color:var(--brand); font-size:12px;">서비스 이용약관</a>
+        &nbsp;·&nbsp;
+        <a href="/privacy/" style="color:var(--brand); font-size:12px;">개인정보 처리방침</a>
+      </p>
+    </div>
+  </div>
+
+  <script>
+    let job = null;
+    let clientKey = '';
+
+    const qs = new URLSearchParams(location.search);
+    const jobId = qs.get('jobId');
+    const draftId = qs.get('draftId');
+    const isDemo = qs.get('demo') === '1';
+
+    const money = (value) => `${Number(value || 0).toLocaleString()}원`;
+
+    function showError(msg) {
+      const el = document.getElementById('errBanner');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    function getDraft() {
+      if (!draftId) return null;
+      const raw = localStorage.getItem(`dango:${draftId}`);
+      if (!raw) return null;
+      try {
+        const parsed = JSON.parse(raw);
+        const savedAt = parsed?.savedAt ? new Date(parsed.savedAt).getTime() : null;
+        if (savedAt && Date.now() - savedAt > 7 * 24 * 60 * 60 * 1000) {
+          localStorage.removeItem(`dango:${draftId}`);
+          return null;
+        }
+        return parsed;
+      } catch {
+        return null;
+      }
+    }
+
+    async function loadJob() {
+      if (isDemo) {
+        return {
+          id: 'DEMO-ORDER-001',
+          service_type: 'move',
+          customer_name: '홍길동',
+          start_address: '서울시 강남구 테헤란로 123',
+          end_address: '서울시 마포구 합정동 456',
+          move_date: '2026-04-01',
+          total_price: 150000,
+        };
+      }
+      if (jobId) {
+        const detailRes = await fetch(`/.netlify/functions/get-job-public?jobId=${encodeURIComponent(jobId)}`);
+        const detailJson = await detailRes.json();
+        if (!detailJson.success) throw new Error(detailJson.error || '주문을 찾을 수 없어요.');
+        return detailJson.job;
+      }
+      const draft = getDraft();
+      if (!draft) throw new Error('주문 정보가 없어요.');
+      return draft;
+    }
+
+    async function load() {
+      try {
+        job = await loadJob();
+        const SERVICE_LABEL = {
+          move: '소형이사', clean: '입주청소', yd: '용달', waste: '폐기물',
+          install: '설치', errand: '심부름', organize: '정리수납', ac_clean: '에어컨청소',
+          appliance_clean: '가전청소', interior: '인테리어', interior_help: '인테리어 보조',
+          pt: 'PT', vocal: '보컬', golf: '골프', tutor: '과외', counseling: '심리상담',
+          marketing: '마케팅'
+        };
+        const serviceText = SERVICE_LABEL[job.service_type] || '';
+        const addrText = job.end_address
+          ? `${job.start_address || '-'} → ${job.end_address}`
+          : (job.start_address || '-');
+        const dateText = job.move_date ? ` / ${job.move_date}` : '';
+        const servicePrefix = serviceText ? `[${serviceText}] ` : '';
+        document.getElementById('summary').textContent = `${servicePrefix}${job.customer_name || '-'} / ${addrText}${dateText}`;
+
+        const total = Number(job.total_price || 0);
+        document.getElementById('totalPrice').textContent = money(total);
+
+        try {
+          const cfg = await fetch('/.netlify/functions/config').then((res) => res.json());
+          clientKey = cfg?.tossClientKey || '';
+        } catch {}
+
+        if (!clientKey) {
+          showError('결제 설정을 불러오지 못했어요. 잠시 후 다시 시도하거나 고객센터로 문의해주세요.');
+          return;
+        }
+
+        document.getElementById('btnPayFull').disabled = false;
+
+      } catch (error) {
+        document.getElementById('summary').textContent = error.message || '주문 정보를 불러오지 못했어요.';
+      }
+    }
+
+    document.getElementById('btnPayFull').onclick = async () => {
+      if (!job || !clientKey) return;
+      const btn = document.getElementById('btnPayFull');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = '결제창을 여는 중...';
+      try {
+        const successUrl = new URL(`${location.origin}/customer/success.html`);
+        const failUrl = new URL(`${location.origin}/customer/fail.html`);
+        if (jobId) { successUrl.searchParams.set('jobId', job.id); failUrl.searchParams.set('jobId', job.id); }
+        if (draftId) { successUrl.searchParams.set('draftId', draftId); failUrl.searchParams.set('draftId', draftId); }
+        if (isDemo) { successUrl.searchParams.set('demo', '1'); failUrl.searchParams.set('demo', '1'); }
+        successUrl.searchParams.set('amount', String(Number(job.total_price || 0)));
+        const toss = TossPayments(clientKey);
+        await toss.requestPayment('카드', {
+          amount: Number(job.total_price || 0),
+          orderId: job.id,
+          orderName: '당고 결제',
+          customerName: job.customer_name || '고객',
+          successUrl: successUrl.toString(),
+          failUrl: failUrl.toString()
+        });
+      } catch (err) {
+        showError(err.message || '결제 중 오류가 발생했어요.');
+      } finally {
+        btn.disabled = false;
+        btn.textContent = originalText;
+      }
+    };
+
+    load();
+  </script>
+  <script src="../assets/js/contact-fab.js"></script>
+  <script src="../assets/js/meta-pixel.js"></script>
+  <script src="../assets/js/site-analytics.js"></script>
+</body>
+</html>

@@ -3,6 +3,8 @@
  */
 import { getSupabase } from './supabase.js'
 
+const BASE_URL = 'https://dang-o.com'
+
 async function getAccessToken() {
   try {
     const { data } = await getSupabase().auth.getSession()
@@ -13,7 +15,7 @@ async function getAccessToken() {
 }
 
 export async function sendChatMessage({ messages, state, conversationId, cardEvent, userId, imageBase64 }) {
-  const res = await fetch('/.netlify/functions/chat-ai', {
+  const res = await fetch(`${BASE_URL}/.netlify/functions/chat-ai`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -33,7 +35,7 @@ export async function sendChatMessage({ messages, state, conversationId, cardEve
 }
 
 export async function calculatePrice(params) {
-  const res = await fetch('/.netlify/functions/calculate-price', {
+  const res = await fetch(`${BASE_URL}/.netlify/functions/calculate-price`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(params),
@@ -47,7 +49,7 @@ export async function createJob(payload) {
   const headers = { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
-  const res = await fetch('/.netlify/functions/create-job', {
+  const res = await fetch(`${BASE_URL}/.netlify/functions/create-job`, {
     method: 'POST',
     headers,
     body: JSON.stringify(payload),
@@ -66,13 +68,13 @@ export async function getRoutePrice({ start, end, floor = 0, helper = false }) {
     floor: String(floor || 0),
     helper: helper ? '1' : '0',
   })
-  const res = await fetch(`/.netlify/functions/get-route-price?${params}`)
+  const res = await fetch(`${BASE_URL}/.netlify/functions/get-route-price?${params}`)
   if (!res.ok) throw new Error('거리 계산 실패')
   return res.json()
 }
 
 export async function fetchConfig() {
-  const res = await fetch('/.netlify/functions/config')
+  const res = await fetch(`${BASE_URL}/.netlify/functions/config`)
   if (!res.ok) throw new Error('config 로드 실패')
   return res.json()
 }
@@ -93,20 +95,20 @@ async function authPost(path, body) {
 }
 
 export async function sendPhoneOtp({ name, phone }) {
-  return authPost('/.netlify/functions/send-phone-otp', { name, phone })
+  return authPost(`${BASE_URL}/.netlify/functions/send-phone-otp`, { name, phone })
 }
 
 export async function verifyPhoneOtp({ otp }) {
-  return authPost('/.netlify/functions/verify-phone-otp', { otp })
+  return authPost(`${BASE_URL}/.netlify/functions/verify-phone-otp`, { otp })
 }
 
 export async function createConsultationRoom({ estimate_snapshot }) {
-  return authPost('/.netlify/functions/consultation-create', { estimate_snapshot })
+  return authPost(`${BASE_URL}/.netlify/functions/consultation-create`, { estimate_snapshot })
 }
 
 export async function fetchConsultationMessages(roomId) {
   const token = await getAccessToken()
-  const res = await fetch(`/.netlify/functions/consultation-messages?room_id=${roomId}`, {
+  const res = await fetch(`${BASE_URL}/.netlify/functions/consultation-messages?room_id=${roomId}`, {
     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
   })
   const json = await res.json().catch(() => ({}))
@@ -115,13 +117,13 @@ export async function fetchConsultationMessages(roomId) {
 }
 
 export async function sendConsultationMessage({ roomId, content }) {
-  return authPost('/.netlify/functions/consultation-send', { room_id: roomId, content })
+  return authPost(`${BASE_URL}/.netlify/functions/consultation-send`, { room_id: roomId, content })
 }
 
 export async function fetchAdminConsultationList(status) {
   const token = await getAccessToken()
   const qs = status ? `?status=${status}` : ''
-  const res = await fetch(`/.netlify/functions/consultation-list${qs}`, {
+  const res = await fetch(`${BASE_URL}/.netlify/functions/consultation-list${qs}`, {
     headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
   })
   const json = await res.json().catch(() => ({}))
@@ -130,5 +132,5 @@ export async function fetchAdminConsultationList(status) {
 }
 
 export async function updateConsultationStatus({ roomId, status }) {
-  return authPost('/.netlify/functions/consultation-status', { room_id: roomId, status })
+  return authPost(`${BASE_URL}/.netlify/functions/consultation-status`, { room_id: roomId, status })
 }

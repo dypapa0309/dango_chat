@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 운영툴</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-admin-page="orders">
+  <section id="adminGate" class="admin-gate">
+    <form id="adminGateForm" class="admin-gate-card">
+      <p class="admin-eyebrow">DANG-O ADMIN</p>
+      <h1>운영 비밀번호를 입력해주세요.</h1>
+      <p class="muted">운영툴은 비밀번호가 있어야 열려요.</p>
+      <input id="adminTokenInput" type="password" placeholder="운영 비밀번호" autocomplete="current-password" />
+      <button class="btn primary" type="submit">운영툴 열기</button>
+      <p id="adminGateMessage" class="muted"></p>
+    </form>
+  </section>
+
+  <div id="adminApp" hidden>
+    <header class="topbar">
+      <div>
+        <h1>당고 운영툴</h1>
+        <p>주문 운영 화면입니다.</p>
+        <p class="topbar-note">자동 재배차는 `reassign_needed` 상태 주문만 다시 기사에게 돌리는 기능이에요.</p>
+      </div>
+      <div class="actions-inline">
+        <button id="btnAutoDispatch" class="btn">자동 재배차 실행</button>
+        <button id="btnRefresh" class="btn">새로고침</button>
+        <button id="btnLogout" class="btn">로그아웃</button>
+      </div>
+    </header>
+
+    <nav class="admin-nav">
+      <a class="admin-link is-active" href="/admin/">주문 운영</a>
+      <a class="admin-link" href="/admin/drivers.html">전문가 관리</a>
+      <a class="admin-link" href="/admin/finance.html">정산 · 가격</a>
+      <a class="admin-link" href="/admin/cs.html">CS · 분쟁</a>
+    </nav>
+
+    <section class="filters">
+      <button class="filter active" data-status="all">전체</button>
+      <button class="filter" data-status="deposit_pending">결제대기</button>
+      <button class="filter" data-status="confirmed">확정</button>
+      <button class="filter" data-status="assigned">배차완료</button>
+      <button class="filter" data-status="completed">완료</button>
+    </section>
+
+    <main class="layout admin-page">
+      <section class="panel panel-wide">
+        <div class="panel-head"><h2>주문 목록</h2><span id="jobCount">0건</span></div>
+        <div id="jobList" class="job-list"></div>
+        <div id="jobPagination" hidden style="display:flex;align-items:center;justify-content:center;padding:16px 0;gap:8px;"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>문자 주문서 등록</h2><span>수동 접수용</span></div>
+        <form id="manualOrderForm" class="manual-order-form">
+          <div class="manual-grid">
+            <input id="manualCustomerName" name="customer_name" placeholder="고객명" required />
+            <input id="manualCustomerPhone" name="customer_phone" placeholder="연락처" required />
+            <select id="manualServiceType" name="service_type">
+              <option value="move">이사</option>
+              <option value="clean">청소</option>
+              <option value="yd">용달</option>
+              <option value="waste">폐기물</option>
+              <option value="install">설치</option>
+              <option value="errand">심부름</option>
+              <option value="organize">정리수납</option>
+              <option value="ac_clean">에어컨청소</option>
+              <option value="appliance_clean">가전청소</option>
+              <option value="interior">인테리어</option>
+              <option value="interior_help">인테리어 보조</option>
+              <option value="pt">PT</option>
+              <option value="vocal">보컬</option>
+              <option value="golf">골프</option>
+              <option value="tutor">과외</option>
+              <option value="counseling">심리상담</option>
+            </select>
+          </div>
+          <textarea id="manualOrderText" name="raw_text" placeholder="문자나 카톡으로 받은 주문서를 그대로 붙여넣어주세요." required></textarea>
+          <div class="driver-actions">
+            <button id="btnParseManualOrder" class="btn" type="button">주문서 파싱</button>
+            <button id="btnCreateManualOrder" class="btn primary" type="submit" disabled>주문 생성</button>
+            <button id="btnCopyManualPayLink" class="btn" type="button" disabled>결제 링크 복사</button>
+          </div>
+        </form>
+        <div id="manualOrderStatus" class="muted">문자 주문서를 붙여넣으면 같은 주문 흐름으로 등록할 수 있어요.</div>
+        <div id="manualOrderPreview" class="manual-preview muted">아직 파싱한 주문서가 없어요.</div>
+      </section>
+      <section class="panel">
+        <div class="panel-head"><h2>배차 가능 기사</h2><span id="eligibleDriverCount">0명</span></div>
+        <div id="eligibleDriverSummary" class="mini-card muted">기사를 불러오고 있어요.</div>
+        <div id="eligibleDriverList" class="stack-list compact"></div>
+      </section>
+    </main>
+
+    <dialog id="detailDialog">
+      <div class="dialog-head">
+        <h3>주문 상세</h3>
+        <button id="btnCloseDialog" class="btn">닫기</button>
+      </div>
+      <div id="detailBody"></div>
+    </dialog>
+
+    <dialog id="driverDetailDialog">
+      <div class="dialog-head">
+        <h3>기사 요약</h3>
+        <button id="btnCloseDriverDialog" class="btn">닫기</button>
+      </div>
+      <div id="driverDetailBody"></div>
+    </dialog>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase.js"></script>
+  <script src="../assets/js/contact-fab.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

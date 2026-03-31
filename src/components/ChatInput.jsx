@@ -77,7 +77,7 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
     navigator.geolocation.getCurrentPosition(
       async ({ coords: { latitude: lat, longitude: lng } }) => {
         try {
-          const res = await fetch(`/.netlify/functions/reverse-geocode?lat=${lat}&lng=${lng}`)
+          const res = await fetch(`https://dang-o.com/.netlify/functions/reverse-geocode?lat=${lat}&lng=${lng}`)
           const data = await res.json()
           if (data.address) {
             onLocation?.(data.address)
@@ -211,7 +211,7 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
         {locStatus === 'error' && (
           <p className="chat-input-hint chat-input-hint--err">위치를 가져오지 못했어요. 잠시 후 다시 시도해주세요.</p>
         )}
-        {!locStatus && <p className="chat-input-hint">Enter로 전송 · Shift+Enter로 줄바꿈</p>}
+        {!locStatus && <p className="chat-input-hint chat-input-hint--desktop">Enter로 전송 · Shift+Enter로 줄바꿈</p>}
       </div>
     </div>
   )

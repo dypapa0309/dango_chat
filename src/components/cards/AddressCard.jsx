@@ -46,7 +46,7 @@ export default function AddressCard({ data = {}, onSubmit }) {
     navigator.geolocation.getCurrentPosition(
       async ({ coords: { latitude: lat, longitude: lng } }) => {
         try {
-          const res = await fetch(`/.netlify/functions/reverse-geocode?lat=${lat}&lng=${lng}`)
+          const res = await fetch(`https://dang-o.com/.netlify/functions/reverse-geocode?lat=${lat}&lng=${lng}`)
           const data = await res.json()
           if (data.address) {
             setAddress(data.address)
@@ -82,7 +82,7 @@ export default function AddressCard({ data = {}, onSubmit }) {
     return (
       <div className="card">
         <p style={{ fontSize: 14, color: 'var(--muted)' }}>
-          ✅ {address}{detail ? ` ${detail}` : ''} 입력 완료
+          입력 완료: {address}{detail ? ` ${detail}` : ''}
         </p>
       </div>
     )
@@ -90,7 +90,7 @@ export default function AddressCard({ data = {}, onSubmit }) {
 
   return (
     <div className="card">
-      <p className="card__title">📍 {data.label || '주소'} 입력</p>
+      <p className="card__title">{data.label || '주소'} 입력</p>
 
       {showEmbed ? (
         <div className="address-card__embed-wrap">
@@ -123,7 +123,7 @@ export default function AddressCard({ data = {}, onSubmit }) {
                     })
                   }}
                 >
-                  📍 {saved.address}{saved.detail ? ` ${saved.detail}` : ''}
+                  {saved.address}{saved.detail ? ` ${saved.detail}` : ''}
                 </button>
               ))}
             </div>
@@ -134,7 +134,7 @@ export default function AddressCard({ data = {}, onSubmit }) {
             onClick={handleCurrentLocation}
             disabled={locStatus === 'loading'}
           >
-            {locStatus === 'loading' ? '📍 위치 찾는 중...' : '📍 현재 위치 사용'}
+            {locStatus === 'loading' ? '위치 찾는 중...' : '현재 위치 사용'}
           </button>
           {locStatus === 'denied' && (
             <p className="address-card__loc-err">위치 권한이 차단되어 있어요. 브라우저 주소창의 자물쇠 아이콘을 눌러 허용해주세요.</p>

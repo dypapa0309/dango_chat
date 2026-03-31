@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 전문가 채팅</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --brand:#ed6b2f; --card:#fffaf3; --line:rgba(70,50,31,.12); --text:#20170f; --muted:#6e6255; }
+    * { box-sizing:border-box; }
+    body { margin:0; font-family:"SUIT",Arial,sans-serif; background:linear-gradient(180deg,#f8e6c3,#f7f3ec); color:var(--text); padding:24px; min-height:100vh; }
+    .topnav { max-width:720px; margin:0 auto 14px; display:flex; flex-wrap:wrap; gap:10px; }
+    .topnav a { flex:1; min-width:120px; min-height:46px; border-radius:14px; background:rgba(255,250,243,.92); border:1px solid var(--line); color:var(--text); text-decoration:none; font-weight:700; display:inline-flex; align-items:center; justify-content:center; }
+    .card { max-width:720px; margin:0 auto; background:var(--card); border-radius:24px; padding:28px; box-shadow:0 24px 60px rgba(77,45,13,.12); border:1px solid var(--line); }
+    h1 { margin:0 0 4px; font-size:22px; }
+    .sub { color:var(--muted); font-size:14px; margin:0 0 20px; }
+    .chat-wrap { border:1px solid #e5e7eb; border-radius:16px; overflow:hidden; background:#fff; }
+    #chatMessages { height:360px; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; background:#f8fafc; }
+    .chat-input-row { display:flex; gap:8px; padding:12px; border-top:1px solid #e5e7eb; background:#fff; }
+    .chat-input-row input { flex:1; min-height:44px; border-radius:10px; border:1px solid #e5e7eb; padding:0 14px; font:inherit; font-size:15px; }
+    .chat-input-row input:disabled { background:#f3f4f6; }
+    .chat-input-row button { min-width:70px; min-height:44px; border-radius:10px; border:0; background:var(--brand); color:#fff; font:inherit; font-weight:700; cursor:pointer; }
+    .chat-input-row button:disabled { background:#d1d5db; cursor:not-allowed; }
+    #chatStatus { font-size:12px; color:#9ca3af; margin:6px 0 0; }
+    .err-box { background:#fef2f2; border:1px solid #fca5a5; border-radius:16px; padding:20px; margin-top:16px; color:#991b1b; }
+  </style>
+</head>
+<body>
+  <nav class="topnav" aria-label="고객 이동 메뉴">
+    <a href="/">홈화면</a>
+    <a href="/customer/dashboard.html">내 주문</a>
+  </nav>
+  <div class="card">
+    <h1>전문가와 채팅</h1>
+    <p class="sub" id="chatSub">메시지를 주고받을 수 있어요.</p>
+    <div id="chatArea">
+      <div class="chat-wrap">
+        <div id="chatMessages">
+          <div style="color:#9ca3af;font-size:13px;text-align:center;margin:auto;">불러오는 중...</div>
+        </div>
+        <div class="chat-input-row">
+          <input id="chatInput" type="text" placeholder="메시지 입력..." maxlength="1000" disabled />
+          <button id="btnChatSend" disabled>전송</button>
+        </div>
+      </div>
+      <p id="chatStatus"></p>
+    </div>
+    <div id="errBox" class="err-box" hidden>
+      유효하지 않은 링크예요. <a href="/customer/dashboard.html" style="color:#991b1b;">내 주문으로 돌아가기</a>
+    </div>
+  </div>
+
+  <script>
+  (function() {
+    const qs = new URLSearchParams(location.search);
+    const token = qs.get('token');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInput = document.getElementById('chatInput');
+    const btnChatSend = document.getElementById('btnChatSend');
+    const chatStatus = document.getElementById('chatStatus');
+
+    if (!token) {
+      document.getElementById('chatArea').hidden = true;
+      document.getElementById('errBox').hidden = false;
+      return;
+    }
+
+    let lastMsgCount = 0;
+    let pollInterval = null;
+
+    function escape(s) {
+      return String(s || '').replace(/[&<>"]/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    }
+
+    function renderMessages(messages) {
+      if (!messages.length) {
+        chatMessages.innerHTML = '<div style="color:#9ca3af;font-size:13px;text-align:center;margin:auto;">아직 메시지가 없어요.</div>';
+        return;
+      }
+      chatMessages.innerHTML = messages.map((m) => {
+        const isMine = m.sender_type === 'customer';
+        const bg = isMine ? '#ed6b2f' : '#fff';
+        const color = isMine ? '#fff' : '#111';
+        const align = isMine ? 'flex-end' : 'flex-start';
+        const time = new Date(m.created_at).toLocaleTimeString('ko-KR', { hour:'2-digit', minute:'2-digit' });
+        return `<div style="display:flex;flex-direction:column;align-items:${align};gap:2px;">
+          <div style="max-width:80%;padding:8px 12px;border-radius:12px;background:${bg};color:${color};font-size:14px;line-height:1.5;word-break:break-word;">${escape(m.content)}</div>
+          <span style="font-size:11px;color:#9ca3af;">${isMine ? '나' : '전문가'} · ${time}</span>
+        </div>`;
+      }).join('');
+      if (messages.length !== lastMsgCount) {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+        lastMsgCount = messages.length;
+      }
+    }
+
+    async function fetchMessages() {
+      try {
+        const res = await fetch(`/.netlify/functions/get-messages?sender_type=customer&token=${encodeURIComponent(token)}`);
+        const data = await res.json();
+        if (data.success) {
+          renderMessages(data.messages || []);
+          chatInput.disabled = false;
+          btnChatSend.disabled = false;
+        } else {
+          chatMessages.innerHTML = '<div style="color:#9ca3af;font-size:13px;text-align:center;margin:auto;">메시지를 불러올 수 없어요.</div>';
+        }
+      } catch {}
+    }
+
+    async function sendMessage() {
+      const content = chatInput.value.trim();
+      if (!content) return;
+      btnChatSend.disabled = true;
+      chatStatus.textContent = '전송 중...';
+      try {
+        const res = await fetch('/.netlify/functions/send-message', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ sender_type: 'customer', token, content })
+        });
+        const data = await res.json();
+        if (data.success) {
+          chatInput.value = '';
+          chatStatus.textContent = '';
+          await fetchMessages();
+        } else {
+          chatStatus.textContent = data.error || '전송에 실패했어요.';
+        }
+      } catch {
+        chatStatus.textContent = '전송 중 오류가 발생했어요.';
+      }
+      btnChatSend.disabled = false;
+    }
+
+    btnChatSend.onclick = sendMessage;
+    chatInput.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } });
+
+    fetchMessages();
+    pollInterval = setInterval(fetchMessages, 10000);
+  })();
+  </script>
+</body>
+</html>

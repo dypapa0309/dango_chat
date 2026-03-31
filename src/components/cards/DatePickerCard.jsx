@@ -9,7 +9,7 @@ export default function DatePickerCard({ data = {}, onSubmit }) {
     return (
       <div className="card">
         <p style={{ fontSize: 14, color: 'var(--muted)' }}>
-          ✅ {date} {time && `${time} `}선택 완료
+          선택 완료: {date} {time && `${time} `}
         </p>
       </div>
     )
@@ -26,7 +26,7 @@ export default function DatePickerCard({ data = {}, onSubmit }) {
 
   return (
     <div className="card">
-      <p className="card__title">📅 날짜 선택</p>
+      <p className="card__title">날짜 선택</p>
       <div className="date-card__inputs">
         <input
           type="date"

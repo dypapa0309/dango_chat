@@ -14,7 +14,7 @@ export default function ServiceSelectCard({ data = {}, onSubmit }) {
     return (
       <div className="card">
         <p style={{ fontSize: 14, color: 'var(--muted)' }}>
-          ✅ {svc?.emoji} {svc?.name} 선택 완료
+          선택 완료: {svc?.name}
         </p>
       </div>
     )
@@ -29,7 +29,7 @@ export default function ServiceSelectCard({ data = {}, onSubmit }) {
 
   return (
     <div className="card" style={{ maxWidth: 400 }}>
-      <p className="card__title">🛎️ 서비스 선택</p>
+      <p className="card__title">서비스 선택</p>
       <div className="service-select-card__grid">
         {services.map((svc) => (
           <button

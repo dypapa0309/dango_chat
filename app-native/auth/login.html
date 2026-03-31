@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 로그인</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=SUIT:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root { --brand: #d97846; --line: rgba(83,62,40,.12); --text: #2a211b; --muted: #706257; }
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: 'SUIT', sans-serif; background: linear-gradient(180deg,#f5ead8,#f8f4ee); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; color: var(--text); }
+    .card { width: 100%; max-width: 420px; background: rgba(255,250,244,.95); border: 1px solid var(--line); border-radius: 28px; padding: 40px 36px; box-shadow: 0 24px 60px rgba(90,63,34,.12); }
+    .brand { font-size: 1.3rem; font-weight: 800; letter-spacing: .08em; display: block; margin-bottom: 28px; color: var(--text); text-decoration: none; }
+    .tabs { display: flex; gap: 0; border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-bottom: 28px; }
+    .tab { flex: 1; padding: 12px; font: inherit; font-size: 14px; font-weight: 700; cursor: pointer; border: none; background: transparent; color: var(--muted); transition: background .15s, color .15s; }
+    .tab.active { background: var(--brand); color: #fff; }
+    h1 { margin: 0 0 8px; font-size: 24px; }
+    .sub { color: var(--muted); font-size: 14px; line-height: 1.6; margin: 0 0 32px; }
+    .divider { display: flex; align-items: center; gap: 12px; margin: 24px 0; color: var(--muted); font-size: 13px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--line); }
+    .btn-oauth { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; min-height: 52px; border-radius: 14px; border: 1px solid var(--line); background: #fff; font: inherit; font-weight: 700; font-size: 15px; cursor: pointer; transition: box-shadow .15s; color: var(--text); text-decoration: none; }
+    .btn-oauth:hover { box-shadow: 0 4px 16px rgba(90,63,34,.1); }
+    .btn-oauth svg { flex-shrink: 0; }
+    .btn-guest { display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; border-radius: 14px; border: 1px solid var(--line); background: transparent; font: inherit; font-size: 14px; cursor: pointer; color: var(--muted); margin-top: 12px; text-decoration: none; }
+    .btn-guest:hover { background: rgba(0,0,0,.03); }
+    #statusMsg { font-size: 13px; color: var(--muted); margin-top: 16px; text-align: center; min-height: 20px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <a class="brand" href="/">DANG-O</a>
+
+    <div class="tabs">
+      <button class="tab active" id="tabCustomer">고객</button>
+      <button class="tab" id="tabDriver">전문가</button>
+    </div>
+
+    <div id="panelCustomer">
+      <h1>간편하게 시작하세요</h1>
+      <p class="sub">로그인하면 주문 내역을 자동으로 확인하고<br />재주문도 빠르게 할 수 있어요.</p>
+
+      <button id="btnKakao" class="btn-oauth" style="background:#FEE500; border-color:#FEE500; color:#191919;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#191919"><path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.7 1.608 5.08 4.05 6.524l-1.03 3.816a.3.3 0 0 0 .437.333L9.64 19.12A11.3 11.3 0 0 0 12 19.4c5.523 0 10-3.477 10-7.8S17.523 3 12 3z"/></svg>
+        카카오로 시작하기
+      </button>
+
+      <button id="btnGoogle" class="btn-oauth" style="margin-top:10px;">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.3 33.1 29.7 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 16.2 4 9.5 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.3-1.9 14.1-5.1l-6.5-5.3C29.6 35.5 26.9 36.5 24 36.5c-5.7 0-10.4-3.8-11.8-9H4.5C7.6 36.6 15.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20H24v8h11.3c-.8 2.2-2.1 4.1-3.9 5.5l6.5 5.3C41.4 35.4 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+        Google로 시작하기
+      </button>
+
+      <div class="divider">또는</div>
+      <a class="btn-guest" href="/customer/dashboard.html">로그인 없이 주문 조회하기</a>
+    </div>
+
+    <div id="panelDriver" hidden>
+      <h1>전문가로 시작하세요</h1>
+      <p class="sub">로그인하면 배차 내역, 정산, 프로필을<br />한 곳에서 관리할 수 있어요.</p>
+
+      <button id="btnKakaoDriver" class="btn-oauth" style="background:#FEE500; border-color:#FEE500; color:#191919;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#191919"><path d="M12 3C6.477 3 2 6.477 2 10.8c0 2.7 1.608 5.08 4.05 6.524l-1.03 3.816a.3.3 0 0 0 .437.333L9.64 19.12A11.3 11.3 0 0 0 12 19.4c5.523 0 10-3.477 10-7.8S17.523 3 12 3z"/></svg>
+        카카오로 시작하기
+      </button>
+
+      <button id="btnGoogleDriver" class="btn-oauth" style="margin-top:10px;">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.3 33.1 29.7 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 16.2 4 9.5 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.3-1.9 14.1-5.1l-6.5-5.3C29.6 35.5 26.9 36.5 24 36.5c-5.7 0-10.4-3.8-11.8-9H4.5C7.6 36.6 15.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20H24v8h11.3c-.8 2.2-2.1 4.1-3.9 5.5l6.5 5.3C41.4 35.4 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
+        Google로 시작하기
+      </button>
+
+      <div class="divider">또는</div>
+      <a class="btn-guest" href="/driver/apply.html">전문가 회원가입 하러 가기</a>
+    </div>
+
+    <p id="statusMsg"></p>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const role = qs.get('role') || 'customer'; // 'customer' | 'driver'
+    const next = qs.get('next') || (role === 'driver' ? '/driver/' : '/customer/dashboard.html');
+    const statusMsg = document.getElementById('statusMsg');
+
+    // 탭 전환
+    const tabCustomer = document.getElementById('tabCustomer');
+    const tabDriver = document.getElementById('tabDriver');
+    const panelCustomer = document.getElementById('panelCustomer');
+    const panelDriver = document.getElementById('panelDriver');
+
+    function switchTab(tab) {
+      const isDriver = tab === 'driver';
+      tabCustomer.classList.toggle('active', !isDriver);
+      tabDriver.classList.toggle('active', isDriver);
+      panelCustomer.hidden = isDriver;
+      panelDriver.hidden = !isDriver;
+    }
+
+    tabCustomer.addEventListener('click', () => switchTab('customer'));
+    tabDriver.addEventListener('click', () => switchTab('driver'));
+
+    // URL role 파라미터로 탭 초기화
+    if (role === 'driver') switchTab('driver');
+
+    function oauthLogin(provider, label, isDriver) {
+      statusMsg.textContent = `${label} 로그인 창을 여는 중...`;
+      const redirectNext = isDriver
+        ? `/driver/`
+        : next;
+      window.dd.onSupabaseReady(async (sb) => {
+        const { error } = await sb.auth.signInWithOAuth({
+          provider,
+          options: {
+            redirectTo: `${location.origin}/auth/callback.html?next=${encodeURIComponent(redirectNext)}&role=${isDriver ? 'driver' : 'customer'}`
+          }
+        });
+        if (error) {
+          statusMsg.textContent = '로그인 중 오류가 발생했어요. 다시 시도해주세요.';
+          console.error(error);
+        }
+      });
+    }
+
+    document.getElementById('btnKakao').addEventListener('click', () => oauthLogin('kakao', '카카오', false));
+    document.getElementById('btnGoogle').addEventListener('click', () => oauthLogin('google', '구글', false));
+    document.getElementById('btnKakaoDriver').addEventListener('click', () => oauthLogin('kakao', '카카오', true));
+    document.getElementById('btnGoogleDriver').addEventListener('click', () => oauthLogin('google', '구글', true));
+  </script>
+</body>
+</html>

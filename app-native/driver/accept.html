@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 배차 응답</title>
+  <link rel="stylesheet" href="./accept.css" />
+</head>
+<body>
+  <main class="wrap">
+    <div class="card">
+      <h1>당고 배차 요청 확인</h1>
+      <div id="jobInfo" class="job-info">불러오는 중...</div>
+      <div id="agreementGate" class="job-info" hidden></div>
+      <div id="progressPanel" class="job-info" hidden>
+        <strong>현재 진행 상태</strong>
+        <div id="progressText" style="margin-top:8px;">상태를 불러오고 있어요.</div>
+        <div class="actions" style="margin-top:14px;">
+          <button id="btnDepart" class="btn" disabled>출발 중</button>
+          <button id="btnArrive" class="btn" disabled>도착</button>
+          <button id="btnStart" class="btn primary" disabled>작업 시작</button>
+          <button id="btnRequestComplete" class="btn" disabled>완료 요청</button>
+        </div>
+      </div>
+      <div id="expiryCountdown" class="job-info" hidden></div>
+      <textarea id="responseNote" rows="4" placeholder="메모(선택)"></textarea>
+      <div class="actions">
+        <button id="btnAccept" class="btn primary" disabled>수락</button>
+        <button id="btnDecline" class="btn danger" disabled>거절</button>
+      </div>
+      <p id="result" class="result"></p>
+
+      <div id="chatPanel" hidden style="margin-top:20px;">
+        <strong style="display:block; margin-bottom:10px; font-size:15px;">고객과 채팅</strong>
+        <div id="chatMessages" style="height:220px; overflow-y:auto; border:1px solid #e5e7eb; border-radius:12px; padding:12px; background:#f8fafc; display:flex; flex-direction:column; gap:8px;"></div>
+        <div style="display:flex; gap:8px; margin-top:8px;">
+          <input id="chatInput" type="text" placeholder="메시지 입력..." maxlength="1000" style="flex:1; min-height:44px; border-radius:10px; border:1px solid #e5e7eb; padding:0 14px; font:inherit;" />
+          <button id="btnChatSend" class="btn primary" style="min-width:70px; min-height:44px; font-size:14px;">전송</button>
+        </div>
+        <p id="chatStatus" style="font-size:12px; color:#9ca3af; margin-top:6px;"></p>
+      </div>
+    </div>
+  </main>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script src="../assets/js/contact-fab.js"></script>
+  <script src="./accept.js"></script>
+</body>
+</html>

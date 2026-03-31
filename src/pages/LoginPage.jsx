@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { getSupabase } from '../lib/supabase.js'
 
 export default function LoginPage() {
+  const navigate = useNavigate()
   const [status, setStatus] = useState('')
   const [role, setRole] = useState('customer')
 
@@ -28,10 +30,14 @@ export default function LoginPage() {
 
   return (
     <div className="login-page">
+      <button className="login-back" onClick={() => navigate(-1)} aria-label="뒤로가기">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+          <path d="M15 18l-6-6 6-6" />
+        </svg>
+      </button>
       <div className="login-card">
         <a className="login-brand" href="/">
           <img src="/assets/img/favicon.svg" alt="당고" />
-          <span>당고</span>
         </a>
 
         <div className="login-tabs">

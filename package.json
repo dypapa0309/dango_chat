@@ -7,6 +7,7 @@
     "dev": "netlify dev",
     "dev:vite": "vite",
     "build": "vite build",
+    "build:app": "vite build --config vite.config.app.js && cp app-native/index-app.html app-native/index.html",
     "preview": "vite preview",
     "check:web": "node --check app/assets/js/main.js",
     "test": "node tests/job_flow_test.js && node tests/sms_failure_test.js && node tests/payment_flow_test.js"
@@ -15,6 +16,11 @@
     "node": ">=20"
   },
   "dependencies": {
+    "@capacitor/app": "^8.1.0",
+    "@capacitor/browser": "^8.0.3",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/ios": "^8.3.0",
     "@supabase/supabase-js": "^2.56.0",
     "axios": "^1.8.4",
     "openai": "^4.77.0",

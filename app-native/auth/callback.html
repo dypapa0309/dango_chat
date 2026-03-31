@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 로그인 중...</title>
+  <meta name="robots" content="noindex, nofollow" />
+  <style>
+    body { margin: 0; font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #f5ead8; color: #2a211b; }
+    .msg { text-align: center; }
+    .msg p { color: #706257; font-size: 14px; margin-top: 8px; }
+  </style>
+</head>
+<body>
+  <div class="msg">
+    <strong>로그인 처리 중...</strong>
+    <p>잠시만 기다려주세요.</p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="../assets/js/supabase-client.js"></script>
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const role = qs.get('role') || 'customer'; // 'customer' | 'driver'
+    const source = qs.get('source') || 'web'; // 'app' | 'web'
+    const next = qs.get('next') || (role === 'driver' ? '/driver/' : '/customer/dashboard.html');
+
+    // 앱(Capacitor)에서 열린 경우 — dangomove:// 스킴으로 토큰 전달
+    if (source === 'app') {
+      window.dd.onSupabaseReady(async (sb) => {
+        const { data, error } = await sb.auth.getSession();
+        if (error || !data?.session) {
+          location.replace('dangomove://auth/error');
+          return;
+        }
+        const { access_token, refresh_token } = data.session;
+        const params = new URLSearchParams({ access_token, refresh_token, role });
+        location.replace(`dangomove://auth/callback?${params.toString()}`);
+      });
+      return;
+    }
+
+    window.dd.onSupabaseReady(async (sb) => {
+      const { data, error } = await sb.auth.getSession();
+      if (error || !data?.session) {
+        document.querySelector('strong').textContent = '로그인에 실패했어요.';
+        document.querySelector('p').innerHTML = '다시 시도해주세요. <a href="/auth/login.html">로그인 페이지로</a>';
+        return;
+      }
+
+      if (role === 'driver') {
+        // 전문가 로그인 — drivers 테이블 확인
+        const accessToken = data.session.access_token;
+        try {
+          const res = await fetch('/.netlify/functions/get-driver-me', {
+            headers: { Authorization: `Bearer ${accessToken}` }
+          });
+          const result = await res.json();
+          if (result.success && result.linked) {
+            // 이미 등록된 전문가 → 포털로
+            location.replace('/driver/');
+          } else {
+            // 미등록 전문가 → 전화번호 연결 페이지로
+            location.replace('/driver/link-phone.html');
+          }
+        } catch {
+          location.replace('/driver/');
+        }
+      } else {
+        // 고객 로그인 — 프로필 미완성이면 회원가입 완성 페이지로
+        const meta = data.session.user?.user_metadata || {};
+        const needsProfile = !meta.profile_complete && !meta.phone;
+        if (needsProfile) {
+          location.replace(`/auth/signup.html?next=${encodeURIComponent(next)}`);
+        } else {
+          location.replace(next);
+        }
+      }
+    });
+
+    setTimeout(() => {
+      if (document.querySelector('strong').textContent === '로그인 처리 중...') {
+        location.replace(next);
+      }
+    }, 5000);
+  </script>
+</body>
+</html>

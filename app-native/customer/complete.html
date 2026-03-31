@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 | 작업 완료 확인</title>
+  <meta name="description" content="당고 작업 완료를 고객이 직접 확인하는 페이지입니다." />
+  <meta name="robots" content="noindex, nofollow" />
+  <script>
+    (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-PZCBT88P');
+  </script>
+  <style>
+    :root {
+      --bg: #f5efe4;
+      --card: #fffaf3;
+      --line: rgba(70, 50, 31, 0.12);
+      --text: #20170f;
+      --muted: #6e6255;
+      --brand: #ed6b2f;
+      --ok: #215a45;
+      --warn: #9a3412;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "SUIT", Arial, sans-serif;
+      padding: 24px;
+      background: linear-gradient(180deg, #f8e6c3, #f7f3ec);
+      color: var(--text);
+    }
+    .card {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 24px 60px rgba(77, 45, 13, 0.12);
+      border: 1px solid var(--line);
+    }
+    .eyebrow { margin: 0 0 8px; color: #bc4d16; font-size: 13px; font-weight: 700; text-transform: uppercase; }
+    h1 { margin: 0; font-size: 36px; line-height: 1.1; }
+    .muted { color: var(--muted); line-height: 1.7; }
+    .summary {
+      margin-top: 22px;
+      padding: 18px;
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 10px;
+    }
+    .line { color: var(--muted); line-height: 1.6; }
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      border: 1px solid var(--line);
+      background: #fff;
+      font: inherit;
+      resize: vertical;
+    }
+    button, a {
+      width: 100%;
+      min-height: 54px;
+      border: 0;
+      border-radius: 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      text-decoration: none;
+    }
+    button {
+      margin-top: 18px;
+      background: var(--brand);
+      color: #fff;
+      box-shadow: 0 16px 28px rgba(237, 107, 47, 0.24);
+    }
+    .ghost {
+      margin-top: 10px;
+      background: #fff;
+      color: var(--muted);
+      border: 1px solid var(--line);
+    }
+    .ok { color: var(--ok); font-weight: 700; }
+    .warn { color: var(--warn); font-weight: 700; }
+    .topnav {
+      max-width: 760px;
+      margin: 0 auto 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .topnav a {
+      flex: 1;
+      min-width: 120px;
+      min-height: 46px;
+      border-radius: 14px;
+      background: rgba(255, 250, 243, 0.92);
+      border: 1px solid var(--line);
+      color: var(--text);
+      text-decoration: none;
+      font-weight: 700;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .review-box { margin-top: 20px; padding: 20px; background: #fff; border: 1px solid var(--line); border-radius: 18px; }
+    .review-box h3 { margin: 0 0 12px; font-size: 18px; }
+    .stars { display: flex; gap: 8px; margin-bottom: 14px; }
+    .star-btn { background: none; border: none; font-size: 32px; cursor: pointer; padding: 0; width: auto; min-height: auto; line-height: 1; color: #d1d5db; transition: color .15s; }
+    .star-btn.active { color: #f59e0b; }
+    .review-submit { background: var(--brand); color: #fff; }
+  </style>
+</head>
+<body data-analytics-page="customer_complete">
+  <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PZCBT88P" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+  <nav class="topnav" aria-label="고객 이동 메뉴">
+    <a href="/">홈화면</a>
+    <a href="/estimate/">소형이사</a>
+    <a href="/ddclean/">입주청소</a>
+    <a href="/yd/">용달</a>
+    <a href="/customer/lookup.html">주문조회</a>
+  </nav>
+  <div class="card">
+    <p class="eyebrow">DANG-O COMPLETE</p>
+    <h1>작업이 끝났다면<br />고객 완료 확인을 눌러주세요.</h1>
+    <p id="statusText" class="muted">주문 정보를 확인하고 있어요.</p>
+
+    <div id="summaryCard" class="summary">
+      <div id="summaryMain" class="line">불러오는 중...</div>
+      <div id="summaryAmount" class="line"></div>
+      <div class="line">완료 확인이 끝나면 기사 정산 처리가 시작돼요.</div>
+      <div class="line">정산은 완료 확인 뒤 빠르게 진행돼요.</div>
+    </div>
+
+    <textarea id="completeNote" placeholder="문제가 있었다면 짧게 남겨주세요. 없으면 비워도 돼요."></textarea>
+    <button id="btnComplete" disabled>고객 완료 확인</button>
+    <a class="ghost" href="/estimate/">다른 견적 보기</a>
+
+    <div id="receiptBox" style="display:none; margin-top:16px;">
+      <button type="button" id="btnReceipt" class="ghost" style="border:1px solid var(--line);">영수증 보기</button>
+    </div>
+
+    <div id="reviewBox" class="review-box" style="display:none;">
+      <h3>기사님은 어떠셨나요?</h3>
+      <div class="stars" id="starButtons">
+        <button type="button" class="star-btn" data-star="1">★</button>
+        <button type="button" class="star-btn" data-star="2">★</button>
+        <button type="button" class="star-btn" data-star="3">★</button>
+        <button type="button" class="star-btn" data-star="4">★</button>
+        <button type="button" class="star-btn" data-star="5">★</button>
+      </div>
+      <textarea id="reviewComment" placeholder="기사님에 대한 의견을 남겨주세요. (선택, 최대 500자)" maxlength="500" style="min-height:90px; margin-top:0;"></textarea>
+      <button id="btnSubmitReview" class="review-submit" style="margin-top:12px;" disabled>리뷰 남기기</button>
+      <p id="reviewResult" style="font-size:14px; margin-top:10px;"></p>
+    </div>
+  </div>
+
+  <script>
+    const qs = new URLSearchParams(location.search);
+    const token = qs.get('token');
+    const statusText = document.getElementById('statusText');
+    const summaryMain = document.getElementById('summaryMain');
+    const summaryAmount = document.getElementById('summaryAmount');
+    const noteInput = document.getElementById('completeNote');
+    const button = document.getElementById('btnComplete');
+
+    const money = (value) => `${Number(value || 0).toLocaleString()}원`;
+
+    async function loadJob() {
+      if (!token) {
+        statusText.className = 'warn';
+        statusText.textContent = '유효하지 않은 접근이에요.';
+        summaryMain.textContent = '완료 확인 링크가 없어요.';
+        return;
+      }
+
+      const res = await fetch(`/.netlify/functions/customer-complete?token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (!data.success) {
+        statusText.className = 'warn';
+        statusText.textContent = data.error || '주문을 찾을 수 없어요.';
+        summaryMain.textContent = '주문 정보를 확인하지 못했어요.';
+        return;
+      }
+
+      const job = data.job;
+      const addrText = job.end_address
+        ? `${job.start_address || '-'} → ${job.end_address}`
+        : (job.start_address || '-');
+      summaryMain.textContent = `${job.customer_name || '-'} / ${addrText}`;
+      summaryAmount.textContent = `총 결제 ${money(job.total_price)}`;
+
+      if (job.status === 'completed') {
+        statusText.className = 'ok';
+        statusText.textContent = '이미 완료 확인이 끝난 주문이에요.';
+        button.disabled = true;
+        button.textContent = '이미 완료 확인됨';
+        return;
+      }
+
+      const dispatchReady = ['accepted', 'driver_departed', 'driver_arrived', 'in_progress', 'completion_requested'].includes(job.dispatch_status);
+      const statusReady = ['assigned', 'in_progress'].includes(job.status);
+      if (!dispatchReady && !statusReady) {
+        statusText.className = 'warn';
+        statusText.textContent = '아직 배차가 완료되지 않아 완료 확인을 할 수 없어요. 기사 배정 후 다시 확인해주세요.';
+        button.disabled = true;
+        return;
+      }
+
+      statusText.className = 'muted';
+      statusText.textContent = '작업이 끝났다면 아래 버튼으로 완료를 확인해주세요.';
+      button.disabled = false;
+    }
+
+    button.onclick = async () => {
+      if (!token) return;
+      button.disabled = true;
+      button.textContent = '완료 처리 중이에요...';
+
+      const res = await fetch('/.netlify/functions/customer-complete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, note: noteInput.value.trim() })
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        statusText.className = 'warn';
+        statusText.textContent = data.error || '완료 확인 처리에 실패했어요.';
+        button.disabled = false;
+        button.textContent = '고객 완료 확인';
+        return;
+      }
+
+      statusText.className = 'ok';
+      statusText.textContent = '완료 확인이 접수됐어요. 기사 정산도 승인 단계로 넘어가요.';
+      button.textContent = '완료 확인 완료';
+      document.getElementById('receiptBox').style.display = 'block';
+      showReviewBox();
+    };
+
+    // Review box logic
+    let selectedRating = 0;
+    const reviewBox = document.getElementById('reviewBox');
+    const starButtons = document.querySelectorAll('.star-btn');
+    const reviewComment = document.getElementById('reviewComment');
+    const btnSubmitReview = document.getElementById('btnSubmitReview');
+    const reviewResult = document.getElementById('reviewResult');
+
+    function showReviewBox() {
+      reviewBox.style.display = 'block';
+    }
+
+    starButtons.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        selectedRating = parseInt(btn.dataset.star, 10);
+        starButtons.forEach((b) => {
+          b.classList.toggle('active', parseInt(b.dataset.star, 10) <= selectedRating);
+        });
+        btnSubmitReview.disabled = false;
+      });
+      btn.addEventListener('mouseover', () => {
+        const hoverVal = parseInt(btn.dataset.star, 10);
+        starButtons.forEach((b) => {
+          b.classList.toggle('active', parseInt(b.dataset.star, 10) <= hoverVal);
+        });
+      });
+      btn.addEventListener('mouseout', () => {
+        starButtons.forEach((b) => {
+          b.classList.toggle('active', parseInt(b.dataset.star, 10) <= selectedRating);
+        });
+      });
+    });
+
+    btnSubmitReview.onclick = async () => {
+      if (!selectedRating) return;
+      btnSubmitReview.disabled = true;
+      btnSubmitReview.textContent = '리뷰 등록 중...';
+
+      const res = await fetch('/.netlify/functions/submit-review', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, rating: selectedRating, comment: reviewComment.value.trim() })
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        reviewResult.style.color = 'var(--warn)';
+        reviewResult.textContent = data.error || '리뷰 등록에 실패했어요.';
+        btnSubmitReview.disabled = false;
+        btnSubmitReview.textContent = '리뷰 남기기';
+        return;
+      }
+
+      reviewResult.style.color = 'var(--ok)';
+      reviewResult.textContent = '리뷰를 남겨주셔서 감사해요!';
+      btnSubmitReview.textContent = '리뷰 등록 완료';
+    };
+
+    document.getElementById('btnReceipt').onclick = async () => {
+      const res = await fetch(`/.netlify/functions/get-receipt?token=${encodeURIComponent(token)}`);
+      const data = await res.json();
+      if (!data.success || !data.receipt) { alert('영수증을 불러오지 못했어요.'); return; }
+      const r = data.receipt;
+      const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>당고 영수증 ${r.receiptNumber}</title>
+<style>body{font-family:sans-serif;max-width:480px;margin:24px auto;padding:24px;border:1px solid #ddd;border-radius:12px;}h2{margin:0 0 4px;font-size:22px;}p{margin:6px 0;color:#444;}.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #eee;}.label{color:#888;}.amount{font-weight:700;font-size:18px;}.footer{margin-top:16px;font-size:12px;color:#aaa;text-align:center;}</style>
+</head><body>
+<p style="color:#ed6b2f;font-weight:700;margin:0 0 4px">당고 (DANG-O)</p>
+<h2>서비스 영수증</h2>
+<p style="color:#888;font-size:13px;">${r.receiptNumber} · ${r.issuedAt.slice(0,10)}</p>
+<hr style="margin:16px 0">
+<div class="row"><span class="label">서비스</span><span>${r.service}</span></div>
+<div class="row"><span class="label">서비스 날짜</span><span>${r.moveDate}</span></div>
+<div class="row"><span class="label">고객명</span><span>${r.customerName}</span></div>
+<div class="row"><span class="label">출발지</span><span>${r.startAddress}</span></div>
+${r.endAddress ? `<div class="row"><span class="label">도착지</span><span>${r.endAddress}</span></div>` : ''}
+${r.driverName ? `<div class="row"><span class="label">담당 전문가</span><span>${r.driverName}${r.driverVehicleType ? ' (' + r.driverVehicleType + ')' : ''}</span></div>` : ''}
+<div class="row"><span class="label">완료 확인일</span><span>${r.completedAt}</span></div>
+<hr style="margin:16px 0">
+<div class="row"><span class="label">선결제(계약금)</span><span>${r.depositAmount}</span></div>
+<div class="row"><span class="label">잔금</span><span>${r.balanceAmount}</span></div>
+<div class="row"><span class="label">합계</span><span class="amount">${r.totalPrice}</span></div>
+<p class="footer">본 영수증은 서비스 완료 후 발급된 증빙용 문서입니다.<br>문의: support@dang-o.kr</p>
+</body></html>`;
+      const w = window.open('', '_blank');
+      w.document.write(html);
+      w.document.close();
+    };
+
+    loadJob();
+  </script>
+  <script src="../assets/js/contact-fab.js"></script>
+  <script src="../assets/js/meta-pixel.js"></script>
+  <script src="../assets/js/site-analytics.js"></script>
+</body>
+</html>

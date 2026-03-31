@@ -1,0 +1,392 @@
+.yd-flow {
+  display: grid;
+  gap: 18px;
+}
+
+.yd-stage-bar {
+  width: 100%;
+}
+
+.yd-step-card {
+  padding: 0;
+  display: block;
+}
+
+.yd-card {
+  padding: 24px;
+}
+
+.section-copy,
+.cta-note,
+.modal-copy {
+  color: #726559;
+  line-height: 1.6;
+}
+
+.field-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.field-grid.two {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+  display: grid;
+  gap: 8px;
+}
+
+.picker-field {
+  cursor: pointer;
+}
+
+.field span {
+  color: #726559;
+  font-size: 14px;
+}
+
+.field input {
+  width: 100%;
+  height: 54px;
+  padding: 0 16px;
+}
+
+.distance-box {
+  margin-top: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.yd-cta-btn {
+  width: 100%;
+  min-height: 58px;
+  border-radius: 18px;
+  font-size: 16px;
+  font-weight: 1000;
+}
+
+.distance-result {
+  border-radius: 16px;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: #f8fafc;
+  padding: 16px;
+  display: grid;
+  gap: 8px;
+}
+
+.distance-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.distance-line strong {
+  font-size: 22px;
+}
+
+.distance-line.muted,
+.label {
+  color: #726559;
+}
+
+.distance-line.muted {
+  font-size: 14px;
+}
+
+.size-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.size-card {
+  text-align: left;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  background: #ffffff;
+  color: #2a211b;
+  border-radius: 20px;
+  padding: 18px;
+  cursor: pointer;
+  min-height: 142px;
+  box-shadow: var(--shadow);
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.size-card:hover {
+  border-color: rgba(217, 120, 70, 0.18);
+  transform: translateY(-1px);
+}
+
+.size-card.is-active {
+  background: #fff3e7;
+  border-color: rgba(217, 120, 70, 0.28);
+  box-shadow: 0 0 0 2px rgba(217, 120, 70, 0.1) inset;
+}
+
+.size-name {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+.size-desc {
+  display: block;
+  font-size: 14px;
+  color: #726559;
+  line-height: 1.5;
+}
+
+.yd-summary-box {
+  margin-top: 16px;
+}
+
+.summary-label {
+  font-size: 13px;
+  color: #726559;
+  margin-bottom: 8px;
+}
+
+.summary-value {
+  line-height: 1.6;
+}
+
+.summary-value.empty {
+  color: #726559;
+}
+
+.help-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.help-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.check-card {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  border: 1px solid rgba(17, 24, 39, 0.08);
+  border-radius: 16px;
+  background: #ffffff;
+  padding: 18px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.check-card input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.check-card strong {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.check-card small {
+  color: #726559;
+}
+
+.yd-check-card {
+  position: relative;
+}
+
+.yd-check-card:hover {
+  border-color: rgba(217, 120, 70, 0.18);
+  transform: translateY(-1px);
+}
+
+.yd-check-card:has(input:checked) {
+  background: #fff3e7;
+  border-color: rgba(217, 120, 70, 0.28);
+  box-shadow: 0 0 0 2px rgba(217, 120, 70, 0.1) inset;
+}
+
+.price-breakdown {
+  display: grid;
+  gap: 12px;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(83, 62, 40, 0.1);
+}
+
+.row.total {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.row.total b {
+  font-size: 28px;
+  color: #ea874d;
+}
+
+.cta-stack {
+  margin-top: 18px;
+}
+
+.big {
+  width: 100%;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 6, 12, 0.72);
+  backdrop-filter: blur(4px);
+}
+
+.modal-panel {
+  position: relative;
+  z-index: 1;
+  width: min(640px, calc(100% - 24px));
+  margin: 6vh auto 0;
+  background: #fffaf4;
+  border: 1px solid rgba(83, 62, 40, 0.1);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(90, 63, 34, 0.14);
+  padding: 22px;
+}
+
+.modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.modal-head h3 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.icon-btn {
+  border: 1px solid rgba(83, 62, 40, 0.1);
+  background: rgba(255, 251, 245, 0.98);
+  color: #2a211b;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+}
+
+.modal-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 18px;
+  max-height: 52vh;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid rgba(83, 62, 40, 0.1);
+  background: rgba(255, 251, 245, 0.98);
+  border-radius: 18px;
+  padding: 14px 16px;
+}
+
+.item-label strong {
+  display: block;
+}
+
+.item-label small {
+  color: #726559;
+}
+
+.stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stepper button {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(83, 62, 40, 0.1);
+  background: #232938;
+  color: #fff8f3;
+  cursor: pointer;
+}
+
+.stepper input {
+  width: 48px;
+  height: 34px;
+  text-align: center;
+  border-radius: 10px;
+  border: 1px solid rgba(83, 62, 40, 0.1);
+  background: #fffaf4;
+  color: #2a211b;
+}
+
+.modal-actions {
+  margin-top: 18px;
+}
+
+.modal-actions .yd-cta-btn {
+  width: 100%;
+}
+
+@media (max-width: 760px) {
+  .yd-card {
+    padding: 18px;
+    border-radius: 20px;
+  }
+
+  .field-grid.two,
+  .size-grid,
+  .help-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .distance-line {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .row.total b {
+    font-size: 24px;
+  }
+}
+
+/* Step navigation */
+.yd-step-nav {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+.yd-step-nav .wizard-primary {
+  flex: 1;
+}
+.yd-step-nav .wizard-btn.ghost {
+  flex: 0 0 auto;
+  min-width: 90px;
+}

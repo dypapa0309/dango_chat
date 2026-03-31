@@ -1,9 +1,12 @@
 {
   "appId": "com.dango.move",
   "appName": "DANG-O",
-  "webDir": "app",
+  "webDir": "app-native",
   "bundledWebRuntime": false,
   "server": {
     "androidScheme": "https"
+  },
+  "ios": {
+    "backgroundColor": "#ffffff"
   }
 }

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 CS · 분쟁</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-admin-page="cs">
+  <section id="adminGate" class="admin-gate">
+    <form id="adminGateForm" class="admin-gate-card">
+      <p class="admin-eyebrow">DANG-O ADMIN</p>
+      <h1>운영 비밀번호를 입력해주세요.</h1>
+      <p class="muted">운영툴은 비밀번호가 있어야 열립니다.</p>
+      <input id="adminTokenInput" type="password" placeholder="운영 비밀번호" autocomplete="current-password" />
+      <button class="btn primary" type="submit">운영툴 열기</button>
+      <p id="adminGateMessage" class="muted"></p>
+    </form>
+  </section>
+
+  <div id="adminApp" hidden>
+    <header class="topbar">
+      <div>
+        <h1>당고 CS · 분쟁</h1>
+        <p>고객 문의, 분쟁, 환불 요청을 관리합니다.</p>
+      </div>
+      <div class="actions-inline">
+        <button id="btnRefresh" class="btn">새로고침</button>
+        <button id="btnLogout" class="btn">로그아웃</button>
+      </div>
+    </header>
+
+    <nav class="admin-nav">
+      <a class="admin-link" href="/admin/">주문 운영</a>
+      <a class="admin-link" href="/admin/drivers.html">전문가 관리</a>
+      <a class="admin-link" href="/admin/finance.html">정산 · 가격</a>
+      <a class="admin-link is-active" href="/admin/cs.html">CS · 분쟁</a>
+    </nav>
+
+    <main class="layout admin-page">
+      <section class="panel panel-wide">
+        <div class="panel-head">
+          <h2>분쟁 · 문의 목록</h2>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select id="filterStatus" class="btn" style="min-height:36px;font-size:13px;">
+              <option value="">전체 상태</option>
+              <option value="open">오픈</option>
+              <option value="in_progress">처리 중</option>
+              <option value="resolved">해결됨</option>
+              <option value="closed">종결</option>
+            </select>
+            <span id="disputeCount">0건</span>
+          </div>
+        </div>
+        <div id="disputeList" class="stack-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>새 CS 티켓 등록</h2></div>
+        <form id="createDisputeForm" class="stack-list" style="gap:10px;">
+          <input id="dJobId" type="text" placeholder="주문 ID (선택)" />
+          <input id="dCustomerName" type="text" placeholder="고객 이름" />
+          <input id="dCustomerPhone" type="text" placeholder="고객 연락처" />
+          <select id="dCategory">
+            <option value="general">일반 문의</option>
+            <option value="refund">환불 요청</option>
+            <option value="damage">파손/분실</option>
+            <option value="no_show">노쇼</option>
+            <option value="complaint">불만 접수</option>
+            <option value="other">기타</option>
+          </select>
+          <select id="dPriority">
+            <option value="normal">보통</option>
+            <option value="low">낮음</option>
+            <option value="high">높음</option>
+            <option value="urgent">긴급</option>
+          </select>
+          <input id="dTitle" type="text" placeholder="제목 *" required />
+          <textarea id="dDescription" rows="4" placeholder="내용 *" required style="resize:vertical;"></textarea>
+          <button type="submit" class="btn primary">티켓 등록</button>
+          <p id="createResult" class="muted" style="font-size:13px;"></p>
+        </form>
+
+        <div id="disputeDetail" hidden style="margin-top:24px;">
+          <div class="panel-subhead"><h3 id="detailTitle">티켓 상세</h3></div>
+          <div id="detailBody" class="stack-list compact"></div>
+          <div style="margin-top:16px;display:grid;gap:8px;">
+            <select id="detailStatus">
+              <option value="open">오픈</option>
+              <option value="in_progress">처리 중</option>
+              <option value="resolved">해결됨</option>
+              <option value="closed">종결</option>
+            </select>
+            <select id="detailPriority">
+              <option value="low">낮음</option>
+              <option value="normal">보통</option>
+              <option value="high">높음</option>
+              <option value="urgent">긴급</option>
+            </select>
+            <textarea id="detailResolution" rows="3" placeholder="처리 내용/해결 메모" style="resize:vertical;"></textarea>
+            <button id="btnUpdateDispute" class="btn primary">저장</button>
+            <p id="updateResult" class="muted" style="font-size:13px;"></p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

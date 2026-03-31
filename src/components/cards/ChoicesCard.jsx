@@ -7,7 +7,7 @@ export default function ChoicesCard({ data = {}, onSubmit }) {
   if (selected !== null) {
     return (
       <div className="choices-card choices-card--done">
-        <span className="choices-card__selected">✅ {selected}</span>
+        <span className="choices-card__selected">선택 완료: {selected}</span>
       </div>
     )
   }

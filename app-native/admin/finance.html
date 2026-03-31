@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="../assets/img/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>당고 정산 · 가격</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body data-admin-page="finance">
+  <section id="adminGate" class="admin-gate">
+    <form id="adminGateForm" class="admin-gate-card">
+      <p class="admin-eyebrow">DANG-O ADMIN</p>
+      <h1>운영 비밀번호를 입력해주세요.</h1>
+      <p class="muted">운영툴은 비밀번호가 있어야 열립니다.</p>
+      <input id="adminTokenInput" type="password" placeholder="운영 비밀번호" autocomplete="current-password" />
+      <button class="btn primary" type="submit">운영툴 열기</button>
+      <p id="adminGateMessage" class="muted"></p>
+    </form>
+  </section>
+
+  <div id="adminApp" hidden>
+    <header class="topbar">
+      <div>
+        <h1>당고 정산 · 가격</h1>
+        <p>2주 정산과 광고 기반 가격 배율을 운영합니다.</p>
+        <p class="topbar-note">광고 데이터와 최근 50시간 성과를 기준으로 배율을 다시 계산할 수 있습니다.</p>
+      </div>
+      <div class="actions-inline">
+        <button id="btnRefresh" class="btn">새로고침</button>
+        <button id="btnLogout" class="btn">로그아웃</button>
+      </div>
+    </header>
+
+    <nav class="admin-nav">
+      <a class="admin-link" href="/admin/">주문 운영</a>
+      <a class="admin-link" href="/admin/drivers.html">전문가 관리</a>
+      <a class="admin-link is-active" href="/admin/finance.html">정산 · 가격</a>
+      <a class="admin-link" href="/admin/cs.html">CS · 분쟁</a>
+    </nav>
+
+    <main class="layout layout-secondary admin-page">
+      <section class="panel">
+        <div class="panel-head"><h2>2주 정산 대시보드</h2><span id="settlementSummary">-</span></div>
+        <div id="settlementCards" class="summary-grid"></div>
+        <div class="panel-subhead"><h3>지급 대기 묶음</h3></div>
+        <div id="settlementGroups" class="stack-list"></div>
+        <div class="panel-subhead"><h3>보류 중 정산</h3></div>
+        <div id="heldSettlementList" class="stack-list compact"></div>
+        <div class="panel-subhead"><h3>최근 지급 완료</h3></div>
+        <div id="paidSettlementList" class="stack-list compact"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>광고 입력</h2><span>숨고 · 메타 · 구글</span></div>
+        <form id="marketingForm" class="driver-grid">
+          <input type="datetime-local" name="metricAt" required />
+          <input type="text" name="channel" placeholder="채널명 예: soomgo" required />
+          <input type="number" name="spendAmount" placeholder="광고비" min="0" step="1000" />
+          <input type="number" name="leadSentCount" placeholder="보낸 견적 수" min="0" step="1" />
+          <input type="number" name="leadReadCount" placeholder="읽힌 견적 수" min="0" step="1" />
+          <input type="number" name="refundCount" placeholder="환급 수" min="0" step="1" />
+          <textarea name="notes" placeholder="메모"></textarea>
+          <button class="btn primary" type="submit">광고 데이터 저장</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head"><h2>가격 배율 대시보드</h2><span id="pricingModeText">-</span></div>
+        <div id="pricingSummaryCards" class="summary-grid"></div>
+        <div id="pricingRecommendation" class="mini-card"></div>
+        <div class="driver-actions">
+          <button class="btn primary" id="btnRecomputePricing">배율 다시 계산</button>
+        </div>
+        <div class="panel-subhead"><h3>채널별 성과</h3></div>
+        <div id="pricingChannelList" class="stack-list compact"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase.js"></script>
+  <script src="../assets/js/contact-fab.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

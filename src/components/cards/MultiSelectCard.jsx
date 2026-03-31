@@ -26,7 +26,7 @@ export default function MultiSelectCard({ data = {}, onSubmit }) {
   if (submitted) {
     return (
       <div className="choices-card choices-card--done">
-        <span className="choices-card__selected">✅ {selected.join(', ')}</span>
+        <span className="choices-card__selected">선택 완료: {selected.join(', ')}</span>
       </div>
     )
   }
@@ -43,7 +43,7 @@ export default function MultiSelectCard({ data = {}, onSubmit }) {
               onClick={() => toggle(opt)}
               type="button"
             >
-              {selected.includes(opt) ? '✓ ' : ''}{opt}
+              {opt}
             </button>
           ))}
         </div>
@@ -83,7 +83,7 @@ export default function MultiSelectCard({ data = {}, onSubmit }) {
           <div className="ms-modal" onClick={e => e.stopPropagation()}>
             <div className="ms-modal__header">
               <p className="ms-modal__title">{data.title || '항목 선택'}</p>
-              <button className="ms-modal__close" onClick={() => setModalOpen(false)} type="button">✕</button>
+              <button className="ms-modal__close" onClick={() => setModalOpen(false)} type="button">닫기</button>
             </div>
             <div className="ms-modal__body">
               {options.map((opt, i) => (
