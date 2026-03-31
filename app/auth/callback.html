@@ -22,7 +22,23 @@
   <script>
     const qs = new URLSearchParams(location.search);
     const role = qs.get('role') || 'customer'; // 'customer' | 'driver'
+    const source = qs.get('source') || 'web'; // 'app' | 'web'
     const next = qs.get('next') || (role === 'driver' ? '/driver/' : '/customer/dashboard.html');
+
+    // 앱(Capacitor)에서 열린 경우 — dangomove:// 스킴으로 토큰 전달
+    if (source === 'app') {
+      window.dd.onSupabaseReady(async (sb) => {
+        const { data, error } = await sb.auth.getSession();
+        if (error || !data?.session) {
+          location.replace('dangomove://auth/error');
+          return;
+        }
+        const { access_token, refresh_token } = data.session;
+        const params = new URLSearchParams({ access_token, refresh_token, role });
+        location.replace(`dangomove://auth/callback?${params.toString()}`);
+      });
+      return;
+    }
 
     window.dd.onSupabaseReady(async (sb) => {
       const { data, error } = await sb.auth.getSession();
