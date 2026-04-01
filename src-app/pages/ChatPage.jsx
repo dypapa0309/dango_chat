@@ -166,8 +166,11 @@ export default function ChatPage({ user }) {
         cardEvent = { type: 'multi_select', field: data.field, value: data.value }
         break
       case 'estimate_cancel':
-        text = '견적을 다시 받고 싶어요'
-        break
+        setMessages([])
+        setConversationState({ phase: 'greeting', collected: {} })
+        setResetKey((k) => k + 1)
+        navigate('/', { replace: true })
+        return
       case 'payment':
         if (data.jobId) window.location.href = `/customer/pay.html?jobId=${data.jobId}`
         return

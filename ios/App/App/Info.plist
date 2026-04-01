@@ -51,6 +51,8 @@
 	<string>현재 위치를 주소로 변환하거나 위치를 공유할 때 사용합니다.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>사진을 선택해 업로드하거나 AI 분석에 활용할 때 사용합니다.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>사진을 직접 촬영해 업로드할 때 카메라를 사용합니다.</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -62,5 +64,7 @@
 			</array>
 		</dict>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
 </dict>
 </plist>

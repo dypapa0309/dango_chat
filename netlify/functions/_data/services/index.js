@@ -29,7 +29,7 @@ export const SERVICES = {
       { field: 'start_address', q: '청소할 주소를 알려주세요.', card: { type: 'address_picker', data: { label: '청소 주소' } } },
       { field: 'date', q: '청소 날짜를 선택해주세요.', card: { type: 'date_picker', data: {} } },
     ],
-    knowledge: '청소 FAQ:\n- 입주청소: 공실 상태에서 새로 입주하기 전 청소\n- 이사청소: 이사 나가면서 퇴거 시 청소\n- 거주청소: 짐이 있는 상태에서 청소 (입주청소의 약 70% 수준)\n- 화장실 2개부터 추가 요금 발생\n- 서비스 완료 후 24시간 내 불만족 시 재청소 또는 환불 처리',
+    knowledge: '청소 FAQ:\n- 입주청소: 공실 상태 (가격 기준 100%)\n- 이사청소: 퇴거 시 청소 (입주청소의 약 90% 수준)\n- 거주청소: 짐 있는 상태 (입주청소의 약 70% 수준, 가장 저렴)\n- 예) 20평 입주청소 200,000원이면, 거주청소는 약 140,000원\n- 화장실 2개부터 추가 요금 발생\n- 오염 심함 선택 시 +20% 추가\n- 서비스 완료 후 24시간 내 불만족 시 재청소 또는 환불 처리',
   },
   waste: {
     key: 'waste', name: '폐기물 수거',
@@ -93,7 +93,7 @@ export const SERVICES = {
       { field: 'start_address', q: '서비스 받을 주소를 알려주세요.', card: { type: 'address_picker', data: { label: '서비스 주소' } } },
       { field: 'date', q: '방문 날짜를 선택해주세요.', card: { type: 'date_picker', data: {} } },
     ],
-    knowledge: '에어컨 청소 FAQ:\n- 분해 청소: 에어컨을 완전히 분해해 내부까지 청소 (기본 청소 대비 +50%)\n- 청소 후 1주일 이내 이상 발생 시 무상 AS 제공\n- 시스템에어컨은 1way/2way/4way에 따라 가격이 달라집니다 (82,000~150,000원)',
+    knowledge: '에어컨 청소 FAQ:\n- 벽걸이 기본 56,000원 / 분해청소 84,000원\n- 스탠드 기본 92,000원 / 분해청소 138,000원\n- 2in1 기본 139,000원 / 분해청소 208,500원\n- 분해청소는 기본청소 대비 50% 추가 (내부까지 완전 분해)\n- 청소 후 1주일 이내 이상 발생 시 무상 AS 제공\n- 시스템에어컨은 1way/2way/4way에 따라 82,000~150,000원',
   },
   appliance_clean: {
     key: 'appliance_clean', name: '가전 청소',

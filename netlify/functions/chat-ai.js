@@ -369,12 +369,13 @@ async function calcMoveYongdal(serviceType, collected, kakaoKey) {
   if (helperFee) breakdown.push({ label: '보조/도움 옵션', amount: helperFee })
   if (specialFee) breakdown.push({ label: '특수 품목', amount: specialFee })
 
+  const trimOption = (str) => str ? str.split(' (')[0].trim() : '-'
   const summary = [
     `출발지: ${collected.start_address}`,
     `도착지: ${collected.end_address}`,
     `거리: 약 ${distKm}km`,
-    serviceType === 'move' ? `이사 방식: ${collected.packing || '일반이사'}` : `차량: ${vehicleStr || '-'}`,
-    serviceType === 'move' ? `차량: ${collected.category || '-'}` : `품목: ${collected.items || '-'}`,
+    serviceType === 'move' ? `이사 방식: ${trimOption(collected.packing) || '일반이사'}` : `차량: ${trimOption(vehicleStr)}`,
+    serviceType === 'move' ? `차량: ${trimOption(collected.category)}` : `품목: ${collected.items || '-'}`,
   ]
   return { total, breakdown, summary }
 }

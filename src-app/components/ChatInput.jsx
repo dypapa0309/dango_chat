@@ -1,4 +1,5 @@
 import { useRef, useState, useEffect } from 'react'
+import { Camera, CameraResultType, CameraSource } from '@capacitor/camera'
 
 export default function ChatInput({ onSend, onLocation, disabled }) {
   const [text, setText] = useState('')
@@ -7,7 +8,6 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
   const [locLoading, setLocLoading] = useState(false)
   const [locStatus, setLocStatus] = useState('')
   const textareaRef = useRef(null)
-  const fileInputRef = useRef(null)
   const menuRef = useRef(null)
 
   useEffect(() => {
@@ -41,16 +41,19 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
     if (textareaRef.current) textareaRef.current.style.height = 'auto'
   }
 
-  function handleFileChange(e) {
-    const file = e.target.files?.[0]
-    if (!file) return
-    const reader = new FileReader()
-    reader.onload = (ev) => {
-      const dataUrl = ev.target.result
-      setAttachment({ name: file.name, base64: dataUrl.split(',')[1], previewUrl: dataUrl })
+  async function handlePickPhoto() {
+    try {
+      const photo = await Camera.getPhoto({
+        resultType: CameraResultType.Base64,
+        source: CameraSource.Prompt,
+        quality: 80,
+      })
+      const previewUrl = `data:image/${photo.format};base64,${photo.base64String}`
+      setAttachment({ name: `photo.${photo.format}`, base64: photo.base64String, previewUrl })
+    } catch {
+      // 사용자가 취소한 경우 무시
     }
-    reader.readAsDataURL(file)
-    e.target.value = ''
+    setShowMenu(false)
   }
 
   async function handleLocation() {
@@ -134,7 +137,7 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
                 <button
                   className="attach-menu__item"
                   type="button"
-                  onClick={() => { fileInputRef.current?.click(); setShowMenu(false) }}
+                  onClick={handlePickPhoto}
                 >
                   사진 업로드
                 </button>
@@ -148,8 +151,6 @@ export default function ChatInput({ onSend, onLocation, disabled }) {
               </div>
             )}
           </div>
-
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
 
           <textarea
             ref={textareaRef}

@@ -44,7 +44,7 @@ export default function EstimateCard({ data = {}, onSubmit, user, onLogin }) {
       start,
       end,
       floor: collected.floor || 0,
-      helper: collected.category === '기사 도움' || false,
+      helper: !!(collected.helper && !String(collected.helper).includes('없음')),
     })
       .then(setRoutePrice)
       .catch(() => {}) // fall back to AI estimate silently

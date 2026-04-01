@@ -12,7 +12,6 @@ export default function LoginPage() {
     setStatus(`${label} 로그인 창을 여는 중...`)
     try {
       const sb = getSupabase()
-      const next = role === 'driver' ? '/driver/index.html' : '/'
       const { data, error } = await sb.auth.signInWithOAuth({
         provider,
         options: {
@@ -26,6 +25,20 @@ export default function LoginPage() {
       }
     } catch {
       setStatus('로그인 중 오류가 발생했어요. 다시 시도해주세요.')
+    }
+  }
+
+  async function demoLogin() {
+    setStatus('테스트 계정으로 로그인 중...')
+    try {
+      const sb = getSupabase()
+      const email = role === 'driver' ? 'demo-driver@dang-o.com' : 'demo-customer@dang-o.com'
+      const password = role === 'driver' ? 'DemoDriver2026!' : 'DemoCustomer2026!'
+      const { error } = await sb.auth.signInWithPassword({ email, password })
+      if (error) { setStatus('테스트 계정 로그인 실패. 잠시 후 다시 시도해주세요.'); return }
+      navigate(role === 'driver' ? '/driver/index.html' : '/')
+    } catch {
+      setStatus('로그인 중 오류가 발생했어요.')
     }
   }
 
@@ -90,6 +103,13 @@ export default function LoginPage() {
           Google로 시작하기
         </button>
 
+        <button className="login-btn login-btn--apple" onClick={() => oauthLogin('apple', 'Apple')}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16.365 1.43c0 1.14-.41 2.182-1.087 2.94-.736.817-1.938 1.45-3.14 1.35-.15-1.097.393-2.275 1.11-3.014.736-.778 2.015-1.33 3.117-1.276zM20.59 17.126c-.58 1.33-.858 1.923-1.605 3.1-1.043 1.64-2.515 3.687-4.34 3.705-1.62.018-2.04-1.06-4.24-1.048-2.2.012-2.66 1.066-4.28 1.048-1.823-.018-3.217-1.87-4.26-3.51-2.92-4.593-3.226-9.98-1.425-12.75 1.28-1.97 3.31-3.123 5.214-3.123 1.94 0 3.16 1.066 4.76 1.066 1.55 0 2.494-1.067 4.746-1.067 1.697 0 3.494.925 4.77 2.52-4.2 2.304-3.52 8.34.66 10.06z"/>
+          </svg>
+          Apple로 시작하기
+        </button>
+
         {isDriver && (
           <>
             <div className="login-divider">또는</div>
@@ -98,6 +118,15 @@ export default function LoginPage() {
         )}
 
         <p className="login-status">{status}</p>
+
+        <div style={{ marginTop: 24, textAlign: 'center' }}>
+          <button
+            onClick={demoLogin}
+            style={{ background: 'none', border: 'none', color: '#aaa', fontSize: 12, textDecoration: 'underline', cursor: 'pointer' }}
+          >
+            테스트 계정으로 시작 ({role === 'driver' ? '전문가' : '고객'})
+          </button>
+        </div>
       </div>
     </div>
   )

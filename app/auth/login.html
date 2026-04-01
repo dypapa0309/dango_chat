@@ -52,6 +52,11 @@
         Google로 시작하기
       </button>
 
+      <button id="btnApple" class="btn-oauth" style="margin-top:10px; background:#111; color:#fff; border-color:#111;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16.365 1.43c0 1.14-.41 2.182-1.087 2.94-.736.817-1.938 1.45-3.14 1.35-.15-1.097.393-2.275 1.11-3.014.736-.778 2.015-1.33 3.117-1.276zM20.59 17.126c-.58 1.33-.858 1.923-1.605 3.1-1.043 1.64-2.515 3.687-4.34 3.705-1.62.018-2.04-1.06-4.24-1.048-2.2.012-2.66 1.066-4.28 1.048-1.823-.018-3.217-1.87-4.26-3.51-2.92-4.593-3.226-9.98-1.425-12.75 1.28-1.97 3.31-3.123 5.214-3.123 1.94 0 3.16 1.066 4.76 1.066 1.55 0 2.494-1.067 4.746-1.067 1.697 0 3.494.925 4.77 2.52-4.2 2.304-3.52 8.34.66 10.06z"/></svg>
+        Apple로 시작하기
+      </button>
+
       <div class="divider">또는</div>
       <a class="btn-guest" href="/customer/dashboard.html">로그인 없이 주문 조회하기</a>
     </div>
@@ -68,6 +73,11 @@
       <button id="btnGoogleDriver" class="btn-oauth" style="margin-top:10px;">
         <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M44.5 20H24v8.5h11.7C34.3 33.1 29.7 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20c11 0 19.7-8 19.7-20 0-1.3-.1-2.7-.2-4z"/><path fill="#34A853" d="M6.3 14.7l7 5.1C15.1 16 19.2 13 24 13c3.1 0 5.8 1.1 8 2.9l6.1-6.1C34.3 6.1 29.4 4 24 4 16.2 4 9.5 8.4 6.3 14.7z"/><path fill="#FBBC05" d="M24 44c5.4 0 10.3-1.9 14.1-5.1l-6.5-5.3C29.6 35.5 26.9 36.5 24 36.5c-5.7 0-10.4-3.8-11.8-9H4.5C7.6 36.6 15.3 44 24 44z"/><path fill="#EA4335" d="M43.6 20H24v8h11.3c-.8 2.2-2.1 4.1-3.9 5.5l6.5 5.3C41.4 35.4 44 30.1 44 24c0-1.3-.1-2.7-.4-4z"/></svg>
         Google로 시작하기
+      </button>
+
+      <button id="btnAppleDriver" class="btn-oauth" style="margin-top:10px; background:#111; color:#fff; border-color:#111;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16.365 1.43c0 1.14-.41 2.182-1.087 2.94-.736.817-1.938 1.45-3.14 1.35-.15-1.097.393-2.275 1.11-3.014.736-.778 2.015-1.33 3.117-1.276zM20.59 17.126c-.58 1.33-.858 1.923-1.605 3.1-1.043 1.64-2.515 3.687-4.34 3.705-1.62.018-2.04-1.06-4.24-1.048-2.2.012-2.66 1.066-4.28 1.048-1.823-.018-3.217-1.87-4.26-3.51-2.92-4.593-3.226-9.98-1.425-12.75 1.28-1.97 3.31-3.123 5.214-3.123 1.94 0 3.16 1.066 4.76 1.066 1.55 0 2.494-1.067 4.746-1.067 1.697 0 3.494.925 4.77 2.52-4.2 2.304-3.52 8.34.66 10.06z"/></svg>
+        Apple로 시작하기
       </button>
 
       <div class="divider">또는</div>
@@ -118,7 +128,7 @@
           }
         });
         if (error) {
-          statusMsg.textContent = '로그인 중 오류가 발생했어요. 다시 시도해주세요.';
+          statusMsg.textContent = `${label} 로그인 설정을 다시 확인해주세요.`;
           console.error(error);
         }
       });
@@ -126,8 +136,10 @@
 
     document.getElementById('btnKakao').addEventListener('click', () => oauthLogin('kakao', '카카오', false));
     document.getElementById('btnGoogle').addEventListener('click', () => oauthLogin('google', '구글', false));
+document.getElementById('btnApple').addEventListener('click', () => oauthLogin('apple', 'Apple', false));
     document.getElementById('btnKakaoDriver').addEventListener('click', () => oauthLogin('kakao', '카카오', true));
     document.getElementById('btnGoogleDriver').addEventListener('click', () => oauthLogin('google', '구글', true));
+document.getElementById('btnAppleDriver').addEventListener('click', () => oauthLogin('apple', 'Apple', true));
   </script>
 </body>
 </html>
